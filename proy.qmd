@@ -1,0 +1,171 @@
+---
+title: "Proyecto"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    theme: cosmo
+    code-fold: true
+    code-summary: "Mostrar / ocultar código"
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+```
+
+
+### Objetivo general
+Analizar los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.
+
+### Carga de datos
+
+```{r}
+datos <- read.csv("muestra_covid_500M_NA.csv")
+head(datos)
+```
+
+## Limpieza y transformación de datos
+
+```{r}
+#| label: limpieza-datos
+
+library(dplyr)
+library(lubridate)
+
+datos_limpios <- datos %>%
+  mutate(
+    FECHA_SINTOMAS = dmy(FECHA_SINTOMAS),
+    FECHA_INGRESO  = dmy(FECHA_INGRESO),
+    FECHA_DEF      = dmy(FECHA_DEF)
+  ) %>%
+  filter(
+    year(FECHA_SINTOMAS) == 2021 |
+    (is.na(FECHA_SINTOMAS) & year(FECHA_INGRESO) == 2021)
+  ) %>%
+  mutate(
+    EDAD = as.numeric(as.character(EDAD)),
+    
+    dias_retraso = as.numeric(difftime(FECHA_INGRESO, FECHA_SINTOMAS, units = "days")),
+    dias_retraso = ifelse(dias_retraso < 0 | dias_retraso > 365, NA_real_, dias_retraso),
+    
+    n_comorbilidades = rowSums(
+      across(
+        c(DIABETES, HIPERTENSION, OBESIDAD, EPOC, ASMA,
+          CARDIOVASCULAR, RENAL_CRONICA, INMUSUPR),
+        ~ifelse(.x == 1, 1, 0)
+      ),
+      na.rm = TRUE
+    ),
+    
+    n_complicaciones_graves = rowSums(
+      across(
+        c(NEUMONIA, INTUBADO, UCI),
+        ~ifelse(.x == 1, 1, 0)
+      ),
+      na.rm = TRUE
+    ),
+    
+    SEXO = factor(
+      as.character(SEXO),
+      levels = c("1", "2", "99"),
+      labels = c("Mujer", "Hombre", "No especificado")
+    ),
+    
+    ENTIDAD_RES = factor(
+      as.character(ENTIDAD_RES),
+      levels = sprintf("%02d", 1:32),
+      labels = c(
+        "Aguascalientes", "Baja California", "Baja California Sur", "Campeche",
+        "Coahuila de Zaragoza", "Colima", "Chiapas", "Chihuahua",
+        "Ciudad de México", "Durango", "Guanajuato", "Guerrero",
+        "Hidalgo", "Jalisco", "México", "Michoacán de Ocampo",
+        "Morelos", "Nayarit", "Nuevo León", "Oaxaca",
+        "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí",
+        "Sinaloa", "Sonora", "Tabasco", "Tamaulipas",
+        "Tlaxcala", "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas"
+      )
+    ),
+    
+    TIPO_PACIENTE = factor(
+      as.character(TIPO_PACIENTE),
+      levels = c("1", "2"),
+      labels = c("Ambulatorio", "Hospitalizado"),
+      ordered = TRUE
+    ),
+    
+    CLASIFICACION_FINAL = factor(
+      as.character(CLASIFICACION_FINAL),
+      levels = c("1", "2", "3", "4", "5", "6", "7"),
+      labels = c(
+        "Confirmado por laboratorio",
+        "Negativo",
+        "Sospechoso",
+        "Confirmado por asociación clínica-epidemiológica",
+        "Confirmado por comité dictaminador",
+        "Confirmado por prueba de antígeno",
+        "No clasificado"
+      ),
+      ordered = TRUE
+    )
+  ) %>%
+  mutate(
+    across(
+      c(EDAD, dias_retraso, n_comorbilidades, n_complicaciones_graves),
+      ~ifelse(.x %in% c(97, 98, 99), NA_real_, .x)
+    ),
+    across(
+      c(DIABETES, HIPERTENSION, OBESIDAD, EPOC, ASMA,
+        CARDIOVASCULAR, RENAL_CRONICA, INMUSUPR,
+        NEUMONIA, INTUBADO, UCI),
+      ~ifelse(.x %in% c(97, 98, 99), NA_integer_, .x)
+    )
+  ) %>%
+  filter(
+    CLASIFICACION_FINAL %in% c("Confirmado por laboratorio", "Sospechoso", "Confirmado por asociación clínica-epidemiológica", "Confirmado por comité dictaminador", "Confirmado por prueba de antígeno")
+  )
+
+glimpse(datos_limpios)
+
+summary(datos_limpios[c("EDAD", "dias_retraso", "n_comorbilidades", "n_complicaciones_graves",
+                        "SEXO", "ENTIDAD_RES", "TIPO_PACIENTE", "CLASIFICACION_FINAL")])
+
+nrow(datos_limpios)
+```
+##  Variables seleccionadas para el análisis
+
+| # | Variable                    | Tipo estadístico                  | Origen / Cómo se obtiene                              | Justificación breve                                                                 |
+|---|-----------------------------|-----------------------------------|-------------------------------------------------------|-------------------------------------------------------------------------------------|
+| 1 | EDAD                        | Cuantitativa continua             | Columna original                                      | Edad en años completos, permite media, desviación estándar, correlaciones, etc.    |
+| 2 | dias_retraso                | Cuantitativa continua             | Derivada: FECHA_INGRESO - FECHA_SINTOMAS              | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica   |
+| 3 | n_comorbilidades            | Cuantitativa discreta             | Derivada: suma de 8 comorbilidades (solo 1=Sí)        | Conteo entero (0 a 8), discreta por naturaleza                                      |
+| 4 | n_complicaciones_graves     | Cuantitativa discreta             | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí) | Conteo entero (0 a 3), discreta, indica severidad                                  |
+| 5 | SEXO                        | Cualitativa nominal               | Columna original                                      | Categorías sin orden: Mujer / Hombre / No especificado                             |
+| 6 | ENTIDAD_RES                 | Cualitativa nominal               | Columna original                                      | 32 entidades federativas + posible 99, sin orden jerárquico                         |
+| 7 | TIPO_PACIENTE               | Cualitativa ordinal               | Columna original                                      | 1 = Ambulatorio < 2 = Hospitalizado (orden lógico de gravedad)                     |
+| 8 | CLASIFICACION_FINAL         | Cualitativa ordinal               | Columna original                                      | Niveles con jerarquía de certeza/severidad (Confirmado > Sospechoso > otros)       |
+
+
+### Objetivos específicos
+
+1. **Describir la distribución de la edad y el tiempo de retraso entre el inicio de síntomas y el ingreso hospitalario en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**  
+   Variables principales: EDAD, dias_retraso, CLASIFICACION_FINAL  
+   Métodos sugeridos: estadísticos descriptivos (media, mediana, percentiles), histogramas, boxplots, tablas resumen.
+
+2. **Analizar la relación entre el número de comorbilidades y el número de complicaciones graves con el tipo de atención requerida en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**  
+   Variables principales: n_comorbilidades, n_complicaciones_graves, TIPO_PACIENTE  
+   Métodos sugeridos: tablas cruzadas, porcentajes, gráficos de barras apiladas, prueba chi-cuadrado o correlación de Spearman.
+
+3. **Comparar la distribución por sexo y entidad de residencia entre los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**  
+   Variables principales: SEXO, ENTIDAD_RES, CLASIFICACION_FINAL  
+   Métodos sugeridos: tablas de contingencia, gráficos de barras apiladas o mosaico, prueba de independencia chi-cuadrado.#Objetivos especificos
+
