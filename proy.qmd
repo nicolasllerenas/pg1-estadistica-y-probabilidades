@@ -23,9 +23,15 @@ library(knitr)
 
 ```
 
-
 ### Objetivo general
-Analizar los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.
+
+Analizar los casos sospechosos y confirmados de COVID-19 en México durante el año 2021. \### Metodología
+
+-   **Población:** La totalidad de registros acumulados en el Sistema de Vigilancia Epidemiológica de Enfermedades Respiratorias Viral (SISVER) de la Dirección General de Epidemiología de México, correspondientes a individuos que cumplieron con la definición operacional de caso sospechoso o confirmado de COVID-19 durante el año 2021.
+
+-   **Tipo de muestreo:** Muestreo aleatorio simple (probabilístico). El archivo de datos utilizado constituye un subconjunto representativo extraído aleatoriamente de la base de datos nacional de Datos Abiertos, garantizando que cada registro tuvo la misma probabilidad de ser seleccionado.
+
+-   **Unidad muestral:** El individuo (paciente). Cada fila de la base de datos representa a una única persona registrada en una unidad de salud, identificada de manera única en el sistema.
 
 ### Carga de datos
 
@@ -42,11 +48,15 @@ head(datos)
 library(dplyr)
 library(lubridate)
 
+library(dplyr)
+library(lubridate)
+
 datos_limpios <- datos %>%
   mutate(
-    FECHA_SINTOMAS = dmy(FECHA_SINTOMAS),
-    FECHA_INGRESO  = dmy(FECHA_INGRESO),
-    FECHA_DEF      = dmy(FECHA_DEF)
+    # Ajuste a ymd() porque el CSV tiene formato AAAA-MM-DD
+    FECHA_SINTOMAS = ymd(FECHA_SINTOMAS),
+    FECHA_INGRESO  = ymd(FECHA_INGRESO),
+    FECHA_DEF      = ymd(FECHA_DEF)
   ) %>%
   filter(
     year(FECHA_SINTOMAS) == 2021 |
@@ -55,9 +65,11 @@ datos_limpios <- datos %>%
   mutate(
     EDAD = as.numeric(as.character(EDAD)),
     
+    # Cálculo de días de retraso
     dias_retraso = as.numeric(difftime(FECHA_INGRESO, FECHA_SINTOMAS, units = "days")),
     dias_retraso = ifelse(dias_retraso < 0 | dias_retraso > 365, NA_real_, dias_retraso),
     
+    # Suma de Comorbilidades (1 = Sí)
     n_comorbilidades = rowSums(
       across(
         c(DIABETES, HIPERTENSION, OBESIDAD, EPOC, ASMA,
@@ -67,6 +79,7 @@ datos_limpios <- datos %>%
       na.rm = TRUE
     ),
     
+    # Suma de Complicaciones Graves
     n_complicaciones_graves = rowSums(
       across(
         c(NEUMONIA, INTUBADO, UCI),
@@ -119,6 +132,7 @@ datos_limpios <- datos %>%
     )
   ) %>%
   mutate(
+    # Conversión de códigos de "No especificado" a NA
     across(
       c(EDAD, dias_retraso, n_comorbilidades, n_complicaciones_graves),
       ~ifelse(.x %in% c(97, 98, 99), NA_real_, .x)
@@ -131,41 +145,92 @@ datos_limpios <- datos %>%
     )
   ) %>%
   filter(
-    CLASIFICACION_FINAL %in% c("Confirmado por laboratorio", "Sospechoso", "Confirmado por asociación clínica-epidemiológica", "Confirmado por comité dictaminador", "Confirmado por prueba de antígeno")
+    CLASIFICACION_FINAL %in% c("Confirmado por laboratorio", "Sospechoso", 
+                               "Confirmado por asociación clínica-epidemiológica", 
+                               "Confirmado por comité dictaminador", 
+                               "Confirmado por prueba de antígeno")
   )
 
+# Verificación de estructura y resumen
 glimpse(datos_limpios)
 
 summary(datos_limpios[c("EDAD", "dias_retraso", "n_comorbilidades", "n_complicaciones_graves",
                         "SEXO", "ENTIDAD_RES", "TIPO_PACIENTE", "CLASIFICACION_FINAL")])
 
-nrow(datos_limpios)
+cat("Total de registros limpios:", nrow(datos_limpios))
 ```
-##  Variables seleccionadas para el análisis
 
-| # | Variable                    | Tipo estadístico                  | Origen / Cómo se obtiene                              | Justificación breve                                                                 |
-|---|-----------------------------|-----------------------------------|-------------------------------------------------------|-------------------------------------------------------------------------------------|
-| 1 | EDAD                        | Cuantitativa continua             | Columna original                                      | Edad en años completos, permite media, desviación estándar, correlaciones, etc.    |
-| 2 | dias_retraso                | Cuantitativa continua             | Derivada: FECHA_INGRESO - FECHA_SINTOMAS              | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica   |
-| 3 | n_comorbilidades            | Cuantitativa discreta             | Derivada: suma de 8 comorbilidades (solo 1=Sí)        | Conteo entero (0 a 8), discreta por naturaleza                                      |
-| 4 | n_complicaciones_graves     | Cuantitativa discreta             | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí) | Conteo entero (0 a 3), discreta, indica severidad                                  |
-| 5 | SEXO                        | Cualitativa nominal               | Columna original                                      | Categorías sin orden: Mujer / Hombre / No especificado                             |
-| 6 | ENTIDAD_RES                 | Cualitativa nominal               | Columna original                                      | 32 entidades federativas + posible 99, sin orden jerárquico                         |
-| 7 | TIPO_PACIENTE               | Cualitativa ordinal               | Columna original                                      | 1 = Ambulatorio < 2 = Hospitalizado (orden lógico de gravedad)                     |
-| 8 | CLASIFICACION_FINAL         | Cualitativa ordinal               | Columna original                                      | Niveles con jerarquía de certeza/severidad (Confirmado > Sospechoso > otros)       |
+## Variables seleccionadas para el análisis
 
+| \# | Variable | Tipo estadístico | Origen / Cómo se obtiene | Justificación breve |
+|--------------|--------------|--------------|--------------|------------------|
+| 1 | EDAD | Cuantitativa continua | Columna original | Edad en años completos, permite media, desviación estándar, correlaciones, etc. |
+| 2 | dias_retraso | Cuantitativa continua | Derivada: FECHA_INGRESO - FECHA_SINTOMAS | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica |
+| 3 | n_comorbilidades | Cuantitativa discreta | Derivada: suma de 8 comorbilidades (solo 1=Sí) | Conteo entero (0 a 8), discreta por naturaleza |
+| 4 | n_complicaciones_graves | Cuantitativa discreta | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí) | Conteo entero (0 a 3), discreta, indica severidad |
+| 5 | SEXO | Cualitativa nominal | Columna original | Categorías sin orden: Mujer / Hombre / No especificado |
+| 6 | ENTIDAD_RES | Cualitativa nominal | Columna original | 32 entidades federativas + posible 99, sin orden jerárquico |
+| 7 | TIPO_PACIENTE | Cualitativa ordinal | Columna original | 1 = Ambulatorio \< 2 = Hospitalizado (orden lógico de gravedad) |
+| 8 | CLASIFICACION_FINAL | Cualitativa ordinal | Columna original | Niveles con jerarquía de certeza/severidad (Confirmado \> Sospechoso \> otros) |
 
 ### Objetivos específicos
 
-1. **Describir la distribución de la edad y el tiempo de retraso entre el inicio de síntomas y el ingreso hospitalario en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**  
-   Variables principales: EDAD, dias_retraso, CLASIFICACION_FINAL  
-   Métodos sugeridos: estadísticos descriptivos (media, mediana, percentiles), histogramas, boxplots, tablas resumen.
+1.  **Describir la distribución de la edad y el tiempo de retraso entre el inicio de síntomas y el ingreso hospitalario en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**\
+    Variables principales: EDAD, dias_retraso, CLASIFICACION_FINAL\
+    Métodos sugeridos: estadísticos descriptivos (media, mediana, percentiles), histogramas, boxplots, tablas resumen.
 
-2. **Analizar la relación entre el número de comorbilidades y el número de complicaciones graves con el tipo de atención requerida en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**  
-   Variables principales: n_comorbilidades, n_complicaciones_graves, TIPO_PACIENTE  
-   Métodos sugeridos: tablas cruzadas, porcentajes, gráficos de barras apiladas, prueba chi-cuadrado o correlación de Spearman.
+2.  **Analizar la relación entre el número de comorbilidades y el número de complicaciones graves con el tipo de atención requerida en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**\
+    Variables principales: n_comorbilidades, n_complicaciones_graves, TIPO_PACIENTE\
+    Métodos sugeridos: tablas cruzadas, porcentajes, gráficos de barras apiladas, prueba chi-cuadrado o correlación de Spearman.
 
-3. **Comparar la distribución por sexo y entidad de residencia entre los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**  
-   Variables principales: SEXO, ENTIDAD_RES, CLASIFICACION_FINAL  
-   Métodos sugeridos: tablas de contingencia, gráficos de barras apiladas o mosaico, prueba de independencia chi-cuadrado.#Objetivos especificos
+3.  **Comparar la distribución por sexo y entidad de residencia entre los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**\
+    Variables principales: SEXO, ENTIDAD_RES, CLASIFICACION_FINAL\
+    Métodos sugeridos: tablas de contingencia, gráficos de barras apiladas o mosaico, prueba de independencia chi-cuadrado.#Objetivos especificos
 
+```{r}
+#| label: analisis-edad
+
+# Tabla descriptiva de EDAD
+tabla_edad <- datos_limpios %>%
+  group_by(CLASIFICACION_FINAL) %>%
+  summarise(
+    Casos = n(),
+    Media = round(mean(EDAD, na.rm = TRUE), 2),
+    Mediana = median(EDAD, na.rm = TRUE),
+    Desv.Std = round(sd(EDAD, na.rm = TRUE), 2),
+    Min = min(EDAD, na.rm = TRUE),
+    Max = max(EDAD, na.rm = TRUE)
+  )
+
+# Imprimimos tabla
+knitr::kable(tabla_edad, caption = "Estadísticos descriptivos de EDAD por Clasificación")
+```
+
+```{r}
+#| label: graficos-edad
+#| fig.width: 10
+#| fig.height: 8
+
+# Histograma General con curva de densidad
+p1 <- ggplot(datos_limpios, aes(x = EDAD)) +
+  geom_histogram(aes(y = ..density..), binwidth = 5, fill = "#69b3a2", color = "white", alpha=0.8) +
+  geom_density(alpha = 0.2, fill = "#FF6666") +
+  theme_minimal() +
+  labs(title = "A) Distribución General de la Edad",
+       subtitle = "Histograma con curva de densidad",
+       x = "Edad (años)", y = "Densidad")
+
+# Boxplot por Clasificación para comparar grupos
+p2 <- ggplot(datos_limpios, aes(x = CLASIFICACION_FINAL, y = EDAD, fill = CLASIFICACION_FINAL)) +
+  geom_boxplot(alpha = 0.6, outlier.size = 0.5, outlier.alpha = 0.3) +
+  theme_minimal() +
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "B) Comparación de Edad por Clasificación",
+       subtitle = "Diagrama de Caja y Bigotes",
+       x = "Clasificación", y = "Edad (años)")
+
+
+p1
+p2
+```
