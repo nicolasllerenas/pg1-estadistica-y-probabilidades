@@ -161,13 +161,12 @@ summary(datos_limpios[c("EDAD", "dias_retraso", "n_comorbilidades", "n_complicac
 cat("Total de registros limpios:", nrow(datos_limpios))
 ```
 
-
 ## Variables seleccionadas para el análisis
 
 | \# | Variable | Tipo estadístico | Origen / Cómo se obtiene | Justificación breve |
 |---------------|---------------|---------------|---------------|---------------|
-| 1 | EDAD | Cuantitativa continua | Columna original | Edad en años completos, permite media, desviación estándar, correlaciones, etc. |
-| 2 | dias_retraso | Cuantitativa continua | Derivada: FECHA_INGRESO - FECHA_SINTOMAS | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica |
+| 1 | EDAD | Cuantitativa discreta | Columna original | Edad en años completos, permite media, desviación estándar, correlaciones, etc. |
+| 2 | dias_retraso | Cuantitativa discreta | Derivada: FECHA_INGRESO - FECHA_SINTOMAS | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica |
 | 3 | n_comorbilidades | Cuantitativa discreta | Derivada: suma de 8 comorbilidades (solo 1=Sí) | Conteo entero (0 a 8), discreta por naturaleza |
 | 4 | n_complicaciones_graves | Cuantitativa discreta | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí) | Conteo entero (0 a 3), discreta, indica severidad |
 | 5 | SEXO | Cualitativa nominal | Columna original | Categorías sin orden: Mujer / Hombre / No especificado |
@@ -236,4 +235,3 @@ p2 <- ggplot(datos_limpios, aes(x = CLASIFICACION_FINAL, y = EDAD, fill = CLASIF
 p1
 p2
 ```
-
