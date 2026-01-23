@@ -37,129 +37,196 @@ Analizar los casos sospechosos y confirmados de COVID-19 en México durante el a
 ### Carga de datos
 
 ```{r}
-datos <- read.csv("muestra_covid_500M_NA.csv")
-head(datos)
+DATOS_INICIALES <- read.csv("muestra_covid_500M_NA.csv")
+DATOS_INICIALES
 ```
 
-## Limpieza y transformación de datos
+#DATOS INICIALES
 
 ```{r}
-#| label: limpieza-datos
-
-library(dplyr)
-library(lubridate)
-
-library(dplyr)
-library(lubridate)
-
-datos_limpios <- datos %>%
-  mutate(
-    # Ajuste a ymd() porque el CSV tiene formato AAAA-MM-DD
-    FECHA_SINTOMAS = ymd(FECHA_SINTOMAS),
-    FECHA_INGRESO  = ymd(FECHA_INGRESO),
-    FECHA_DEF      = ymd(FECHA_DEF)
-  ) %>%
-  filter(
-    year(FECHA_SINTOMAS) == 2021 |
-    (is.na(FECHA_SINTOMAS) & year(FECHA_INGRESO) == 2021)
-  ) %>%
-  mutate(
-    EDAD = as.numeric(as.character(EDAD)),
-    
-    # Cálculo de días de retraso
-    dias_retraso = as.numeric(difftime(FECHA_INGRESO, FECHA_SINTOMAS, units = "days")),
-    dias_retraso = ifelse(dias_retraso < 0 | dias_retraso > 365, NA_real_, dias_retraso),
-    
-    # Suma de Comorbilidades (1 = Sí)
-    n_comorbilidades = rowSums(
-      across(
-        c(DIABETES, HIPERTENSION, OBESIDAD, EPOC, ASMA,
-          CARDIOVASCULAR, RENAL_CRONICA, INMUSUPR),
-        ~ifelse(.x == 1, 1, 0)
-      ),
-      na.rm = TRUE
-    ),
-    
-    # Suma de Complicaciones Graves
-    n_complicaciones_graves = rowSums(
-      across(
-        c(NEUMONIA, INTUBADO, UCI),
-        ~ifelse(.x == 1, 1, 0)
-      ),
-      na.rm = TRUE
-    ),
-    
-    SEXO = factor(
-      as.character(SEXO),
-      levels = c("1", "2", "99"),
-      labels = c("Mujer", "Hombre", "No especificado")
-    ),
-    
-    ENTIDAD_RES = factor(
-      as.character(ENTIDAD_RES),
-      levels = sprintf("%02d", 1:32),
-      labels = c(
-        "Aguascalientes", "Baja California", "Baja California Sur", "Campeche",
-        "Coahuila de Zaragoza", "Colima", "Chiapas", "Chihuahua",
-        "Ciudad de México", "Durango", "Guanajuato", "Guerrero",
-        "Hidalgo", "Jalisco", "México", "Michoacán de Ocampo",
-        "Morelos", "Nayarit", "Nuevo León", "Oaxaca",
-        "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí",
-        "Sinaloa", "Sonora", "Tabasco", "Tamaulipas",
-        "Tlaxcala", "Veracruz de Ignacio de la Llave", "Yucatán", "Zacatecas"
-      )
-    ),
-    
-    TIPO_PACIENTE = factor(
-      as.character(TIPO_PACIENTE),
-      levels = c("1", "2"),
-      labels = c("Ambulatorio", "Hospitalizado"),
-      ordered = TRUE
-    ),
-    
-    CLASIFICACION_FINAL = factor(
-      as.character(CLASIFICACION_FINAL),
-      levels = c("1", "2", "3", "4", "5", "6", "7"),
-      labels = c(
-        "Confirmado por laboratorio",
-        "Negativo",
-        "Sospechoso",
-        "Confirmado por asociación clínica-epidemiológica",
-        "Confirmado por comité dictaminador",
-        "Confirmado por prueba de antígeno",
-        "No clasificado"
-      ),
-      ordered = TRUE
-    )
-  ) %>%
-  mutate(
-    # Conversión de códigos de "No especificado" a NA
-    across(
-      c(EDAD, dias_retraso, n_comorbilidades, n_complicaciones_graves),
-      ~ifelse(.x %in% c(97, 98, 99), NA_real_, .x)
-    ),
-    across(
-      c(DIABETES, HIPERTENSION, OBESIDAD, EPOC, ASMA,
-        CARDIOVASCULAR, RENAL_CRONICA, INMUSUPR,
-        NEUMONIA, INTUBADO, UCI),
-      ~ifelse(.x %in% c(97, 98, 99), NA_integer_, .x)
-    )
-  ) %>%
-  filter(
-    CLASIFICACION_FINAL %in% c("Confirmado por laboratorio", "Sospechoso", 
-                               "Confirmado por asociación clínica-epidemiológica", 
-                               "Confirmado por comité dictaminador", 
-                               "Confirmado por prueba de antígeno")
-  )
-
-# Verificación de estructura y resumen
-glimpse(datos_limpios)
-
-summary(datos_limpios[c("EDAD", "dias_retraso", "n_comorbilidades", "n_complicaciones_graves",
-                        "SEXO", "ENTIDAD_RES", "TIPO_PACIENTE", "CLASIFICACION_FINAL")])
-
-cat("Total de registros limpios:", nrow(datos_limpios))
+str(DATOS_INICIALES)
 ```
+## Limpieza de datos
+
+
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |> 
+  mutate(ESTADO = if_else(is.na(FECHA_DEF), "Vivo", "Muerto"))
+```
+
+
+```{r}
+DATOS_INICIALES
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+sum(is.na(datos))
+```
+
+```{r}
+sum(is.na(datos$SEXO))
+```
+
+```{r}
+sum(!complete.cases(datos))
+```
+
+```{r}
+names(datos)
+```
+```{r}
+sum(!is.na(datos$FECHA_DEF))
+
+table(datos$FECHA_DEF, useNA = "always")
+```
+
+
+
+
+
+```{r}
+names(datos)
+```
+
+
+```{r}
+library(dplyr)
+
+LOS_FRIOS <- datos |> 
+  filter(!is.na(FECHA_DEF), FECHA_DEF != "")
+
+```
+
+```{r}
+LOS_FRIOS
+```
+
+
+```{r}
+table(LOS_FRIOS$INTUBADO, useNA = "always")
+```
+
+
+```{r}
+sum(complete.cases(LOS_FRIOS))
+```
+
+```{r}
+colSums(is.na(LOS_FRIOS))
+```
+#LIMPIANDO VARIABLES
+
+```{r}
+LOS_FRIOS <- LOS_FRIOS %>%
+  filter(!is.na(EDAD) & !is.na(SEXO) & !is.na(FECHA_INGRESO) & !is.na(FECHA_SINTOMAS))
+
+```
+
+
+#SEXO
+
+```{r}
+table(datos$SEXO, useNA = "always")
+```
+
+```{r}
+datos$SEXO <- as.character(datos$SEXO)
+datos$SEXO[datos$SEXO == "1"] <- "Hombre"
+datos$SEXO[datos$SEXO == "2"] <- "Mujer"
+sexo <- table(datos$SEXO)
+barplot(
+  sexo,     # Conteo de cada categoría
+  ylab = "Frecuencia",              # Etiqueta del eje Y
+  xlab = "Sexo",                    # Etiqueta del eje X
+  main = "Distribución de Sexo",    # Título del gráfico
+  col = c("red", "yellow"),         # Colores de las barras
+  border = "black"                  # Bordes de las barras
+)
+```
+
+```{r}
+pie(
+  sexo,              # Conteo de cada categoría
+  col = c("red", "yellow"),            # Colores más agradables
+  main = "Distribución de Sexo",             # Título del gráfico
+  labels = paste0(
+    names(sexo),     # Etiquetas (M, F, etc.)
+    " (", round(100 * prop.table(sexo), 1), "%)"
+  )
+)
+
+```
+
+#EDAD
+
+```{r}
+summary(datos$EDAD)
+```
+```{r}
+datos <- datos |> 
+  mutate(EDAD = ifelse(EDAD == 0 | EDAD > 100, NA, EDAD))
+```
+
+
+```{r}
+hist(datos$EDAD)
+```
+
+```{r}
+summary(datos$EDAD)
+```
+# Dias_retraso
+```{r}
+library(lubridate)
+datos <- datos |> 
+  mutate(
+    FECHA_INGRESO = as.Date(FECHA_INGRESO, format = "%Y-%m-%d"),
+    FECHA_SINTOMAS = as.Date(FECHA_SINTOMAS, format = "%Y-%m-%d"),
+    DIAS_RETRASO = as.numeric(FECHA_INGRESO - FECHA_SINTOMAS)
+  )
+  
+```
+
+```{r}
+colSums(is.na(datos))
+```
+
+
+```{r}
+Variables <- datos|> 
+  select(SEXO, EDAD, DIAS_RETRASO)
+```
+
+
+```{r}
+Variables
+```
+
+```{r}
+colSums(is.na(Variables))
+```
+
+
+
+
+
+
 
 ## Variables seleccionadas para el análisis
 
