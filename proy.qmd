@@ -13,29 +13,59 @@ execute:
   message: false
 ---
 
+
+## Introducción
+
+La pandemia por COVID-19 ha tenido un impacto significativo en la salud pública a nivel mundial.  
+El análisis de datos epidemiológicos permite comprender mejor las características de los casos y los factores asociados a la gravedad de la enfermedad.
+
+Este informe presenta un análisis descriptivo de los **casos sospechosos y confirmados de COVID-19 en México durante el año 2021**, utilizando una muestra de datos oficiales del sistema de vigilancia epidemiológica.
+
+
+
+## Objetivo general
+
+Analizar los casos sospechosos y confirmados de COVID-19 en México durante el año 2021, describiendo sus principales características demográficas y clínicas.
+
+
+
+## Objetivos específicos
+
+1. Describir la distribución de la edad y el tiempo de retraso entre el inicio de síntomas y el ingreso hospitalario.
+2. Analizar el número de comorbilidades y complicaciones graves en los pacientes.
+3. Comparar la distribución por sexo entre los casos registrados.
+
+
+## Metodología
+
+### Población de estudio
+
+La población está conformada por los registros acumulados en el **Sistema de Vigilancia Epidemiológica de Enfermedades Respiratorias Viral (SISVER)** correspondientes al año 2021.
+
+### Tipo de muestreo
+
+Se utilizó un **muestreo aleatorio simple**, garantizando que cada individuo tuviera la misma probabilidad de ser seleccionado.
+
+### Unidad muestral
+
+La unidad muestral es el **individuo (paciente)**.  
+Cada fila del conjunto de datos representa a una persona registrada en una unidad de salud.
+
+
+## Preparación del entorno
+
 ```{r}
 #| label: setup
 #| include: false
+
 library(dplyr)
 library(ggplot2)
-#library(tidyverse)
 library(lubridate)
 library(knitr)
-
 ```
 
-### Objetivo general
-
-Analizar los casos sospechosos y confirmados de COVID-19 en México durante el año 2021. \### Metodología
-
--   **Población:** La totalidad de registros acumulados en el Sistema de Vigilancia Epidemiológica de Enfermedades Respiratorias Viral (SISVER) de la Dirección General de Epidemiología de México, correspondientes a individuos que cumplieron con la definición operacional de caso sospechoso o confirmado de COVID-19 durante el año 2021.
-
--   **Tipo de muestreo:** Muestreo aleatorio simple (probabilístico). El archivo de datos utilizado constituye un subconjunto representativo extraído aleatoriamente de la base de datos nacional de Datos Abiertos, garantizando que cada registro tuvo la misma probabilidad de ser seleccionado.
-
--   **Unidad muestral:** El individuo (paciente). Cada fila de la base de datos representa a una única persona registrada en una unidad de salud, identificada de manera única en el sistema.
 
 ### Carga de datos
-
 ```{r}
 DATOS_INICIALES <- read.csv("muestra_covid_500M_NA.csv")
 DATOS_INICIALES
@@ -46,34 +76,17 @@ DATOS_INICIALES
 ```{r}
 str(DATOS_INICIALES)
 ```
-## Limpieza de datos
 
+## Limpieza de datos
 
 ```{r}
 DATOS_INICIALES <- DATOS_INICIALES |> 
   mutate(ESTADO = if_else(is.na(FECHA_DEF), "Vivo", "Muerto"))
 ```
 
-
 ```{r}
 DATOS_INICIALES
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ```{r}
 sum(is.na(datos))
@@ -90,20 +103,16 @@ sum(!complete.cases(datos))
 ```{r}
 names(datos)
 ```
+
 ```{r}
 sum(!is.na(datos$FECHA_DEF))
 
 table(datos$FECHA_DEF, useNA = "always")
 ```
 
-
-
-
-
 ```{r}
 names(datos)
 ```
-
 
 ```{r}
 library(dplyr)
@@ -117,11 +126,9 @@ LOS_FRIOS <- datos |>
 LOS_FRIOS
 ```
 
-
 ```{r}
 table(LOS_FRIOS$INTUBADO, useNA = "always")
 ```
-
 
 ```{r}
 sum(complete.cases(LOS_FRIOS))
@@ -130,6 +137,7 @@ sum(complete.cases(LOS_FRIOS))
 ```{r}
 colSums(is.na(LOS_FRIOS))
 ```
+
 #LIMPIANDO VARIABLES
 
 ```{r}
@@ -137,7 +145,6 @@ LOS_FRIOS <- LOS_FRIOS %>%
   filter(!is.na(EDAD) & !is.na(SEXO) & !is.na(FECHA_INGRESO) & !is.na(FECHA_SINTOMAS))
 
 ```
-
 
 #SEXO
 
@@ -178,11 +185,11 @@ pie(
 ```{r}
 summary(datos$EDAD)
 ```
+
 ```{r}
 datos <- datos |> 
   mutate(EDAD = ifelse(EDAD == 0 | EDAD > 100, NA, EDAD))
 ```
-
 
 ```{r}
 hist(datos$EDAD)
@@ -191,7 +198,9 @@ hist(datos$EDAD)
 ```{r}
 summary(datos$EDAD)
 ```
+
 # Dias_retraso
+
 ```{r}
 library(lubridate)
 datos <- datos |> 
@@ -203,16 +212,41 @@ datos <- datos |>
   
 ```
 
+# n_comorbilidades
+```{r}
+datos <- datos |>
+  mutate(
+    n_comorbilidades = rowSums(
+      across(
+        c(
+          DIABETES,
+          EPOC,
+          ASMA,
+          INMUSUPR,
+          HIPERTENSION,
+          CARDIOVASCULAR,
+          OBESIDAD,
+          RENAL_CRONICA,
+          TABAQUISMO,
+          OTRA_COM
+        ),
+        ~ ifelse(.x == 1, 1, 0)
+      ),
+      na.rm = TRUE
+    )
+  )
+
+```
+
+
 ```{r}
 colSums(is.na(datos))
 ```
-
 
 ```{r}
 Variables <- datos|> 
   select(SEXO, EDAD, DIAS_RETRASO)
 ```
-
 
 ```{r}
 Variables
@@ -222,19 +256,13 @@ Variables
 colSums(is.na(Variables))
 ```
 
-
-
-
-
-
-
 ## Variables seleccionadas para el análisis
 
 | \# | Variable | Tipo estadístico | Origen / Cómo se obtiene | Justificación breve |
 |---------------|---------------|---------------|---------------|---------------|
 | 1 | EDAD | Cuantitativa discreta | Columna original | Edad en años completos, permite media, desviación estándar, correlaciones, etc. |
 | 2 | dias_retraso | Cuantitativa discreta | Derivada: FECHA_INGRESO - FECHA_SINTOMAS | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica |
-| 3 | n_comorbilidades | Cuantitativa discreta | Derivada: suma de 8 comorbilidades (solo 1=Sí) | Conteo entero (0 a 8), discreta por naturaleza |
+| 3 | n_comorbilidades | Cuantitativa discreta | Derivada: suma de 10 comorbilidades (solo 1=Sí) | Conteo entero (0 a 10), discreta por naturaleza |
 | 4 | n_complicaciones_graves | Cuantitativa discreta | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí) | Conteo entero (0 a 3), discreta, indica severidad |
 | 5 | SEXO | Cualitativa nominal | Columna original | Categorías sin orden: Mujer / Hombre / No especificado |
 | 6 | ENTIDAD_RES | Cualitativa nominal | Columna original | 32 entidades federativas + posible 99, sin orden jerárquico |
