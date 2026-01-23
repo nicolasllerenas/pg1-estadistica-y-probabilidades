@@ -13,33 +13,27 @@ execute:
   message: false
 ---
 
-
 ## Introducción
 
-La pandemia por COVID-19 ha tenido un impacto significativo en la salud pública a nivel mundial.  
+La pandemia por COVID-19 ha tenido un impacto significativo en la salud pública a nivel mundial.\
 El análisis de datos epidemiológicos permite comprender mejor las características de los casos y los factores asociados a la gravedad de la enfermedad.
 
 Este informe presenta un análisis descriptivo de los **casos sospechosos y confirmados de COVID-19 en México durante el año 2021**, utilizando una muestra de datos oficiales del sistema de vigilancia epidemiológica.
-
-
 
 ## Objetivo general
 
 Analizar los casos sospechosos y confirmados de COVID-19 en México durante el año 2021, describiendo sus principales características demográficas y clínicas.
 
-
-
 ### Objetivos específicos
 
 1.  *Describir la distribución del score de riesgo COVID y del índice de gravedad en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
-  Variables principales: score_riesgo_covid, indice_gravedad\
+    Variables principales: score_riesgo_covid, indice_gravedad\
 
 2.  *Analizar la relación entre el número de comorbilidades y el tipo de atención recibida por los pacientes en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
-  Variables principales: n_comorbilidades, TIPO_PACIENTE\
+    Variables principales: n_comorbilidades, TIPO_PACIENTE\
 
 3.  *Comparar la distribución de los casos según sexo y clasificación final en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
     Variables principales: SEXO, CLASIFICACION_FINAL\
-
 
 ## Metodología
 
@@ -53,9 +47,8 @@ Se utilizó un **muestreo aleatorio simple**, garantizando que cada individuo tu
 
 ### Unidad muestral
 
-La unidad muestral es el **individuo (paciente)**.  
+La unidad muestral es el **individuo (paciente)**.\
 Cada fila del conjunto de datos representa a una persona registrada en una unidad de salud.
-
 
 ## Preparación del entorno
 
@@ -69,8 +62,8 @@ library(lubridate)
 library(knitr)
 ```
 
-
 ### Carga de datos
+
 ```{r}
 DATOS_INICIALES <- read.csv("muestra_covid_500M_NA.csv")
 ```
@@ -80,7 +73,6 @@ DATOS_INICIALES <- read.csv("muestra_covid_500M_NA.csv")
 ```{r}
 str(DATOS_INICIALES)
 ```
-
 
 #LIMPIANDO VARIABLES
 
@@ -92,17 +84,16 @@ DATOS_INICIALES <- DATOS_INICIALES |>
   select(-FECHA_DEF)
 ```
 
-
 ##SEXO
 
 ```{r}
 table(DATOS_INICIALES$SEXO, useNA = "always")
 ```
+
 ```{r}
 DATOS_INICIALES <- DATOS_INICIALES |> 
   filter(!is.na(SEXO))
 ```
-
 
 ```{r}
 table(DATOS_INICIALES$SEXO, useNA = "always")
@@ -132,7 +123,6 @@ DATOS_INICIALES <- DATOS_INICIALES |>
 summary(DATOS_INICIALES$EDAD)
 ```
 
-
 ## Dias_retraso
 
 ```{r}
@@ -161,6 +151,7 @@ summary(DATOS_INICIALES$DIAS_RETRASO)
 ```
 
 ## N_COMORBILIDADES
+
 ```{r}
 DATOS_INICIALES <- DATOS_INICIALES |>
   mutate(
@@ -189,6 +180,7 @@ DATOS_INICIALES <- DATOS_INICIALES |>
 ```{r}
 summary(DATOS_INICIALES$N_COMORBILIDADES)
 ```
+
 ##SORE_RIESGO_COVID
 
 ```{r}
@@ -283,7 +275,6 @@ DATOS_INICIALES <- DATOS_INICIALES |>
 range(DATOS_INICIALES$INDICE_GRAVEDAD, na.rm = TRUE)
 ```
 
-
 ```{r}
 DATOS_INICIALES |> 
   filter(INDICE_GRAVEDAD < 0 | INDICE_GRAVEDAD > 1) %>%
@@ -331,7 +322,6 @@ DATOS_INICIALES <- DATOS_INICIALES |>
   )
 ```
 
-
 ```{r}
 summary(DATOS_INICIALES$N_COMPLICACIONES_GRAVES)
 table(DATOS_INICIALES$N_COMPLICACIONES_GRAVES, useNA = "always")
@@ -346,7 +336,6 @@ DATOS_INICIALES <- DATOS_INICIALES |>
   filter(!is.na(N_COMPLICACIONES_GRAVES))
 ```
 
-
 ```{r}
 table(DATOS_INICIALES$N_COMPLICACIONES_GRAVES, useNA = "always")
 ```
@@ -356,6 +345,7 @@ table(DATOS_INICIALES$N_COMPLICACIONES_GRAVES, useNA = "always")
 ```{r}
 table(DATOS_INICIALES$TIPO_PACIENTE, useNA = "always")
 ```
+
 ```{r}
 DATOS_INICIALES <- DATOS_INICIALES |> 
   filter(!is.na(TIPO_PACIENTE))
@@ -370,28 +360,25 @@ table(DATOS_INICIALES$TIPO_PACIENTE, useNA = "always")
 ```{r}
 table(DATOS_INICIALES$CLASIFICACION_FINAL, useNA = "always")
 ```
+
 ```{r}
 DATOS_INICIALES <- DATOS_INICIALES |> 
   mutate(CLASIFICACION_FINAL = ifelse(CLASIFICACION_FINAL == 7, NA, CLASIFICACION_FINAL))
 ```
-
 
 ```{r}
 DATOS_INICIALES <- DATOS_INICIALES |> 
   filter(!is.na(CLASIFICACION_FINAL))
 ```
 
-
 ```{r}
 table(DATOS_INICIALES$CLASIFICACION_FINAL, useNA = "always")
 ```
 
-
-
 ## Variables seleccionadas para el análisis
 
 | \# | Variable | Tipo estadístico | Origen / Cómo se obtiene | Justificación breve |
-|---------------|---------------|---------------|---------------|---------------|
+|-------|---------------|---------------|---------------|---------------|
 | 1 | EDAD | Cuantitativa discreta | Columna original | Edad en años completos, permite media, desviación estándar, correlaciones, etc. |
 | 2 | dias_retraso | Cuantitativa discreta | Derivada: FECHA_INGRESO - FECHA_SINTOMAS | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica |
 | 3 | n_comorbilidades | Cuantitativa discreta | Derivada: suma de 10 comorbilidades (solo 1=Sí) | Conteo entero (0 a 10), discreta por naturaleza |
