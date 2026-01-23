@@ -29,11 +29,16 @@ Analizar los casos sospechosos y confirmados de COVID-19 en México durante el a
 
 
 
-## Objetivos específicos
+### Objetivos específicos
 
-1. Describir la distribución de la edad y el tiempo de retraso entre el inicio de síntomas y el ingreso hospitalario.
-2. Analizar el número de comorbilidades y complicaciones graves en los pacientes.
-3. Comparar la distribución por sexo entre los casos registrados.
+1.  *Describir la distribución del score de riesgo COVID y del índice de gravedad en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
+  Variables principales: score_riesgo_covid, indice_gravedad\
+
+2.  *Analizar la relación entre el número de comorbilidades y el tipo de atención recibida por los pacientes en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
+  Variables principales: n_comorbilidades, TIPO_PACIENTE\
+
+3.  *Comparar la distribución de los casos según sexo y clasificación final en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
+    Variables principales: SEXO, CLASIFICACION_FINAL\
 
 
 ## Metodología
@@ -68,7 +73,6 @@ library(knitr)
 ### Carga de datos
 ```{r}
 DATOS_INICIALES <- read.csv("muestra_covid_500M_NA.csv")
-DATOS_INICIALES
 ```
 
 #DATOS INICIALES
@@ -77,146 +81,90 @@ DATOS_INICIALES
 str(DATOS_INICIALES)
 ```
 
-## Limpieza de datos
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  mutate(ESTADO = if_else(is.na(FECHA_DEF), "Vivo", "Muerto"))
-```
-
-```{r}
-DATOS_INICIALES
-```
-
-```{r}
-sum(is.na(datos))
-```
-
-```{r}
-sum(is.na(datos$SEXO))
-```
-
-```{r}
-sum(!complete.cases(datos))
-```
-
-```{r}
-names(datos)
-```
-
-```{r}
-sum(!is.na(datos$FECHA_DEF))
-
-table(datos$FECHA_DEF, useNA = "always")
-```
-
-```{r}
-names(datos)
-```
-
-```{r}
-library(dplyr)
-
-LOS_FRIOS <- datos |> 
-  filter(!is.na(FECHA_DEF), FECHA_DEF != "")
-
-```
-
-```{r}
-LOS_FRIOS
-```
-
-```{r}
-table(LOS_FRIOS$INTUBADO, useNA = "always")
-```
-
-```{r}
-sum(complete.cases(LOS_FRIOS))
-```
-
-```{r}
-colSums(is.na(LOS_FRIOS))
-```
 
 #LIMPIANDO VARIABLES
 
-```{r}
-LOS_FRIOS <- LOS_FRIOS %>%
-  filter(!is.na(EDAD) & !is.na(SEXO) & !is.na(FECHA_INGRESO) & !is.na(FECHA_SINTOMAS))
+## ESTADO
 
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |> 
+  mutate(ESTADO = if_else(is.na(FECHA_DEF), "Vivo", "Muerto")) |> 
+  select(-FECHA_DEF)
 ```
 
-#SEXO
+
+##SEXO
 
 ```{r}
-table(datos$SEXO, useNA = "always")
+table(DATOS_INICIALES$SEXO, useNA = "always")
+```
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |> 
+  filter(!is.na(SEXO))
 ```
 
+
 ```{r}
-datos$SEXO <- as.character(datos$SEXO)
-datos$SEXO[datos$SEXO == "1"] <- "Hombre"
-datos$SEXO[datos$SEXO == "2"] <- "Mujer"
-sexo <- table(datos$SEXO)
-barplot(
-  sexo,     # Conteo de cada categoría
-  ylab = "Frecuencia",              # Etiqueta del eje Y
-  xlab = "Sexo",                    # Etiqueta del eje X
-  main = "Distribución de Sexo",    # Título del gráfico
-  col = c("red", "yellow"),         # Colores de las barras
-  border = "black"                  # Bordes de las barras
-)
+table(DATOS_INICIALES$SEXO, useNA = "always")
 ```
 
-```{r}
-pie(
-  sexo,              # Conteo de cada categoría
-  col = c("red", "yellow"),            # Colores más agradables
-  main = "Distribución de Sexo",             # Título del gráfico
-  labels = paste0(
-    names(sexo),     # Etiquetas (M, F, etc.)
-    " (", round(100 * prop.table(sexo), 1), "%)"
-  )
-)
-
-```
-
-#EDAD
+##EDAD
 
 ```{r}
-summary(datos$EDAD)
+summary(DATOS_INICIALES$EDAD)
 ```
 
 ```{r}
-datos <- datos |> 
+DATOS_INICIALES <- DATOS_INICIALES |> 
   mutate(EDAD = ifelse(EDAD == 0 | EDAD > 100, NA, EDAD))
 ```
 
 ```{r}
-hist(datos$EDAD)
+summary(DATOS_INICIALES$EDAD)
 ```
 
 ```{r}
-summary(datos$EDAD)
+DATOS_INICIALES <- DATOS_INICIALES |> 
+  filter(!is.na(EDAD))
 ```
 
-# Dias_retraso
+```{r}
+summary(DATOS_INICIALES$EDAD)
+```
+
+
+## Dias_retraso
 
 ```{r}
 library(lubridate)
-datos <- datos |> 
+DATOS_INICIALES <- DATOS_INICIALES |> 
   mutate(
     FECHA_INGRESO = as.Date(FECHA_INGRESO, format = "%Y-%m-%d"),
     FECHA_SINTOMAS = as.Date(FECHA_SINTOMAS, format = "%Y-%m-%d"),
-    DIAS_RETRASO = as.numeric(FECHA_INGRESO - FECHA_SINTOMAS)
+    DIAS_RETRASO = as.numeric(FECHA_INGRESO - FECHA_SINTOMAS),
+    DIAS_RETRASO = if_else(DIAS_RETRASO < 0, NA_real_, DIAS_RETRASO)
   )
   
 ```
 
-# n_comorbilidades
 ```{r}
-datos <- datos |>
+summary(DATOS_INICIALES$DIAS_RETRASO)
+```
+
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |> 
+  filter(!is.na(DIAS_RETRASO))
+```
+
+```{r}
+summary(DATOS_INICIALES$DIAS_RETRASO)
+```
+
+## N_COMORBILIDADES
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |>
   mutate(
-    n_comorbilidades = rowSums(
+    N_COMORBILIDADES = rowSums(
       across(
         c(
           DIABETES,
@@ -238,23 +186,207 @@ datos <- datos |>
 
 ```
 
+```{r}
+summary(DATOS_INICIALES$N_COMORBILIDADES)
+```
+##SORE_RIESGO_COVID
 
 ```{r}
-colSums(is.na(datos))
+table(DATOS_INICIALES$RESULTADO_LAB, useNA = "always")
+table(DATOS_INICIALES$RESULTADO_ANTIGENO, useNA = "always")
 ```
 
 ```{r}
-Variables <- datos|> 
-  select(SEXO, EDAD, DIAS_RETRASO)
+DATOS_INICIALES <- DATOS_INICIALES |>
+  mutate(
+    CARGA_ENFERMEDAD = N_COMORBILIDADES / 10,
+    FACTOR_CERTEZA = case_when(
+        RESULTADO_LAB == 1 | RESULTADO_ANTIGENO == 1 ~ 3,  
+        RESULTADO_LAB == 2 | RESULTADO_ANTIGENO == 2 ~ 1,  
+        TRUE ~ 2                                           
+      ),
+    SCORE_RIESGO_COVID = CARGA_ENFERMEDAD * FACTOR_CERTEZA
+  )
+
 ```
 
 ```{r}
-Variables
+summary(DATOS_INICIALES$CARGA_ENFERMEDAD)
+summary(DATOS_INICIALES$FACTOR_CERTEZA)
+summary(DATOS_INICIALES$SCORE_RIESGO_COVID)
 ```
 
 ```{r}
-colSums(is.na(Variables))
+DATOS_INICIALES <- DATOS_INICIALES |>
+  mutate(
+    CARGA_ENFERMEDAD = ifelse(CARGA_ENFERMEDAD < 0 | CARGA_ENFERMEDAD > 1, NA, CARGA_ENFERMEDAD),
+    SCORE_RIESGO_COVID = ifelse(SCORE_RIESGO_COVID < 0 | SCORE_RIESGO_COVID > 3, NA, SCORE_RIESGO_COVID)
+  )
 ```
+
+```{r}
+summary(DATOS_INICIALES$SCORE_RIESGO_COVID)
+```
+
+```{r}
+summary(DATOS_INICIALES$SCORE_RIESGO_COVID)
+```
+
+## INDICE_GRAVEDAD
+
+```{r}
+table(DATOS_INICIALES$NEUMONIA, useNA = "always")
+table(DATOS_INICIALES$UCI, useNA = "always")
+table(DATOS_INICIALES$INTUBADO, useNA = "always")
+table(DATOS_INICIALES$ESTADO, useNA = "always")
+```
+
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |>
+  mutate(
+    NEUMONIA01 = case_when(
+      NEUMONIA == 1 ~ 1,
+      NEUMONIA == 2 ~ 0,
+      TRUE ~ NA_real_
+    ),
+    UCI01 = case_when(
+      UCI == 1 ~ 1,
+      UCI == 2 ~ 0,
+      TRUE ~ NA_real_
+    ),
+    INTUBADO01 = case_when(
+      INTUBADO == 1 ~ 1,
+      INTUBADO == 2 ~ 0,
+      TRUE ~ NA_real_
+    ),
+    DEFUNCION01 = case_when(
+      ESTADO == "Muerto" ~ 1,
+      ESTADO == "Vivo" ~ 0,
+      TRUE ~ NA_real_
+    ),
+    INDICE_GRAVEDAD = (1*NEUMONIA01 + 2*UCI01 + 3*INTUBADO01 + 4*DEFUNCION01) / 10
+  )
+
+```
+
+```{r}
+summary(DATOS_INICIALES$INDICE_GRAVEDAD)
+```
+
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |>
+  filter(!is.na(INDICE_GRAVEDAD))
+
+```
+
+```{r}
+range(DATOS_INICIALES$INDICE_GRAVEDAD, na.rm = TRUE)
+```
+
+
+```{r}
+DATOS_INICIALES |> 
+  filter(INDICE_GRAVEDAD < 0 | INDICE_GRAVEDAD > 1) %>%
+  nrow()
+```
+
+```{r}
+summary(DATOS_INICIALES$INDICE_GRAVEDAD)
+```
+
+## ENTIDAD_RES
+
+```{r}
+table(DATOS_INICIALES$ENTIDAD_RES, useNA = "always")
+sum(is.na(DATOS_INICIALES$ENTIDAD_RES))
+```
+
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |>
+  mutate(
+    ENTIDAD_RES = na_if(trimws(as.character(ENTIDAD_RES)), ""),
+    ENTIDAD_RES = suppressWarnings(as.integer(ENTIDAD_RES)),
+    ENTIDAD_RES = ifelse(ENTIDAD_RES %in% 1:32, ENTIDAD_RES, NA_integer_)
+  ) |>
+  filter(!is.na(ENTIDAD_RES))
+```
+
+```{r}
+table(DATOS_INICIALES$ENTIDAD_RES, useNA = "always")
+```
+
+##N_COMPLICACIONES_GRAVES
+
+```{r}
+summary(DATOS_INICIALES$NEUMONIA)
+summary(DATOS_INICIALES$INTUBADO)
+summary(DATOS_INICIALES$UCI)
+```
+
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |>
+  mutate(
+    N_COMPLICACIONES_GRAVES =
+      (NEUMONIA == 1) + (INTUBADO == 1) + (UCI == 1)
+  )
+```
+
+
+```{r}
+summary(DATOS_INICIALES$N_COMPLICACIONES_GRAVES)
+table(DATOS_INICIALES$N_COMPLICACIONES_GRAVES, useNA = "always")
+```
+
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |>
+  mutate(
+    N_COMPLICACIONES_GRAVES = ifelse(N_COMPLICACIONES_GRAVES %in% 0:3,
+                                     N_COMPLICACIONES_GRAVES, NA)
+  ) |>
+  filter(!is.na(N_COMPLICACIONES_GRAVES))
+```
+
+
+```{r}
+table(DATOS_INICIALES$N_COMPLICACIONES_GRAVES, useNA = "always")
+```
+
+## TIPO_PACIENTE
+
+```{r}
+table(DATOS_INICIALES$TIPO_PACIENTE, useNA = "always")
+```
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |> 
+  filter(!is.na(TIPO_PACIENTE))
+```
+
+```{r}
+table(DATOS_INICIALES$TIPO_PACIENTE, useNA = "always")
+```
+
+## CLASIFICACION_FINAL
+
+```{r}
+table(DATOS_INICIALES$CLASIFICACION_FINAL, useNA = "always")
+```
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |> 
+  mutate(CLASIFICACION_FINAL = ifelse(CLASIFICACION_FINAL == 7, NA, CLASIFICACION_FINAL))
+```
+
+
+```{r}
+DATOS_INICIALES <- DATOS_INICIALES |> 
+  filter(!is.na(CLASIFICACION_FINAL))
+```
+
+
+```{r}
+table(DATOS_INICIALES$CLASIFICACION_FINAL, useNA = "always")
+```
+
+
 
 ## Variables seleccionadas para el análisis
 
