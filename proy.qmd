@@ -30,7 +30,7 @@ Analizar los casos sospechosos y confirmados de COVID-19 en México durante el a
     Variables principales: score_riesgo_covid, indice_gravedad\
 
 2.  *Analizar la relación entre el número de comorbilidades y el tipo de atención recibida por los pacientes en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
-    Variables principales: n_comorbilidades, TIPO_PACIENTE\
+    Variables principales: n_comorbilidades, INDIGENA\
 
 3.  *Comparar la distribución de los casos según sexo y clasificación final en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
     Variables principales: SEXO, CLASIFICACION_FINAL\
@@ -50,7 +50,6 @@ Se utilizó un **muestreo aleatorio simple**, garantizando que cada individuo tu
 La unidad muestral es el **individuo (paciente)**.\
 Cada fila del conjunto de datos representa a una persona registrada en una unidad de salud.
 
-
 ```{mermaid}
 gantt
     title Planificación del Proyecto
@@ -68,36 +67,35 @@ gantt
     Redacción de resultados e informe final     :d1, 2026-02-21, 9d
 ```
 
-
 ## Variables seleccionadas para el análisis
 
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| \#       | Variable                | Tipo estadístico      | Origen / Cómo se obtiene                                                 | Justificación breve                                                              |
-+==========+=========================+=======================+==========================================================================+==================================================================================+
-| 1        | SCORE_RIESGO_COVID      | Cuantitativa continua | Derivada: índice continuo basado en comorbilidades y certeza diagnóstica | Resume el nivel relativo de riesgo del paciente                                  |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| 2        | INDICE_GRAVEDAD         | Cuantitativa continua | Derivada: índice ponderado de complicaciones y defunción                 | Mide la severidad clínica del caso                                               |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| 3        | N_COMORBILIDADES        | Cuantitativa discreta | Derivada: suma de 10 comorbilidades (solo 1=Sí)                          | Conteo entero (0 a 10), discreta por naturaleza                                  |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| 4        | N_COMPLICACIONES_GRAVES | Cuantitativa discreta | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí)                  | Conteo entero (0 a 3), discreta, indica severidad                                |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| 5        | EDAD                    | Cuantitativa discreta | Columna original                                                         | Edad en años completos, permite media, desviación estándar, correlaciones, etc.  |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| 6        | DIAS_RETRASO            | Cuantitativa discreta | Derivada: FECHA_INGRESO - FECHA_SINTOMAS                                 | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| 7        | SEXO                    | Cualitativa nominal   | Columna original                                                         | Categorías sin orden: Mujer / Hombre / No especificado                           |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| 8        | ENTIDAD_RES             | Cualitativa nominal   | Columna original                                                         | 32 entidades federativas + posible 99, sin orden jerárquico                      |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| 9        | ESTADO                  | Cualitativa nominal   | Derivada de FECHA_DEF                                                    | Si tiene fecha de defunción = Muerto                                             |
-|          |                         |                       |                                                                          |                                                                                  |
-|          |                         |                       |                                                                          | Caso contrario = Vivo                                                            |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| 10       | TIPO_PACIENTE           | Cualitativa ordinal   | Columna original                                                         | 1 = Ambulatorio \< 2 = Hospitalizado (orden lógico de gravedad)                  |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
-| 11       | CLASIFICACION_FINAL     | Cualitativa ordinal   | Columna original                                                         | Niveles con jerarquía de certeza/severidad (Confirmado \> Sospechoso \> otros)   |
-+----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| \#       | Variable                | Tipo estadístico      | Origen / Cómo se obtiene                                                 | Justificación breve                                                                                                                                                            |
++==========+=========================+=======================+==========================================================================+================================================================================================================================================================================+
+| 1        | SCORE_RIESGO_COVID      | Cuantitativa continua | Derivada: índice continuo basado en comorbilidades y certeza diagnóstica | Resume el nivel relativo de riesgo del paciente                                                                                                                                |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 2        | INDICE_GRAVEDAD         | Cuantitativa continua | Derivada: índice ponderado de complicaciones y defunción                 | Mide la severidad clínica del caso                                                                                                                                             |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3        | N_COMORBILIDADES        | Cuantitativa discreta | Derivada: suma de 10 comorbilidades (solo 1=Sí)                          | Conteo entero (0 a 10), discreta por naturaleza                                                                                                                                |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 4        | N_COMPLICACIONES_GRAVES | Cuantitativa discreta | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí)                  | Conteo entero (0 a 3), discreta, indica severidad                                                                                                                              |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 5        | EDAD                    | Cuantitativa discreta | Columna original                                                         | Edad en años completos, permite media, desviación estándar, correlaciones, etc.                                                                                                |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 6        | DIAS_RETRASO            | Cuantitativa discreta | Derivada: FECHA_INGRESO - FECHA_SINTOMAS                                 | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica                                                                                               |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 7        | SEXO                    | Cualitativa nominal   | Columna original                                                         | Categorías sin orden: Mujer / Hombre / No especificado                                                                                                                         |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 8        | ENTIDAD_RES             | Cualitativa nominal   | Columna original                                                         | 32 entidades federativas + posible 99, sin orden jerárquico                                                                                                                    |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 9        | ESTADO                  | Cualitativa nominal   | Derivada de FECHA_DEF                                                    | Si tiene fecha de defunción = Muerto                                                                                                                                           |
+|          |                         |                       |                                                                          |                                                                                                                                                                                |
+|          |                         |                       |                                                                          | Caso contrario = Vivo                                                                                                                                                          |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 10       | RIESGO\_ CLINICO        | Cualitativa ordinal   | Derivada de N_COMORBILIDADES (conteo de comorbilidades por paciente)     | Niveles con jerarquía de riesgo clínico (a mayor comorbilidades, mayor riesgo): Muy bajo (0) \< Bajo (1–2) \< Moderado (3–4) \< Alto (5–6) \< Muy alto (7–8) \< Crítico (9–10) |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 11       | CLASIFICACION_FINAL     | Cualitativa ordinal   | Columna original                                                         | Niveles con jerarquía de certeza/severidad (Confirmado \> Sospechoso \> otros)                                                                                                 |
++----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ## Preparación del entorno
 
@@ -389,20 +387,34 @@ DATOS_INICIALES <- DATOS_INICIALES |>
 table(DATOS_INICIALES$N_COMPLICACIONES_GRAVES, useNA = "always")
 ```
 
-## TIPO_PACIENTE
+## RIESGO_CLINICO
 
-```{r}
-table(DATOS_INICIALES$TIPO_PACIENTE, useNA = "always")
+```{R}
+DATOS_INICIALES <- DATOS_INICIALES |>
+  mutate(
+    RIESGO_CLINICO = case_when(
+      N_COMORBILIDADES == 0 ~ "Muy bajo (0)",
+      between(N_COMORBILIDADES, 1, 2) ~ "Bajo (1-2)",
+      between(N_COMORBILIDADES, 3, 4) ~ "Moderado (3-4)",
+      between(N_COMORBILIDADES, 5, 6) ~ "Alto (5-6)",
+      between(N_COMORBILIDADES, 7, 8) ~ "Muy alto (7-8)",
+      between(N_COMORBILIDADES, 9, 10) ~ "Crítico (9-10)",
+      TRUE ~ NA_character_
+    ),
+    RIESGO_CLINICO = factor(
+      RIESGO_CLINICO,
+      levels = c(
+        "Muy bajo (0)", "Bajo (1-2)", "Moderado (3-4)",
+        "Alto (5-6)", "Muy alto (7-8)", "Crítico (9-10)"
+      ),
+      ordered = TRUE
+    ),
+    SCORE_RIESGO_COMORB = as.integer(RIESGO_CLINICO)
+  )
+
+table(DATOS_INICIALES$RIESGO_CLINICO, useNA = "always")
 ```
 
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  filter(!is.na(TIPO_PACIENTE))
-```
-
-```{r}
-table(DATOS_INICIALES$TIPO_PACIENTE, useNA = "always")
-```
 
 ## CLASIFICACION_FINAL
 
@@ -443,127 +455,155 @@ DATOS_FINALES <- DATOS_INICIALES |>
 sum(is.na(DATOS_FINALES))
 ```
 
+```{R}
+DATOS_INICIALES <- DATOS_INICIALES |> 
+  select(-TIPO_PACIENTE)
+```
 
-## Objetivo 1  
+## Objetivo 1
 
 ### Mínimo
+
 ```{r}
 c(
   SCORE_RIESGO_COVID = min(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
   INDICE_GRAVEDAD    = min(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
 )
 ```
+
 ### Máximo
+
 ```{r}
 c(
   SCORE_RIESGO_COVID = max(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
   INDICE_GRAVEDAD    = max(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
 )
 ```
+
 ### Media
+
 ```{r}
 c(
   SCORE_RIESGO_COVID = mean(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
   INDICE_GRAVEDAD    = mean(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
 )
 ```
+
 ### Mediana
+
 ```{r}
 c(
   SCORE_RIESGO_COVID = median(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
   INDICE_GRAVEDAD    = median(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
 )
 ```
+
 ### Cuartiles
+
 ```{r}
 rbind(
   SCORE_RIESGO_COVID = quantile(DATOS_FINALES$SCORE_RIESGO_COVID, probs = c(.25,.50,.75), na.rm = TRUE),
   INDICE_GRAVEDAD    = quantile(DATOS_FINALES$INDICE_GRAVEDAD,    probs = c(.25,.50,.75), na.rm = TRUE)
 )
 ```
+
 Desviación estándar
+
 ```{r}
 c(
   SCORE_RIESGO_COVID = sd(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
   INDICE_GRAVEDAD    = sd(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
 ) 
 ```
-## Objetivo 2 
+
+## Objetivo 2
 
 ### Mínimo
+
 ```{r}
 c(
   N_COMORBILIDADES = min(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
-  TIPO_PACIENTE    = min(as.numeric(DATOS_FINALES$TIPO_PACIENTE), na.rm = TRUE)
+  INDIGENA    = min(as.numeric(DATOS_FINALES$INDIGENA), na.rm = TRUE)
 )
 ```
 
 ### Máximo
+
 ```{r}
 c(
   N_COMORBILIDADES = max(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
-  TIPO_PACIENTE    = max(as.numeric(DATOS_FINALES$TIPO_PACIENTE), na.rm = TRUE)
+  INDIGENA    = max(as.numeric(DATOS_FINALES$INDIGENA), na.rm = TRUE)
 )
 ```
 
 ### Media
+
 ```{r}
 
 c(
   N_COMORBILIDADES = mean(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
-  TIPO_PACIENTE    = mean(as.numeric(DATOS_FINALES$TIPO_PACIENTE), na.rm = TRUE)
+  INDIGENA    = mean(as.numeric(DATOS_FINALES$INDIGENA), na.rm = TRUE)
 )
 ```
 
 ### Mediana
+
 ```{r}
 c(
   N_COMORBILIDADES = median(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
-  TIPO_PACIENTE    = median(as.numeric(DATOS_FINALES$TIPO_PACIENTE), na.rm = TRUE)
+  INDIGENA    = median(as.numeric(DATOS_FINALES$INDIGENA), na.rm = TRUE)
 )
 ```
 
 ### Cuartiles
+
 ```{r}
 
 rbind(
   N_COMORBILIDADES = quantile(DATOS_FINALES$N_COMORBILIDADES, probs = c(.25,.50,.75), na.rm = TRUE),
-  TIPO_PACIENTE    = quantile(as.numeric(DATOS_FINALES$TIPO_PACIENTE), probs = c(.25,.50,.75), na.rm = TRUE)
+  INDIGENA    = quantile(as.numeric(DATOS_FINALES$INDIGENA), probs = c(.25,.50,.75), na.rm = TRUE)
 )
 ```
+
 ### Desviación estándar
+
 ```{r}
 
 c(
   N_COMORBILIDADES = sd(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
-  TIPO_PACIENTE    = sd(as.numeric(DATOS_FINALES$TIPO_PACIENTE), na.rm = TRUE)
+  INDIGENA    = sd(as.numeric(DATOS_FINALES$INDIGENA), na.rm = TRUE)
 )
 ```
 
 ## Objetivo 3
 
 ### Mínimo
+
 ```{r}
 min(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
 ```
 
 ### Máximo
+
 ```{r}
 max(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
 ```
 
 ### Media
+
 ```{r}
 mean(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
 ```
 
 ### Mediana
+
 ```{r}
 median(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
 
 ```
 
 ### Cuartiles
+
 ```{r}
 quantile(
   as.numeric(DATOS_FINALES$CLASIFICACION_FINAL),
@@ -573,13 +613,13 @@ quantile(
 ```
 
 ### Desviación Estándar
+
 ```{r}
 sd(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
 ```
 
+## Objetivo específico 1
 
-
-## Objetivo específico 1  
 ### Distribución del score de riesgo COVID y del índice de gravedad
 
 ### Tabla descriptiva
@@ -603,6 +643,7 @@ tabla_obj1 <- data.frame(
 
 knitr::kable(tabla_obj1, caption = "Estadísticos descriptivos del score de riesgo COVID y del índice de gravedad")
 ```
+
 ### 1. Histograma SCORE_RIESGO_COVID
 
 ```{r}
@@ -617,6 +658,7 @@ lines(density(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
 ```
 
 ### 2. Boxplot SCORE_RIESGO_COVID
+
 ```{r}
 # 2. Boxplot SCORE_RIESGO_COVID
 boxplot(DATOS_FINALES$SCORE_RIESGO_COVID,
@@ -626,6 +668,7 @@ boxplot(DATOS_FINALES$SCORE_RIESGO_COVID,
 ```
 
 ### 3. Histograma INDICE_GRAVEDAD
+
 ```{r}
 # 3. Histograma INDICE_GRAVEDAD
 hist(DATOS_FINALES$INDICE_GRAVEDAD,
@@ -639,6 +682,7 @@ lines(density(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE),
 ```
 
 ### 4. Boxplot INDICE_GRAVEDAD
+
 ```{r}
 # 4. Boxplot INDICE_GRAVEDAD
 boxplot(DATOS_FINALES$INDICE_GRAVEDAD,
@@ -648,13 +692,12 @@ boxplot(DATOS_FINALES$INDICE_GRAVEDAD,
 
 ```
 
-##Objetivo específico 2
-###Relación entre el número de comorbilidades y el tipo de paciente
-###Tabla resumen
+##Objetivo específico 2 ###Relación entre el número de comorbilidades y el tipo de paciente ###Tabla resumen
+
 ```{r}
 
 tabla_obj2 <- DATOS_FINALES %>%
-  group_by(TIPO_PACIENTE) %>%
+  group_by(INDIGENA) %>%
   summarise(
     Casos = n(),
     Media_Comorbilidades = mean(N_COMORBILIDADES, na.rm = TRUE),
@@ -668,13 +711,11 @@ knitr::kable(
 )
 ```
 
-
-
 ```{r}
 
 ggplot(
   DATOS_FINALES,
-  aes(x = factor(TIPO_PACIENTE), y = N_COMORBILIDADES)
+  aes(x = factor(INDIGENA), y = N_COMORBILIDADES)
 ) +
   geom_boxplot(fill = "darkgreen", alpha = 0.7) +
   theme_minimal() +
@@ -686,10 +727,13 @@ ggplot(
   # Agregar etiquetas para hacerlo más claro
   scale_x_discrete(labels = c("1" = "Ambulatorio", "2" = "Hospitalizado"))
 ```
+
 ## Objetivo específico 3
+
 ###DISTRIBUCIÓN DE CASOS SEGÚN SEXO Y CLASIFICACIÓN FINAL
 
 ### Tabla de contingencia CORREGIDA
+
 ```{r}
 # Primero verifiquemos las categorías
 cat("Categorías únicas de CLASIFICACION_FINAL:\n")
@@ -733,6 +777,7 @@ barplot(tabla_obj3,
         names.arg = paste("Clasif.", 1:6),
         cex.names = 0.8)
 ```
+
 ###2. Gráfico de barras apiladas - porcentaje
 
 ```{r}
@@ -751,7 +796,3 @@ barplot(prop_tabla3,
 
 
 ```
-
-
-
-
