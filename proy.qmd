@@ -139,274 +139,68 @@ str(DATOS_INICIALES)
 
 # LIMPIANDO VARIABLES
 
-## ESTADO
-
 ```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  mutate(ESTADO = if_else(is.na(FECHA_DEF), "Vivo", "Muerto")) |> 
-  select(-FECHA_DEF)
-```
-
-## SEXO
-
-```{r}
-table(DATOS_INICIALES$SEXO, useNA = "always")
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  filter(!is.na(SEXO))
-```
-
-```{r}
-table(DATOS_INICIALES$SEXO, useNA = "always")
-```
-
-## EDAD
-
-```{r}
-summary(DATOS_INICIALES$EDAD)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  mutate(EDAD = ifelse(EDAD == 0 | EDAD > 100, NA, EDAD))
-```
-
-```{r}
-summary(DATOS_INICIALES$EDAD)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  filter(!is.na(EDAD))
-```
-
-```{r}
-summary(DATOS_INICIALES$EDAD)
-```
-
-## DIAS_RETRASO
-
-```{r}
-library(lubridate)
-DATOS_INICIALES <- DATOS_INICIALES |> 
+DATOS_TRANSFORMADOS <- DATOS_INICIALES |>
+  # 1. Variable ESTADO (Derivada de FECHA_DEF)
+  mutate(ESTADO = if_else(is.na(FECHA_DEF), "Vivo", "Muerto")) |>
+  
+  # 2. Limpieza de EDAD (Valores lógicos)
+  mutate(EDAD = ifelse(EDAD == 0 | EDAD > 100, NA, EDAD)) |>
+  
+  # 3. DIAS_RETRASO (Cálculo de fechas)
   mutate(
     FECHA_INGRESO = as.Date(FECHA_INGRESO, format = "%Y-%m-%d"),
     FECHA_SINTOMAS = as.Date(FECHA_SINTOMAS, format = "%Y-%m-%d"),
     DIAS_RETRASO = as.numeric(FECHA_INGRESO - FECHA_SINTOMAS),
     DIAS_RETRASO = if_else(DIAS_RETRASO < 0, NA_real_, DIAS_RETRASO)
-  )
+  ) |>
   
-```
-
-```{r}
-summary(DATOS_INICIALES$DIAS_RETRASO)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  filter(!is.na(DIAS_RETRASO))
-```
-
-```{r}
-summary(DATOS_INICIALES$DIAS_RETRASO)
-```
-
-## N_COMORBILIDADES
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
+  # 4. N_COMORBILIDADES (Suma de condiciones)
   mutate(
-    N_COMORBILIDADES = rowSums(
-      across(
-        c(
-          DIABETES,
-          EPOC,
-          ASMA,
-          INMUSUPR,
-          HIPERTENSION,
-          CARDIOVASCULAR,
-          OBESIDAD,
-          RENAL_CRONICA,
-          TABAQUISMO,
-          OTRA_COM
-        ),
-        ~ ifelse(.x == 1, 1, 0)
-      ),
-      na.rm = TRUE
-    )
-  )
-
-```
-
-```{r}
-summary(DATOS_INICIALES$N_COMORBILIDADES)
-```
-
-## SCORE_RIESGO_COVID
-
-```{r}
-table(DATOS_INICIALES$RESULTADO_LAB, useNA = "always")
-table(DATOS_INICIALES$RESULTADO_ANTIGENO, useNA = "always")
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
+    N_COMORBILIDADES = rowSums(across(c(DIABETES, EPOC, ASMA, INMUSUPR, 
+                                        HIPERTENSION, CARDIOVASCULAR, OBESIDAD, 
+                                        RENAL_CRONICA, TABAQUISMO, OTRA_COM), 
+                                      ~ ifelse(.x == 1, 1, 0)), na.rm = TRUE)
+  ) |>
+  
+  # 5. SCORE_RIESGO_COVID
   mutate(
     CARGA_ENFERMEDAD = N_COMORBILIDADES / 10,
     FACTOR_CERTEZA = case_when(
         RESULTADO_LAB == 1 | RESULTADO_ANTIGENO == 1 ~ 3,  
         RESULTADO_LAB == 2 | RESULTADO_ANTIGENO == 2 ~ 1,  
-        TRUE ~ 2                                           
+        TRUE ~ 2 
       ),
-    SCORE_RIESGO_COVID = CARGA_ENFERMEDAD * FACTOR_CERTEZA
-  )
-
-```
-
-```{r}
-summary(DATOS_INICIALES$CARGA_ENFERMEDAD)
-summary(DATOS_INICIALES$FACTOR_CERTEZA)
-summary(DATOS_INICIALES$SCORE_RIESGO_COVID)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
-  mutate(
-    CARGA_ENFERMEDAD = ifelse(CARGA_ENFERMEDAD < 0 | CARGA_ENFERMEDAD > 1, NA, CARGA_ENFERMEDAD),
+    SCORE_RIESGO_COVID = CARGA_ENFERMEDAD * FACTOR_CERTEZA,
+    # Validación de rango
     SCORE_RIESGO_COVID = ifelse(SCORE_RIESGO_COVID < 0 | SCORE_RIESGO_COVID > 3, NA, SCORE_RIESGO_COVID)
-  )
-```
-
-```{r}
-summary(DATOS_INICIALES$SCORE_RIESGO_COVID)
-```
-
-```{r}
-summary(DATOS_INICIALES$SCORE_RIESGO_COVID)
-```
-
-## INDICE_GRAVEDAD
-
-```{r}
-table(DATOS_INICIALES$NEUMONIA, useNA = "always")
-table(DATOS_INICIALES$UCI, useNA = "always")
-table(DATOS_INICIALES$INTUBADO, useNA = "always")
-table(DATOS_INICIALES$ESTADO, useNA = "always")
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
+  ) |>
+  
+  # 6. INDICE_GRAVEDAD
   mutate(
-    NEUMONIA01 = case_when(
-      NEUMONIA == 1 ~ 1,
-      NEUMONIA == 2 ~ 0,
-      TRUE ~ NA_real_
-    ),
-    UCI01 = case_when(
-      UCI == 1 ~ 1,
-      UCI == 2 ~ 0,
-      TRUE ~ NA_real_
-    ),
-    INTUBADO01 = case_when(
-      INTUBADO == 1 ~ 1,
-      INTUBADO == 2 ~ 0,
-      TRUE ~ NA_real_
-    ),
-    DEFUNCION01 = case_when(
-      ESTADO == "Muerto" ~ 1,
-      ESTADO == "Vivo" ~ 0,
-      TRUE ~ NA_real_
-    ),
-    INDICE_GRAVEDAD = (1*NEUMONIA01 + 2*UCI01 + 3*INTUBADO01 + 4*DEFUNCION01) / 10
-  )
-
-```
-
-```{r}
-summary(DATOS_INICIALES$INDICE_GRAVEDAD)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
-  filter(!is.na(INDICE_GRAVEDAD))
-
-```
-
-```{r}
-range(DATOS_INICIALES$INDICE_GRAVEDAD, na.rm = TRUE)
-```
-
-```{r}
-DATOS_INICIALES |> 
-  filter(INDICE_GRAVEDAD < 0 | INDICE_GRAVEDAD > 1) %>%
-  nrow()
-```
-
-```{r}
-summary(DATOS_INICIALES$INDICE_GRAVEDAD)
-```
-
-## ENTIDAD_RES
-
-```{r}
-table(DATOS_INICIALES$ENTIDAD_RES, useNA = "always")
-sum(is.na(DATOS_INICIALES$ENTIDAD_RES))
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
+    NEUMONIA01 = case_when(NEUMONIA == 1 ~ 1, NEUMONIA == 2 ~ 0, TRUE ~ NA_real_),
+    UCI01 = case_when(UCI == 1 ~ 1, UCI == 2 ~ 0, TRUE ~ NA_real_),
+    INTUBADO01 = case_when(INTUBADO == 1 ~ 1, INTUBADO == 2 ~ 0, TRUE ~ NA_real_),
+    DEFUNCION01 = case_when(ESTADO == "Muerto" ~ 1, ESTADO == "Vivo" ~ 0, TRUE ~ NA_real_),
+    INDICE_GRAVEDAD = (1*NEUMONIA01 + 2*UCI01 + 3*INTUBADO01 + 4*DEFUNCION01) / 10,
+    # Validación de rango
+    INDICE_GRAVEDAD = ifelse(INDICE_GRAVEDAD < 0 | INDICE_GRAVEDAD > 1, NA, INDICE_GRAVEDAD)
+  ) |>
+  
+  # 7. Limpieza ENTIDAD_RES
   mutate(
     ENTIDAD_RES = na_if(trimws(as.character(ENTIDAD_RES)), ""),
     ENTIDAD_RES = suppressWarnings(as.integer(ENTIDAD_RES)),
     ENTIDAD_RES = ifelse(ENTIDAD_RES %in% 1:32, ENTIDAD_RES, NA_integer_)
   ) |>
-  filter(!is.na(ENTIDAD_RES))
-```
-
-```{r}
-table(DATOS_INICIALES$ENTIDAD_RES, useNA = "always")
-```
-
-## N_COMPLICACIONES_GRAVES
-
-```{r}
-summary(DATOS_INICIALES$NEUMONIA)
-summary(DATOS_INICIALES$INTUBADO)
-summary(DATOS_INICIALES$UCI)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
+  
+  # 8. N_COMPLICACIONES_GRAVES
   mutate(
-    N_COMPLICACIONES_GRAVES =
-      (NEUMONIA == 1) + (INTUBADO == 1) + (UCI == 1)
-  )
-```
-
-```{r}
-summary(DATOS_INICIALES$N_COMPLICACIONES_GRAVES)
-table(DATOS_INICIALES$N_COMPLICACIONES_GRAVES, useNA = "always")
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
-  mutate(
-    N_COMPLICACIONES_GRAVES = ifelse(N_COMPLICACIONES_GRAVES %in% 0:3,
-                                     N_COMPLICACIONES_GRAVES, NA)
+    N_COMPLICACIONES_GRAVES = (NEUMONIA == 1) + (INTUBADO == 1) + (UCI == 1),
+    N_COMPLICACIONES_GRAVES = ifelse(N_COMPLICACIONES_GRAVES %in% 0:3, N_COMPLICACIONES_GRAVES, NA)
   ) |>
-  filter(!is.na(N_COMPLICACIONES_GRAVES))
-```
-
-```{r}
-table(DATOS_INICIALES$N_COMPLICACIONES_GRAVES, useNA = "always")
-```
-
-## RIESGO_CLINICO
-
-```{R}
-DATOS_INICIALES <- DATOS_INICIALES |>
+  
+  # 9. RIESGO_CLINICO (Categorización)
   mutate(
     RIESGO_CLINICO = case_when(
       N_COMORBILIDADES == 0 ~ "Muy bajo (0)",
@@ -417,139 +211,59 @@ DATOS_INICIALES <- DATOS_INICIALES |>
       between(N_COMORBILIDADES, 9, 10) ~ "Crítico (9-10)",
       TRUE ~ NA_character_
     ),
-    RIESGO_CLINICO = factor(
-      RIESGO_CLINICO,
-      levels = c(
-        "Muy bajo (0)", "Bajo (1-2)", "Moderado (3-4)",
-        "Alto (5-6)", "Muy alto (7-8)", "Crítico (9-10)"
-      ),
-      ordered = TRUE
-    ),
-    SCORE_RIESGO_COMORB = as.integer(RIESGO_CLINICO)
-  )
-
-table(DATOS_INICIALES$RIESGO_CLINICO, useNA = "always")
-```
-
-## CLASIFICACION_FINAL
-
-```{r}
-table(DATOS_INICIALES$CLASIFICACION_FINAL, useNA = "always")
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
+    RIESGO_CLINICO = factor(RIESGO_CLINICO, 
+                            levels = c("Muy bajo (0)", "Bajo (1-2)", "Moderado (3-4)", 
+                                       "Alto (5-6)", "Muy alto (7-8)", "Crítico (9-10)"), 
+                            ordered = TRUE)
+  ) |>
+  
+  # 10. Limpieza CLASIFICACION_FINAL
   mutate(CLASIFICACION_FINAL = ifelse(CLASIFICACION_FINAL == 7, NA, CLASIFICACION_FINAL))
 ```
 
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  filter(!is.na(CLASIFICACION_FINAL))
-```
+## Limpiar NA
 
 ```{r}
-table(DATOS_INICIALES$CLASIFICACION_FINAL, useNA = "always")
-```
+# Seleccionamos las variables de interés para el análisis
+cols_analisis <- c("EDAD", "SEXO", "DIAS_RETRASO", "ENTIDAD_RES", 
+                   "N_COMORBILIDADES", "SCORE_RIESGO_COVID", "INDICE_GRAVEDAD", 
+                   "N_COMPLICACIONES_GRAVES", "RIESGO_CLINICO", "CLASIFICACION_FINAL")
 
-## Limpiar NA faltantes
+# Contamos NAs en la base transformada (pero aún sucia)
+nas_por_columna <- sapply(DATOS_TRANSFORMADOS[cols_analisis], function(x) sum(is.na(x)))
+pct_nas <- round((nas_por_columna / nrow(DATOS_TRANSFORMADOS)) * 100, 2)
 
-```{r}
-DATOS_FINALES <- DATOS_INICIALES |> 
-  filter(complete.cases(DATOS_INICIALES))
-```
-
-## Resultado del proceso de limpieza
-
-```{r}
-#| label: muestra-final
-#| tbl-cap: "Tabla 1. Resumen del proceso de limpieza de datos"
-
-# Usar los valores guardados
-total_inicial <- OBSERVACIONES_INICIALES
-total_final <- nrow(DATOS_FINALES)
-eliminados <- total_inicial - total_final
-porcentaje_conservado <- round(total_final/total_inicial*100, 2)
-tasa_eliminacion <- round(eliminados/total_inicial*100, 2)
-
-# Crear tabla
-tabla_resumen <- data.frame(
-  "Estadístico" = c(
-    "Observaciones iniciales",
-    "Observaciones finales", 
-    "Registros eliminados",
-    "Porcentaje conservado",
-    "Tasa de eliminación"
-  ),
-  "Valor" = c(
-    format(total_inicial, big.mark = ","),
-    format(total_final, big.mark = ","),
-    format(eliminados, big.mark = ","),
-    paste0(porcentaje_conservado, "%"),
-    paste0(tasa_eliminacion, "%")
-  )
+tabla_diagnostico <- data.frame(
+  Variable = names(nas_por_columna),
+  NAs_Cantidad = nas_por_columna,
+  NAs_Porcentaje = paste0(pct_nas, "%")
 )
 
-kable(tabla_resumen, align = c("l", "r"), 
-      caption = "Resumen del impacto del proceso de limpieza de datos")
+# Mostramos tabla de diagnóstico
+knitr::kable(tabla_diagnostico, caption = "Cantidad de valores perdidos por variable antes de la limpieza")
 ```
 
-**Interpretación:** El proceso de limpieza conservó `r round(nrow(DATOS_FINALES)/OBSERVACIONES_INICIALES*100, 2)`% de los registros originales. Se eliminaron `r format(OBSERVACIONES_INICIALES - nrow(DATOS_FINALES), big.mark = ",")` observaciones (`r round((OBSERVACIONES_INICIALES - nrow(DATOS_FINALES))/OBSERVACIONES_INICIALES*100, 2)`% del total) debido a valores faltantes o inconsistentes en variables clave para el análisis. Esta alta tasa de eliminación (superior al 95%) indica que la base de datos original contenía una proporción muy elevada de registros incompletos o con valores inconsistentes.
+```{r}
+# EJECUCIÓN DEL FILTRADO
+# Ahora sí, creamos DATOS_FINALES eliminando las filas con problemas
+n_antes <- nrow(DATOS_TRANSFORMADOS)
 
-##Tabla comparativa de valores faltantes
+DATOS_FINALES <- DATOS_TRANSFORMADOS |>
+  # Filtramos NAs solo en las columnas que usamos
+  filter(complete.cases(across(all_of(cols_analisis))))
+
+n_despues <- nrow(DATOS_FINALES)
+n_eliminados <- n_antes - n_despues
+```
 
 ```{r}
-#| label: tabla-comparativa-nas
-#| tbl-cap: "Tabla 2. Comparación de valores faltantes por variable clave"
-
-# Variables que existían en el dataset original
-vars_originales <- c("EDAD", "SEXO", "CLASIFICACION_FINAL", "DIABETES", 
-                     "HIPERTENSION", "OBESIDAD", "NEUMONIA", "UCI", "INTUBADO")
-
-# Variables derivadas (creadas durante limpieza)
-vars_derivadas <- c("SCORE_RIESGO_COVID", "INDICE_GRAVEDAD", "N_COMORBILIDADES",
-                    "DIAS_RETRASO", "ESTADO", "RIESGO_CLINICO", "N_COMPLICACIONES_GRAVES")
-
-# Función para contar NAs - VERSIÓN SEGURA
-contar_nas <- function(df, vars) {
-  result <- numeric(length(vars))
-  for(i in seq_along(vars)) {
-    var_name <- vars[i]
-    if(var_name %in% names(df)) {
-      result[i] <- sum(is.na(df[[var_name]]))
-    } else {
-      result[i] <- NA
-    }
-  }
-  names(result) <- vars
-  return(result)
-}
-
-# Contar NAs antes (usando DATOS_ORIGINALES)
-na_inicial <- contar_nas(DATOS_ORIGINALES, vars_originales)
-
-# Para variables derivadas, indicar que no existían
-na_inicial_completo <- c(na_inicial, rep(NA, length(vars_derivadas)))
-names(na_inicial_completo) <- c(vars_originales, vars_derivadas)
-
-# Contar NAs después (en DATOS_FINALES)
-na_final <- rep(0, length(vars_originales) + length(vars_derivadas))
-names(na_final) <- c(vars_originales, vars_derivadas)
-
-# Crear tabla comparativa
-tabla_comparativa <- data.frame(
-  Variable = names(na_inicial_completo),
-  Tipo = ifelse(names(na_inicial_completo) %in% vars_derivadas, "Derivada", "Original"),
-  NAs_Inicial = na_inicial_completo,
-  NAs_Final = na_final,
-  Porcentaje_Datos = "100%"
+tabla_balance <- data.frame(
+  Fase = c("Total Registros Iniciales", "Registros Eliminados (Incompletos)", "Muestra Final Analizable"),
+  Cantidad = c(format(n_antes, big.mark=","), format(n_eliminados, big.mark=","), format(n_despues, big.mark=",")),
+  Porcentaje = c("100%", paste0(round(n_eliminados/n_antes*100, 2), "%"), paste0(round(n_despues/n_antes*100, 2), "%"))
 )
 
-# Reemplazar NA con "N/A" para mejor presentación
-tabla_comparativa$NAs_Inicial[is.na(tabla_comparativa$NAs_Inicial)] <- "N/A"
-tabla_comparativa$Porcentaje_Datos[tabla_comparativa$Tipo == "Derivada"] <- "Calculada"
-
-kable(tabla_comparativa, align = c("l", "l", "c", "c", "c"),
-      caption = "Comparación de valores faltantes antes y después del proceso de limpieza")
+knitr::kable(tabla_balance, align = c("l", "r", "r"), caption = "Resumen del impacto de la limpieza de datos")
 ```
 
 # ANÁLISIS DESCRIPTIVO
@@ -800,8 +514,8 @@ knitr::kable(round(matriz_cor, 3), caption = "Tabla 5. Matriz de Correlaciones")
 
 **Interpretación de Correlaciones:**
 
-* **Edad vs. Riesgo:** Se observa una correlación positiva moderada. Esto es biológicamente esperable, ya que la edad avanzada es el principal factor asociado a la acumulación de comorbilidades.
-* **Riesgo vs. Gravedad:** Existe una correlación positiva. Esto valida estadísticamente el *Score de Riesgo*: a mayor puntaje de riesgo basal, efectivamente se observó un desenlace clínico más grave.
+-   **Edad vs. Riesgo:** Se observa una correlación positiva moderada. Esto es biológicamente esperable, ya que la edad avanzada es el principal factor asociado a la acumulación de comorbilidades.
+-   **Riesgo vs. Gravedad:** Existe una correlación positiva. Esto valida estadísticamente el *Score de Riesgo*: a mayor puntaje de riesgo basal, efectivamente se observó un desenlace clínico más grave.
 
 ## Objetivo específico 2
 
@@ -1104,16 +818,12 @@ Sin sesgos marcados: No hay clasificaciones con predominancia extrema de un sexo
 Consistencia metodológica: El patrón relativamente uniforme sugiere que los criterios de clasificación se aplicaron de manera consistente para ambos sexos")
 ```
 
-
 ## Conclusiones
 
 El análisis integral de los 17,714 registros de COVID-19 en México durante 2021 permite sintetizar los siguientes hallazgos clínicos y estadísticos:
 
-1.  **Perfil Epidemiológico (Objetivo 1):**
-    El análisis de la distribución del **Score de Riesgo** y el **Índice de Gravedad** reveló un comportamiento asimétrico positivo. La gran mayoría de la población estudiada presentó valores bajos de riesgo y una gravedad nula o leve (Moda = 0), mientras que los casos severos se concentraron en los extremos superiores. El alto Coeficiente de Variación (>100%) en el Índice de Gravedad confirma la heterogeneidad clínica de la muestra: no existe un "paciente promedio", sino una polarización entre casos leves y críticos.
+1.  **Perfil Epidemiológico (Objetivo 1):** El análisis de la distribución del **Score de Riesgo** y el **Índice de Gravedad** reveló un comportamiento asimétrico positivo. La gran mayoría de la población estudiada presentó valores bajos de riesgo y una gravedad nula o leve (Moda = 0), mientras que los casos severos se concentraron en los extremos superiores. El alto Coeficiente de Variación (\>100%) en el Índice de Gravedad confirma la heterogeneidad clínica de la muestra: no existe un "paciente promedio", sino una polarización entre casos leves y críticos.
 
-2.  **Predictibilidad del Riesgo (Objetivo 2):**
-    Se confirmó que el **Nivel de Riesgo Clínico**, basado en la carga de comorbilidades, es un predictor funcional del desenlace. El análisis de correlación mostró una tendencia positiva significativa: a mayor número de comorbilidades, mayor probabilidad de un desenlace grave. Sin embargo, la variabilidad en el grupo de 'Riesgo Crítico' sugiere que factores externos (como la atención médica oportuna) pudieron mitigar la mortalidad en los pacientes más vulnerables.
+2.  **Predictibilidad del Riesgo (Objetivo 2):** Se confirmó que el **Nivel de Riesgo Clínico**, basado en la carga de comorbilidades, es un predictor funcional del desenlace. El análisis de correlación mostró una tendencia positiva significativa: a mayor número de comorbilidades, mayor probabilidad de un desenlace grave. Sin embargo, la variabilidad en el grupo de 'Riesgo Crítico' sugiere que factores externos (como la atención médica oportuna) pudieron mitigar la mortalidad en los pacientes más vulnerables.
 
-3.  **Equidad Epidemiológica (Objetivo 3):**
-    La comparación según **Sexo y Clasificación Final** demostró consistencia en el sistema de vigilancia. No se observaron sesgos significativos de género, manteniéndose una proporción equilibrada (aprox. 50/50) en todas las categorías diagnósticas. Esto sugiere que la susceptibilidad al contagio y los criterios de registro operaron de manera equitativa para ambos sexos.
+3.  **Equidad Epidemiológica (Objetivo 3):** La comparación según **Sexo y Clasificación Final** demostró consistencia en el sistema de vigilancia. No se observaron sesgos significativos de género, manteniéndose una proporción equilibrada (aprox. 50/50) en todas las categorías diagnósticas. Esto sugiere que la susceptibilidad al contagio y los criterios de registro operaron de manera equitativa para ambos sexos.
