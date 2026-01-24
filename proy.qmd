@@ -70,33 +70,33 @@ gantt
 
 # Variables seleccionadas para el análisis
 
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| \#     | Variable                | Tipo estadístico      | Origen / Cómo se obtiene                                                 | Justificación breve                                                                                                                                                            |
-+========+=========================+=======================+==========================================================================+================================================================================================================================================================================+
-| 1      | SCORE_RIESGO_COVID      | Cuantitativa continua | Derivada: índice continuo basado en comorbilidades y certeza diagnóstica | Resume el nivel relativo de riesgo del paciente                                                                                                                                |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 2      | INDICE_GRAVEDAD         | Cuantitativa continua | Derivada: índice ponderado de complicaciones y defunción                 | Mide la severidad clínica del caso                                                                                                                                             |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 3      | N_COMORBILIDADES        | Cuantitativa discreta | Derivada: suma de 10 comorbilidades (solo 1=Sí)                          | Conteo entero (0 a 10), discreta por naturaleza                                                                                                                                |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 4      | N_COMPLICACIONES_GRAVES | Cuantitativa discreta | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí)                  | Conteo entero (0 a 3), discreta, indica severidad                                                                                                                              |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 5      | EDAD                    | Cuantitativa discreta | Columna original                                                         | Edad en años completos, permite media, desviación estándar, correlaciones, etc.                                                                                                |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 6      | DIAS_RETRASO            | Cuantitativa discreta | Derivada: FECHA_INGRESO - FECHA_SINTOMAS                                 | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica                                                                                               |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 7      | SEXO                    | Cualitativa nominal   | Columna original                                                         | Categorías sin orden: Mujer / Hombre / No especificado                                                                                                                         |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 8      | ENTIDAD_RES             | Cualitativa nominal   | Columna original                                                         | 32 entidades federativas + posible 99, sin orden jerárquico                                                                                                                    |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 9      | ESTADO                  | Cualitativa nominal   | Derivada de FECHA_DEF                                                    | Si tiene fecha de defunción = Muerto                                                                                                                                           |
-|        |                         |                       |                                                                          |                                                                                                                                                                                |
-|        |                         |                       |                                                                          | Caso contrario = Vivo                                                                                                                                                          |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 10     | RIESGO\_ CLINICO        | Cualitativa ordinal   | Derivada de N_COMORBILIDADES (conteo de comorbilidades por paciente)     | Niveles con jerarquía de riesgo clínico (a mayor comorbilidades, mayor riesgo): Muy bajo (0) \< Bajo (1–2) \< Moderado (3–4) \< Alto (5–6) \< Muy alto (7–8) \< Crítico (9–10) |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 11     | CLASIFICACION_FINAL     | Cualitativa ordinal   | Columna original                                                         | Niveles con jerarquía de certeza/severidad (Confirmado \> Sospechoso \> otros)                                                                                                 |
-+--------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| \# | Variable                | Tipo estadístico      | Origen / Cómo se obtiene                                                 | Justificación breve                                                                                                                                                            |
++====+=========================+=======================+==========================================================================+================================================================================================================================================================================+
+| 1  | SCORE_RIESGO_COVID      | Cuantitativa continua | Derivada: índice continuo basado en comorbilidades y certeza diagnóstica | Resume el nivel relativo de riesgo del paciente                                                                                                                                |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 2  | INDICE_GRAVEDAD         | Cuantitativa continua | Derivada: índice ponderado de complicaciones y defunción                 | Mide la severidad clínica del caso                                                                                                                                             |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3  | N_COMORBILIDADES        | Cuantitativa discreta | Derivada: suma de 10 comorbilidades (solo 1=Sí)                          | Conteo entero (0 a 10), discreta por naturaleza                                                                                                                                |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 4  | N_COMPLICACIONES_GRAVES | Cuantitativa discreta | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí)                  | Conteo entero (0 a 3), discreta, indica severidad                                                                                                                              |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 5  | EDAD                    | Cuantitativa discreta | Columna original                                                         | Edad en años completos, permite media, desviación estándar, correlaciones, etc.                                                                                                |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 6  | DIAS_RETRASO            | Cuantitativa discreta | Derivada: FECHA_INGRESO - FECHA_SINTOMAS                                 | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica                                                                                               |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 7  | SEXO                    | Cualitativa nominal   | Columna original                                                         | Categorías sin orden: Mujer / Hombre / No especificado                                                                                                                         |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 8  | ENTIDAD_RES             | Cualitativa nominal   | Columna original                                                         | 32 entidades federativas + posible 99, sin orden jerárquico                                                                                                                    |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 9  | ESTADO                  | Cualitativa nominal   | Derivada de FECHA_DEF                                                    | Si tiene fecha de defunción = Muerto                                                                                                                                           |
+|    |                         |                       |                                                                          |                                                                                                                                                                                |
+|    |                         |                       |                                                                          | Caso contrario = Vivo                                                                                                                                                          |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 10 | RIESGO\_ CLINICO        | Cualitativa ordinal   | Derivada de N_COMORBILIDADES (conteo de comorbilidades por paciente)     | Niveles con jerarquía de riesgo clínico (a mayor comorbilidades, mayor riesgo): Muy bajo (0) \< Bajo (1–2) \< Moderado (3–4) \< Alto (5–6) \< Muy alto (7–8) \< Crítico (9–10) |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 11 | CLASIFICACION_FINAL     | Cualitativa ordinal   | Columna original                                                         | Niveles con jerarquía de certeza/severidad (Confirmado \> Sospechoso \> otros)                                                                                                 |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 # Preparación del entorno
 
@@ -551,9 +551,9 @@ kable(tabla_comparativa, align = c("l", "l", "c", "c", "c"),
       caption = "Comparación de valores faltantes antes y después del proceso de limpieza")
 ```
 
-#ANÁLISIS DESCRIPTIVO
+# ANÁLISIS DESCRIPTIVO
 
-\## Análisis descriptivo general
+## Análisis descriptivo general
 
 ```{r}
 #| label: analisis-descriptivo-general
@@ -784,7 +784,9 @@ boxplot(DATOS_FINALES$INDICE_GRAVEDAD,
 cat("**Interpretación de la Figura 1D:** Interpretación: El diagrama de caja confirma los hallazgos del histograma. La mediana es 0 (línea central dentro de la caja), lo que significa que más del 50% de los pacientes tuvieron un índice de gravedad de 0. La caja (que representa el 50% central de los datos) está muy cerca del mínimo, con el primer cuartil (Q1) en 0 y el tercer cuartil (Q3) probablemente por debajo de 0.1. Los valores atípicos (outliers) que se extienden hasta 1.0 representan casos excepcionales con complicaciones graves (neumonía, UCI, intubación o fallecimiento).")
 ```
 
-##Objetivo específico 2 ####Relación entre nivel de riesgo clínico e índice de gravedad
+##Objetivo específico 2
+
+#### Relación entre nivel de riesgo clínico e índice de gravedad
 
 ```{r}
 #| label: tabla-obj2
@@ -903,7 +905,7 @@ cat("3. **Error en clasificación:** Revisar cálculo de RIESGO_CLINICO\n\n")
 
 ```
 
-###1. Boxplot
+### 1. Boxplot
 
 ```{r}
 #| label: figura-2
@@ -956,7 +958,9 @@ Pero no es fuerte: Otros factores influyen más en la gravedad del desenlace
 El grupo Crítico (9-10) muestra alta variabilidad, con algunos casos graves (valores altos) pero también casos leves")
 ```
 
-##Objetivo específico 3 ####Distribución de los casos según sexo y clasificación final
+## Objetivo específico 3
+
+#### Distribución de los casos según sexo y clasificación final
 
 ```{r}
 #| label: tabla-obj3
@@ -999,7 +1003,7 @@ cat("**Interpretación:** Se observaron ", format(total_general, big.mark = ",")
     porcentaje_casos_lab, "% del total.", sep = "")
 ```
 
-###1. Gráfico de barras agrupadas - número de casos
+### 1. Gráfico de barras agrupadas - número de casos
 
 ```{r}
 #| label: figura-3a
@@ -1033,7 +1037,7 @@ Patrón consistente: La clasificación 3 es la más frecuente para ambos sexos, 
 Posible interpretación: Clasif. 3 podría corresponder a Caso confirmado por asociación clínica-epidemiológica según la codificación típica del sistema mexicano")
 ```
 
-###2. Gráfico de barras apiladas - porcentaje
+### 2. Gráfico de barras apiladas - porcentaje
 
 ```{r}
 #| label: figura-3b
