@@ -581,6 +581,7 @@ sd(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
 ```
 
 
+
 # Análisis de resultados - CORREGIDO (todo en mayúscula)
 
 ## Objetivo específico 1  
@@ -622,7 +623,6 @@ lines(density(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
 
 ### 2. Boxplot SCORE_RIESGO_COVID
 ```{r}
-# 2. Boxplot SCORE_RIESGO_COVID
 boxplot(DATOS_FINALES$SCORE_RIESGO_COVID,
         col = "lightblue",
         main = "Diagrama de Caja - Score de Riesgo",
@@ -631,7 +631,6 @@ boxplot(DATOS_FINALES$SCORE_RIESGO_COVID,
 
 ### 3. Histograma INDICE_GRAVEDAD
 ```{r}
-# 3. Histograma INDICE_GRAVEDAD
 hist(DATOS_FINALES$INDICE_GRAVEDAD,
      breaks = 30,
      col = "lightgreen",
@@ -644,7 +643,6 @@ lines(density(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE),
 
 ### 4. Boxplot INDICE_GRAVEDAD
 ```{r}
-# 4. Boxplot INDICE_GRAVEDAD
 boxplot(DATOS_FINALES$INDICE_GRAVEDAD,
         col = "lightgreen",
         main = "Diagrama de Caja - Índice de Gravedad",
@@ -656,62 +654,85 @@ boxplot(DATOS_FINALES$INDICE_GRAVEDAD,
 ###Relación entre el número de comorbilidades y el tipo de paciente
 ###Tabla resumen
 ```{r}
+n_casos <- table(DATOS_FINALES$TIPO_PACIENTE)
+medias <- tapply(DATOS_FINALES$N_COMORBILIDADES, 
+                 DATOS_FINALES$TIPO_PACIENTE, 
+                 mean, na.rm = TRUE)
+medianas <- tapply(DATOS_FINALES$N_COMORBILIDADES, 
+                   DATOS_FINALES$TIPO_PACIENTE, 
+                   median, na.rm = TRUE)
+maximos <- tapply(DATOS_FINALES$N_COMORBILIDADES, 
+                  DATOS_FINALES$TIPO_PACIENTE, 
+                  max, na.rm = TRUE)
 
-tabla_obj2 <- DATOS_FINALES %>%
-  group_by(TIPO_PACIENTE) %>%
-  summarise(
-    Casos = n(),
-    Media_Comorbilidades = mean(N_COMORBILIDADES, na.rm = TRUE),
-    Mediana_Comorbilidades = median(N_COMORBILIDADES, na.rm = TRUE),
-    Max_Comorbilidades = max(N_COMORBILIDADES, na.rm = TRUE)
-  )
-
-knitr::kable(
-  tabla_obj2,
-  caption = "Número de comorbilidades según tipo de paciente"
+tabla_obj2_base <- data.frame(
+  Tipo_Paciente = names(n_casos),
+  Casos = as.numeric(n_casos),
+  Media = round(as.numeric(medias), 2),
+  Mediana = as.numeric(medianas),
+  Máximo = as.numeric(maximos)
 )
+
+knitr::kable(tabla_obj2_base, 
+             caption = "Comorbilidades por tipo de paciente",
+             row.names = FALSE)
 ```
 
 
-
+### Boxplot
 ```{r}
+if(!is.factor(DATOS_FINALES$TIPO_PACIENTE)) {
+  DATOS_FINALES$TIPO_PACIENTE <- as.factor(DATOS_FINALES$TIPO_PACIENTE)
+}
 
-ggplot(
-  DATOS_FINALES,
-  aes(x = factor(TIPO_PACIENTE), y = N_COMORBILIDADES)
-) +
-  geom_boxplot(fill = "darkgreen", alpha = 0.7) +
-  theme_minimal() +
-  labs(
-    title = "Número de comorbilidades según tipo de paciente",
-    x = "Tipo de paciente (1=Ambulatorio, 2=Hospitalizado)",
-    y = "Número de comorbilidades"
-  ) +
-  # Agregar etiquetas para hacerlo más claro
-  scale_x_discrete(labels = c("1" = "Ambulatorio", "2" = "Hospitalizado"))
+niveles <- levels(DATOS_FINALES$TIPO_PACIENTE)
+colores <- c("#FFD700", "#2E8B57")  
+
+
+par(mar = c(5, 4, 4, 2))  
+
+boxplot(N_COMORBILIDADES ~ TIPO_PACIENTE,
+        data = DATOS_FINALES,
+        col = colores,
+        boxwex = 0.6,
+        main = "Distribución de Comorbilidades por Tipo de Paciente",
+        xlab = "Tipo de Paciente",
+        ylab = "Número de Comorbilidades",
+        names = niveles,  
+        cex.main = 1.2,
+        font.lab = 2)
+
+
+legend("topright",
+       legend = niveles,
+       fill = colores[1:length(niveles)],  
+       title = "Tipo de Paciente",
+       bty = "n")
+
+
+text(x = 1:length(niveles),
+     y = par("usr")[3] - (par("usr")[4] - par("usr")[3]) * 0.05,
+     labels = paste("n =", table(DATOS_FINALES$TIPO_PACIENTE)),
+     xpd = TRUE)
 ```
-## Objetivo específico 3
-###DISTRIBUCIÓN DE CASOS SEGÚN SEXO Y CLASIFICACIÓN FINAL
 
-### Tabla de contingencia CORREGIDA
+##Objetivo específico 3
+###Distribución de los casos según sexo y clasificación final
+###Tabla de contingencia
 ```{r}
-# Primero verifiquemos las categorías
 cat("Categorías únicas de CLASIFICACION_FINAL:\n")
 print(unique(DATOS_FINALES$CLASIFICACION_FINAL))
 cat("\nFrecuencia de cada categoría:\n")
 print(table(DATOS_FINALES$CLASIFICACION_FINAL))
 
-# Crear la tabla de contingencia
 tabla_obj3 <- table(
   DATOS_FINALES$SEXO,
   DATOS_FINALES$CLASIFICACION_FINAL
 )
 
-# Ver dimensiones
 cat("\nDimensiones de la tabla:", dim(tabla_obj3), "\n")
 
-# Mostrar tabla con nombres correctos
-# Como CLASIFICACION_FINAL tiene valores 1, 2, 3, 4, 5, 6
+
 nombres_columnas <- paste("Clasif.", 1:6)
 
 knitr::kable(
@@ -725,10 +746,10 @@ knitr::kable(
 ###Gráfico de barras agrupadas - número de casos
 
 ```{r}
-# 1. Gráfico de barras agrupadas - número de casos
+
 barplot(tabla_obj3,
         beside = TRUE,
-        col = c("lightblue", "pink"),  # Solo HOMBRE y MUJER
+        col = c("lightblue", "pink"), 
         legend.text = rownames(tabla_obj3),
         args.legend = list(x = "topright", title = "SEXO", cex = 0.8),
         main = "Casos por Sexo y Clasificación Final",
@@ -740,7 +761,7 @@ barplot(tabla_obj3,
 ###2. Gráfico de barras apiladas - porcentaje
 
 ```{r}
-# 2. Gráfico de barras apiladas - porcentaje
+
 prop_tabla3 <- prop.table(tabla_obj3, 2) * 100
 barplot(prop_tabla3,
         beside = FALSE,
@@ -755,7 +776,3 @@ barplot(prop_tabla3,
 
 
 ```
-
-
-
-
