@@ -13,14 +13,14 @@ execute:
   message: false
 ---
 
-## Introducción
+# Introducción
 
 La pandemia por COVID-19 ha tenido un impacto significativo en la salud pública a nivel mundial.\
 El análisis de datos epidemiológicos permite comprender mejor las características de los casos y los factores asociados a la gravedad de la enfermedad.
 
 Este informe presenta un análisis descriptivo de los **casos sospechosos y confirmados de COVID-19 en México durante el año 2021**, utilizando una muestra de datos oficiales del sistema de vigilancia epidemiológica.
 
-## Objetivo general
+# Objetivo general
 
 Analizar los casos sospechosos y confirmados de COVID-19 en México durante el año 2021, describiendo sus principales características demográficas y clínicas.
 
@@ -35,7 +35,7 @@ Analizar los casos sospechosos y confirmados de COVID-19 en México durante el a
 3.  *Comparar la distribución de los casos según sexo y clasificación final en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
     Variables principales: SEXO, CLASIFICACION_FINAL\
 
-## Metodología
+# Metodología
 
 ### Población de estudio
 
@@ -49,6 +49,36 @@ Se utilizó un **muestreo aleatorio simple**, garantizando que cada individuo tu
 
 La unidad muestral es el **individuo (paciente)**.\
 Cada fila del conjunto de datos representa a una persona registrada en una unidad de salud.
+
+## Variables seleccionadas para el análisis
+
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| \# | Variable                | Tipo estadístico      | Origen / Cómo se obtiene                                                 | Justificación breve                                                              |
++====+=========================+=======================+==========================================================================+==================================================================================+
+| 1  | SCORE_RIESGO_COVID      | Cuantitativa continua | Derivada: índice continuo basado en comorbilidades y certeza diagnóstica | Resume el nivel relativo de riesgo del paciente                                  |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| 2  | INDICE_GRAVEDAD         | Cuantitativa continua | Derivada: índice ponderado de complicaciones y defunción                 | Mide la severidad clínica del caso                                               |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| 3  | N_COMORBILIDADES        | Cuantitativa discreta | Derivada: suma de 10 comorbilidades (solo 1=Sí)                          | Conteo entero (0 a 10), discreta por naturaleza                                  |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| 4  | N_COMPLICACIONES_GRAVES | Cuantitativa discreta | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí)                  | Conteo entero (0 a 3), discreta, indica severidad                                |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| 5  | EDAD                    | Cuantitativa discreta | Columna original                                                         | Edad en años completos, permite media, desviación estándar, correlaciones, etc.  |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| 6  | DIAS_RETRASO            | Cuantitativa discreta | Derivada: FECHA_INGRESO - FECHA_SINTOMAS                                 | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| 7  | SEXO                    | Cualitativa nominal   | Columna original                                                         | Categorías sin orden: Mujer / Hombre / No especificado                           |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| 8  | ENTIDAD_RES             | Cualitativa nominal   | Columna original                                                         | 32 entidades federativas + posible 99, sin orden jerárquico                      |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| 9  | ESTADO                  | Cualitativa nominal   | Derivada de FECHA_DEF                                                    | Si tiene fecha de defunción = Muerto                                             |
+|    |                         |                       |                                                                          |                                                                                  |
+|    |                         |                       |                                                                          | Caso contrario = Vivo                                                            |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| 10 | TIPO_PACIENTE           | Cualitativa ordinal   | Columna original                                                         | 1 = Ambulatorio \< 2 = Hospitalizado (orden lógico de gravedad)                  |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
+| 11 | CLASIFICACION_FINAL     | Cualitativa ordinal   | Columna original                                                         | Niveles con jerarquía de certeza/severidad (Confirmado \> Sospechoso \> otros)   |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
 
 ## Preparación del entorno
 
@@ -68,13 +98,13 @@ library(knitr)
 DATOS_INICIALES <- read.csv("muestra_covid_500M_NA.csv")
 ```
 
-#DATOS INICIALES
+# DATOS INICIALES
 
 ```{r}
 str(DATOS_INICIALES)
 ```
 
-#LIMPIANDO VARIABLES
+# LIMPIANDO VARIABLES
 
 ## ESTADO
 
@@ -84,7 +114,7 @@ DATOS_INICIALES <- DATOS_INICIALES |>
   select(-FECHA_DEF)
 ```
 
-##SEXO
+## SEXO
 
 ```{r}
 table(DATOS_INICIALES$SEXO, useNA = "always")
@@ -99,7 +129,7 @@ DATOS_INICIALES <- DATOS_INICIALES |>
 table(DATOS_INICIALES$SEXO, useNA = "always")
 ```
 
-##EDAD
+## EDAD
 
 ```{r}
 summary(DATOS_INICIALES$EDAD)
@@ -123,7 +153,7 @@ DATOS_INICIALES <- DATOS_INICIALES |>
 summary(DATOS_INICIALES$EDAD)
 ```
 
-## Dias_retraso
+## DIAS_RETRASO
 
 ```{r}
 library(lubridate)
@@ -181,7 +211,7 @@ DATOS_INICIALES <- DATOS_INICIALES |>
 summary(DATOS_INICIALES$N_COMORBILIDADES)
 ```
 
-##SORE_RIESGO_COVID
+## SORE_RIESGO_COVID
 
 ```{r}
 table(DATOS_INICIALES$RESULTADO_LAB, useNA = "always")
@@ -374,33 +404,6 @@ DATOS_INICIALES <- DATOS_INICIALES |>
 ```{r}
 table(DATOS_INICIALES$CLASIFICACION_FINAL, useNA = "always")
 ```
-
-## Variables seleccionadas para el análisis
-
-| \# | Variable | Tipo estadístico | Origen / Cómo se obtiene | Justificación breve |
-|-------|---------------|---------------|---------------|---------------|
-| 1 | EDAD | Cuantitativa discreta | Columna original | Edad en años completos, permite media, desviación estándar, correlaciones, etc. |
-| 2 | dias_retraso | Cuantitativa discreta | Derivada: FECHA_INGRESO - FECHA_SINTOMAS | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica |
-| 3 | n_comorbilidades | Cuantitativa discreta | Derivada: suma de 10 comorbilidades (solo 1=Sí) | Conteo entero (0 a 10), discreta por naturaleza |
-| 4 | n_complicaciones_graves | Cuantitativa discreta | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí) | Conteo entero (0 a 3), discreta, indica severidad |
-| 5 | SEXO | Cualitativa nominal | Columna original | Categorías sin orden: Mujer / Hombre / No especificado |
-| 6 | ENTIDAD_RES | Cualitativa nominal | Columna original | 32 entidades federativas + posible 99, sin orden jerárquico |
-| 7 | TIPO_PACIENTE | Cualitativa ordinal | Columna original | 1 = Ambulatorio \< 2 = Hospitalizado (orden lógico de gravedad) |
-| 8 | CLASIFICACION_FINAL | Cualitativa ordinal | Columna original | Niveles con jerarquía de certeza/severidad (Confirmado \> Sospechoso \> otros) |
-
-### Objetivos específicos
-
-1.  **Describir la distribución de la edad y el tiempo de retraso entre el inicio de síntomas y el ingreso hospitalario en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**\
-    Variables principales: EDAD, dias_retraso, CLASIFICACION_FINAL\
-    Métodos sugeridos: estadísticos descriptivos (media, mediana, percentiles), histogramas, boxplots, tablas resumen.
-
-2.  **Analizar la relación entre el número de comorbilidades y el número de complicaciones graves con el tipo de atención requerida en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**\
-    Variables principales: n_comorbilidades, n_complicaciones_graves, TIPO_PACIENTE\
-    Métodos sugeridos: tablas cruzadas, porcentajes, gráficos de barras apiladas, prueba chi-cuadrado o correlación de Spearman.
-
-3.  **Comparar la distribución por sexo y entidad de residencia entre los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.**\
-    Variables principales: SEXO, ENTIDAD_RES, CLASIFICACION_FINAL\
-    Métodos sugeridos: tablas de contingencia, gráficos de barras apiladas o mosaico, prueba de independencia chi-cuadrado.#Objetivos especificos
 
 ```{r}
 #| label: analisis-edad
