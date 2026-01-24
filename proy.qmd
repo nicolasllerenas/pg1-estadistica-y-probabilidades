@@ -516,8 +516,7 @@ c(
 
 ```{r}
 c(
-  N_COMORBILIDADES = min(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
-  INDIGENA    = min(as.numeric(DATOS_FINALES$INDIGENA), na.rm = TRUE)
+  INDICE_GRAVEDAD = min(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE)
 )
 ```
 
@@ -525,8 +524,7 @@ c(
 
 ```{r}
 c(
-  N_COMORBILIDADES = max(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
-  INDIGENA    = max(as.numeric(DATOS_FINALES$INDIGENA), na.rm = TRUE)
+  INDICE_GRAVEDAD = max(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE)
 )
 ```
 
@@ -535,8 +533,7 @@ c(
 ```{r}
 
 c(
-  N_COMORBILIDADES = mean(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
-  INDIGENA    = mean(as.numeric(DATOS_FINALES$INDIGENA), na.rm = TRUE)
+  INDICE_GRAVEDAD = mean(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE)
 )
 ```
 
@@ -544,8 +541,7 @@ c(
 
 ```{r}
 c(
-  N_COMORBILIDADES = median(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
-  INDIGENA    = median(as.numeric(DATOS_FINALES$INDIGENA), na.rm = TRUE)
+  INDICE_GRAVEDAD = median(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE)
 )
 ```
 
@@ -553,10 +549,7 @@ c(
 
 ```{r}
 
-rbind(
-  N_COMORBILIDADES = quantile(DATOS_FINALES$N_COMORBILIDADES, probs = c(.25,.50,.75), na.rm = TRUE),
-  INDIGENA    = quantile(as.numeric(DATOS_FINALES$INDIGENA), probs = c(.25,.50,.75), na.rm = TRUE)
-)
+quantile(DATOS_FINALES$INDICE_GRAVEDAD, probs = c(.25, .50, .75), na.rm = TRUE)
 ```
 
 ### Desviación estándar
@@ -564,8 +557,7 @@ rbind(
 ```{r}
 
 c(
-  N_COMORBILIDADES = sd(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
-  INDIGENA    = sd(as.numeric(DATOS_FINALES$INDIGENA), na.rm = TRUE)
+  INDICE_GRAVEDAD = sd(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE)
 )
 ```
 
@@ -686,40 +678,44 @@ boxplot(DATOS_FINALES$INDICE_GRAVEDAD,
 
 ```
 
-##Objetivo específico 2 ###Relación entre el número de comorbilidades y el tipo de paciente ###Tabla resumen
+##Objetivo específico 2 ###Riesgo Clínico vs Gravedad Real
+###Tabla resumen
 
 ```{r}
 
 tabla_obj2 <- DATOS_FINALES %>%
-  group_by(INDIGENA) %>%
+tabla_prediccion <- DATOS_FINALES %>%
+  group_by(RIESGO_CLINICO) %>%
   summarise(
-    Casos = n(),
-    Media_Comorbilidades = mean(N_COMORBILIDADES, na.rm = TRUE),
-    Mediana_Comorbilidades = median(N_COMORBILIDADES, na.rm = TRUE),
-    Max_Comorbilidades = max(N_COMORBILIDADES, na.rm = TRUE)
+    n = n(),
+    Gravedad_Promedio = round(mean(INDICE_GRAVEDAD, na.rm=TRUE), 3),
+    Desv_Gravedad = round(sd(INDICE_GRAVEDAD, na.rm=TRUE), 3),
+    # Calculamos el % de pacientes que fallecieron en cada grupo para dar contexto
+    Mortalidad_Pct = round(mean(ES_FALLECIDO, na.rm=TRUE) * 100, 1)
   )
 
-knitr::kable(
-  tabla_obj2,
-  caption = "Número de comorbilidades según tipo de paciente"
-)
+knitr::kable(tabla_prediccion, col.names = c("Nivel Riesgo", "Pacientes", "Índice Gravedad Promedio", "Desviación", "Mortalidad (%)"))
 ```
 
 ```{r}
 
-ggplot(
-  DATOS_FINALES,
-  aes(x = factor(INDIGENA), y = N_COMORBILIDADES)
-) +
-  geom_boxplot(fill = "darkgreen", alpha = 0.7) +
-  theme_minimal() +
+ggplot(DATOS_FINALES, aes(x = RIESGO_CLINICO, y = INDICE_GRAVEDAD, fill = RIESGO_CLINICO)) +
+  geom_violin(trim = FALSE, alpha = 0.6) + # Forma de la distribución
+  geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA) + # Caja interior
+  
+  # Agregamos el promedio como punto rojo (La tendencia clave)
+  stat_summary(fun = mean, geom = "point", shape = 18, size = 3, color = "red") +
+  
   labs(
-    title = "Número de comorbilidades según tipo de paciente",
-    x = "Tipo de paciente (1=Ambulatorio, 2=Hospitalizado)",
-    y = "Número de comorbilidades"
+    title = "Validación Predictiva: Riesgo vs Desenlace",
+    subtitle = "El punto rojo muestra cómo aumenta la gravedad promedio según el riesgo",
+    x = "Nivel de Riesgo Clínico (Basado en Comorbilidades)",
+    y = "Índice de Gravedad Real (0 a 1)",
+    fill = "Nivel Riesgo"
   ) +
-  # Agregar etiquetas para hacerlo más claro
-  scale_x_discrete(labels = c("1" = "Ambulatorio", "2" = "Hospitalizado"))
+  theme_minimal() +
+  scale_fill_brewer(palette = "YlOrRd") + # Amarillo a Rojo (Alerta)
+  theme(legend.position = "none")
 ```
 
 ## Objetivo específico 3
