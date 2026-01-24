@@ -50,6 +50,28 @@ Se utilizó un **muestreo aleatorio simple**, garantizando que cada individuo tu
 La unidad muestral es el **individuo (paciente)**.\
 Cada fila del conjunto de datos representa a una persona registrada en una unidad de salud.
 
+
+```{mermaid}
+gantt
+    title Planificacion del Proyecto
+    dateFormat YYYY-MM-DD
+    axisFormat %d/%m
+    todayMarker off
+
+    section Investigación y Diseño
+    Definición del tema de investigación        :a1, 2026-01-05, 7d
+    Definición de variables relevantes          :a2, 2026-01-10, 10d
+    Creación de la herramienta de recolección   :a3, 2026-01-16, 10d
+
+    section Análisis de Datos
+    Análisis descriptivo de los datos           :b1, 2026-02-01, 9d
+    Análisis de interacción                     :b2, 2026-02-06, 11d
+
+    section Redacción y Preparación
+    Redacción de resultados e informe final     :c1, 2026-02-18, 9d
+```
+
+
 ## Variables seleccionadas para el análisis
 
 +----------+-------------------------+-----------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------+
@@ -425,50 +447,569 @@ sum(is.na(DATOS_FINALES))
 ```
 
 
-```{r}
-#| label: analisis-edad
+## Objetivo 1  
 
-# Tabla descriptiva de EDAD
-tabla_edad <- datos_limpios %>%
-  group_by(CLASIFICACION_FINAL) %>%
+### Mínimo
+```{r}
+c(
+  SCORE_RIESGO_COVID = min(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
+  INDICE_GRAVEDAD    = min(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
+)
+```
+### Máximo
+```{r}
+c(
+  SCORE_RIESGO_COVID = max(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
+  INDICE_GRAVEDAD    = max(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
+)
+```
+### Media
+```{r}
+c(
+  SCORE_RIESGO_COVID = mean(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
+  INDICE_GRAVEDAD    = mean(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
+)
+```
+### Mediana
+```{r}
+c(
+  SCORE_RIESGO_COVID = median(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
+  INDICE_GRAVEDAD    = median(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
+)
+```
+### Cuartiles
+```{r}
+rbind(
+  SCORE_RIESGO_COVID = quantile(DATOS_FINALES$SCORE_RIESGO_COVID, probs = c(.25,.50,.75), na.rm = TRUE),
+  INDICE_GRAVEDAD    = quantile(DATOS_FINALES$INDICE_GRAVEDAD,    probs = c(.25,.50,.75), na.rm = TRUE)
+)
+```
+Desviación estándar
+```{r}
+c(
+  SCORE_RIESGO_COVID = sd(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
+  INDICE_GRAVEDAD    = sd(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
+) 
+```
+## Objetivo 2 
+
+### Mínimo
+```{r}
+c(
+  N_COMORBILIDADES = min(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
+  TIPO_PACIENTE    = min(as.numeric(DATOS_FINALES$TIPO_PACIENTE), na.rm = TRUE)
+)
+```
+
+### Máximo
+```{r}
+c(
+  N_COMORBILIDADES = max(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
+  TIPO_PACIENTE    = max(as.numeric(DATOS_FINALES$TIPO_PACIENTE), na.rm = TRUE)
+)
+```
+
+### Media
+```{r}
+
+c(
+  N_COMORBILIDADES = mean(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
+  TIPO_PACIENTE    = mean(as.numeric(DATOS_FINALES$TIPO_PACIENTE), na.rm = TRUE)
+)
+```
+
+### Mediana
+```{r}
+c(
+  N_COMORBILIDADES = median(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
+  TIPO_PACIENTE    = median(as.numeric(DATOS_FINALES$TIPO_PACIENTE), na.rm = TRUE)
+)
+```
+
+### Cuartiles
+```{r}
+
+rbind(
+  N_COMORBILIDADES = quantile(DATOS_FINALES$N_COMORBILIDADES, probs = c(.25,.50,.75), na.rm = TRUE),
+  TIPO_PACIENTE    = quantile(as.numeric(DATOS_FINALES$TIPO_PACIENTE), probs = c(.25,.50,.75), na.rm = TRUE)
+)
+```
+### Desviación estándar
+```{r}
+
+c(
+  N_COMORBILIDADES = sd(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE),
+  TIPO_PACIENTE    = sd(as.numeric(DATOS_FINALES$TIPO_PACIENTE), na.rm = TRUE)
+)
+```
+
+## Objetivo 3
+
+### Mínimo
+```{r}
+min(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
+```
+
+### Máximo
+```{r}
+max(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
+```
+
+### Media
+```{r}
+mean(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
+```
+
+### Mediana
+```{r}
+median(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
+
+```
+
+### Cuartiles
+```{r}
+quantile(
+  as.numeric(DATOS_FINALES$CLASIFICACION_FINAL),
+  probs = c(0.25, 0.50, 0.75),
+  na.rm = TRUE
+)
+```
+
+### Desviación Estándar
+```{r}
+sd(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
+```
+
+
+```{R}
+# ==============================================================================
+# ANÁLISIS COVID-19 - CÓDIGO CORREGIDO PARA INSERTAR EN QUARTO
+# ==============================================================================
+# Instrucciones: Copia cada sección en tu documento .qmd donde corresponda
+
+# ==============================================================================
+# OBJETIVO 1: Score de riesgo e Índice de gravedad
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# TABLA 1: Estadísticos descriptivos
+# ------------------------------------------------------------------------------
+
+tabla_obj1 <- DATOS_FINALES %>%
   summarise(
-    Casos = n(),
-    Media = round(mean(EDAD, na.rm = TRUE), 2),
-    Mediana = median(EDAD, na.rm = TRUE),
-    Desv.Std = round(sd(EDAD, na.rm = TRUE), 2),
-    Min = min(EDAD, na.rm = TRUE),
-    Max = max(EDAD, na.rm = TRUE)
+    Variable = c("SCORE_RIESGO_COVID", "INDICE_GRAVEDAD"),
+    Mínimo = c(min(SCORE_RIESGO_COVID, na.rm = TRUE), 
+               min(INDICE_GRAVEDAD, na.rm = TRUE)),
+    Q1 = c(quantile(SCORE_RIESGO_COVID, 0.25, na.rm = TRUE),
+           quantile(INDICE_GRAVEDAD, 0.25, na.rm = TRUE)),
+    Mediana = c(median(SCORE_RIESGO_COVID, na.rm = TRUE),
+                median(INDICE_GRAVEDAD, na.rm = TRUE)),
+    Media = c(mean(SCORE_RIESGO_COVID, na.rm = TRUE),
+              mean(INDICE_GRAVEDAD, na.rm = TRUE)),
+    Q3 = c(quantile(SCORE_RIESGO_COVID, 0.75, na.rm = TRUE),
+           quantile(INDICE_GRAVEDAD, 0.75, na.rm = TRUE)),
+    Máximo = c(max(SCORE_RIESGO_COVID, na.rm = TRUE),
+               max(INDICE_GRAVEDAD, na.rm = TRUE)),
+    Desv_Est = c(sd(SCORE_RIESGO_COVID, na.rm = TRUE),
+                 sd(INDICE_GRAVEDAD, na.rm = TRUE))
   )
 
-# Imprimimos tabla
-knitr::kable(tabla_edad, caption = "Estadísticos descriptivos de EDAD por Clasificación")
+kable(tabla_obj1, digits = 3, 
+      caption = "Tabla 1. Estadísticos descriptivos de Score de Riesgo e Índice de Gravedad")
+
+# ------------------------------------------------------------------------------
+# GRÁFICO 1.1: Histogramas
+# ------------------------------------------------------------------------------
+
+# Histograma - Score de Riesgo
+ggplot(DATOS_FINALES, aes(x = SCORE_RIESGO_COVID)) +
+  geom_histogram(bins = 30, fill = "#3498db", color = "white", alpha = 0.8) +
+  labs(
+    title = "Distribución del Score de Riesgo COVID",
+    x = "Score de Riesgo COVID",
+    y = "Frecuencia"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12)
+  )
+
+# Histograma - Índice de Gravedad
+ggplot(DATOS_FINALES, aes(x = INDICE_GRAVEDAD)) +
+  geom_histogram(bins = 30, fill = "#e74c3c", color = "white", alpha = 0.8) +
+  labs(
+    title = "Distribución del Índice de Gravedad",
+    x = "Índice de Gravedad",
+    y = "Frecuencia"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12)
+  )
+
+# ------------------------------------------------------------------------------
+# GRÁFICO 1.2: Boxplots
+# ------------------------------------------------------------------------------
+
+# Boxplot - Score de Riesgo
+ggplot(DATOS_FINALES, aes(y = SCORE_RIESGO_COVID)) +
+  geom_boxplot(fill = "#3498db", alpha = 0.7, outlier.color = "#e74c3c") +
+  labs(
+    title = "Diagrama de Caja: Score de Riesgo COVID",
+    y = "Score de Riesgo COVID"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    axis.text.x = element_blank()
+  )
+
+# Boxplot - Índice de Gravedad
+ggplot(DATOS_FINALES, aes(y = INDICE_GRAVEDAD)) +
+  geom_boxplot(fill = "#e74c3c", alpha = 0.7, outlier.color = "#3498db") +
+  labs(
+    title = "Diagrama de Caja: Índice de Gravedad",
+    y = "Índice de Gravedad"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    axis.text.x = element_blank()
+  )
+
+
+# ==============================================================================
+# OBJETIVO 2: n_comorbilidades × TIPO_PACIENTE
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Crear etiquetas descriptivas (solo una vez)
+# ------------------------------------------------------------------------------
+
+DATOS_FINALES <- DATOS_FINALES %>%
+  mutate(TIPO_PACIENTE_LABEL = case_when(
+    TIPO_PACIENTE == 1 ~ "Ambulatorio",
+    TIPO_PACIENTE == 2 ~ "Hospitalizado",
+    TRUE ~ as.character(TIPO_PACIENTE)
+  ))
+
+# ------------------------------------------------------------------------------
+# TABLA 2: Resumen de N_COMORBILIDADES por TIPO_PACIENTE
+# ------------------------------------------------------------------------------
+
+tabla_obj2 <- DATOS_FINALES %>%
+  group_by(TIPO_PACIENTE_LABEL) %>%
+  summarise(
+    N = n(),
+    Mínimo = min(N_COMORBILIDADES, na.rm = TRUE),
+    Q1 = quantile(N_COMORBILIDADES, 0.25, na.rm = TRUE),
+    Mediana = median(N_COMORBILIDADES, na.rm = TRUE),
+    Media = mean(N_COMORBILIDADES, na.rm = TRUE),
+    Q3 = quantile(N_COMORBILIDADES, 0.75, na.rm = TRUE),
+    Máximo = max(N_COMORBILIDADES, na.rm = TRUE),
+    Desv_Est = sd(N_COMORBILIDADES, na.rm = TRUE)
+  ) %>%
+  rename(`Tipo de Paciente` = TIPO_PACIENTE_LABEL)
+
+kable(tabla_obj2, digits = 2,
+      caption = "Tabla 2. Número de comorbilidades según tipo de paciente")
+
+# ------------------------------------------------------------------------------
+# GRÁFICO 2: Boxplot por grupo
+# ------------------------------------------------------------------------------
+
+ggplot(DATOS_FINALES, aes(x = TIPO_PACIENTE_LABEL, 
+                          y = N_COMORBILIDADES,
+                          fill = TIPO_PACIENTE_LABEL)) +
+  geom_boxplot(alpha = 0.7, outlier.color = "#e74c3c") +
+  scale_fill_manual(values = c("Ambulatorio" = "#2ecc71", 
+                                "Hospitalizado" = "#e67e22")) +
+  labs(
+    title = "Número de Comorbilidades según Tipo de Paciente",
+    x = "Tipo de Paciente",
+    y = "Número de Comorbilidades"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    legend.position = "none"
+  )
+
+
+# ==============================================================================
+# OBJETIVO 3: SEXO × CLASIFICACION_FINAL
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Crear etiquetas descriptivas (solo una vez)
+# ------------------------------------------------------------------------------
+
+DATOS_FINALES <- DATOS_FINALES %>%
+  mutate(
+    SEXO_LABEL = case_when(
+      SEXO == 1 ~ "Mujer",
+      SEXO == 2 ~ "Hombre",
+      TRUE ~ "No especificado"
+    ),
+    CLASIFICACION_LABEL = case_when(
+      CLASIFICACION_FINAL == 1 ~ "Confirmado clínico-epidemiológico",
+      CLASIFICACION_FINAL == 2 ~ "Confirmado por comité",
+      CLASIFICACION_FINAL == 3 ~ "SARS-CoV-2 confirmado",
+      CLASIFICACION_FINAL == 4 ~ "Inválido por laboratorio",
+      CLASIFICACION_FINAL == 5 ~ "No realizado por laboratorio",
+      CLASIFICACION_FINAL == 6 ~ "Caso sospechoso",
+      TRUE ~ "Otro"
+    )
+  )
+
+# ------------------------------------------------------------------------------
+# TABLA 3a: Tabla de contingencia (frecuencias absolutas)
+# ------------------------------------------------------------------------------
+
+# Opción 1: Con tidyr::pivot_wider (requiere library(tidyr))
+# tabla_obj3_abs <- DATOS_FINALES %>%
+#   count(SEXO_LABEL, CLASIFICACION_LABEL) %>%
+#   pivot_wider(names_from = CLASIFICACION_LABEL, values_from = n, values_fill = 0)
+
+# Opción 2: Con tabla base de R (SIN tidyr)
+tabla_obj3_abs <- table(DATOS_FINALES$SEXO_LABEL, DATOS_FINALES$CLASIFICACION_LABEL)
+
+kable(tabla_obj3_abs,
+      caption = "Tabla 3a. Tabla de contingencia: Sexo × Clasificación Final (frecuencias absolutas)")
+
+# ------------------------------------------------------------------------------
+# TABLA 3b: Tabla de contingencia (porcentajes por fila)
+# ------------------------------------------------------------------------------
+
+# Calcular porcentajes por fila
+tabla_obj3_pct <- prop.table(tabla_obj3_abs, margin = 1) * 100
+
+kable(tabla_obj3_pct, digits = 1,
+      caption = "Tabla 3b. Distribución porcentual por sexo (%)")
+
+# ------------------------------------------------------------------------------
+# GRÁFICO 3.1: Barras agrupadas
+# ------------------------------------------------------------------------------
+
+ggplot(DATOS_FINALES, aes(x = CLASIFICACION_LABEL, fill = SEXO_LABEL)) +
+  geom_bar(position = "dodge", alpha = 0.8) +
+  scale_fill_manual(values = c("Mujer" = "#e91e63", "Hombre" = "#2196f3")) +
+  labs(
+    title = "Clasificación Final según Sexo",
+    x = "Clasificación Final",
+    y = "Frecuencia",
+    fill = "Sexo"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+    legend.position = "top"
+  )
+
+# ------------------------------------------------------------------------------
+# GRÁFICO 3.2: Barras apiladas (100%)
+# ------------------------------------------------------------------------------
+
+ggplot(DATOS_FINALES, aes(x = SEXO_LABEL, fill = CLASIFICACION_LABEL)) +
+  geom_bar(position = "fill", alpha = 0.8) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title = "Proporción de Clasificación Final por Sexo",
+    x = "Sexo",
+    y = "Porcentaje",
+    fill = "Clasificación Final"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    legend.position = "right",
+    legend.text = element_text(size = 8)
+  )
 ```
+
+# Análisis de resultados - CORREGIDO (todo en mayúscula)
+
+## Objetivo específico 1  
+### Distribución del score de riesgo COVID y del índice de gravedad
+
+### Tabla descriptiva
 
 ```{r}
-#| label: graficos-edad
-#| fig.width: 10
-#| fig.height: 8
+tabla_obj1 <- data.frame(
+  Score_Min     = min(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
+  Score_Q1      = quantile(DATOS_FINALES$SCORE_RIESGO_COVID, 0.25, na.rm = TRUE),
+  Score_Mediana = median(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
+  Score_Media   = mean(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
+  Score_Q3      = quantile(DATOS_FINALES$SCORE_RIESGO_COVID, 0.75, na.rm = TRUE),
+  Score_Max     = max(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
+  
+  Gravedad_Min     = min(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE),
+  Gravedad_Q1      = quantile(DATOS_FINALES$INDICE_GRAVEDAD, 0.25, na.rm = TRUE),
+  Gravedad_Mediana = median(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE),
+  Gravedad_Media   = mean(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE),
+  Gravedad_Q3      = quantile(DATOS_FINALES$INDICE_GRAVEDAD, 0.75, na.rm = TRUE),
+  Gravedad_Max     = max(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE)
+)
 
-# Histograma General con curva de densidad
-p1 <- ggplot(datos_limpios, aes(x = EDAD)) +
-  geom_histogram(aes(y = ..density..), binwidth = 5, fill = "#69b3a2", color = "white", alpha=0.8) +
-  geom_density(alpha = 0.2, fill = "#FF6666") +
-  theme_minimal() +
-  labs(title = "A) Distribución General de la Edad",
-       subtitle = "Histograma con curva de densidad",
-       x = "Edad (años)", y = "Densidad")
-
-# Boxplot por Clasificación para comparar grupos
-p2 <- ggplot(datos_limpios, aes(x = CLASIFICACION_FINAL, y = EDAD, fill = CLASIFICACION_FINAL)) +
-  geom_boxplot(alpha = 0.6, outlier.size = 0.5, outlier.alpha = 0.3) +
-  theme_minimal() +
-  theme(legend.position = "none", 
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
-  labs(title = "B) Comparación de Edad por Clasificación",
-       subtitle = "Diagrama de Caja y Bigotes",
-       x = "Clasificación", y = "Edad (años)")
-
-
-p1
-p2
+knitr::kable(tabla_obj1, caption = "Estadísticos descriptivos del score de riesgo COVID y del índice de gravedad")
 ```
+### 1. Histograma SCORE_RIESGO_COVID
+
+```{r}
+hist(DATOS_FINALES$SCORE_RIESGO_COVID,
+     breaks = 30,
+     col = "lightblue",
+     freq = FALSE,
+     main = "Distribución del Score de Riesgo COVID",
+     xlab = "Score de riesgo")
+lines(density(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE), 
+      lwd = 2, col = "red")
+```
+
+### 2. Boxplot SCORE_RIESGO_COVID
+```{r}
+# 2. Boxplot SCORE_RIESGO_COVID
+boxplot(DATOS_FINALES$SCORE_RIESGO_COVID,
+        col = "lightblue",
+        main = "Diagrama de Caja - Score de Riesgo",
+        ylab = "Score de riesgo COVID")
+```
+
+### 3. Histograma INDICE_GRAVEDAD
+```{r}
+# 3. Histograma INDICE_GRAVEDAD
+hist(DATOS_FINALES$INDICE_GRAVEDAD,
+     breaks = 30,
+     col = "lightgreen",
+     freq = FALSE,
+     main = "Distribución del Índice de Gravedad",
+     xlab = "Índice de gravedad")
+lines(density(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE), 
+      lwd = 2, col = "darkgreen")
+```
+
+### 4. Boxplot INDICE_GRAVEDAD
+```{r}
+# 4. Boxplot INDICE_GRAVEDAD
+boxplot(DATOS_FINALES$INDICE_GRAVEDAD,
+        col = "lightgreen",
+        main = "Diagrama de Caja - Índice de Gravedad",
+        ylab = "Índice de gravedad")
+
+```
+
+##Objetivo específico 2
+###Relación entre el número de comorbilidades y el tipo de paciente
+###Tabla resumen
+```{r}
+
+tabla_obj2 <- DATOS_FINALES %>%
+  group_by(TIPO_PACIENTE) %>%
+  summarise(
+    Casos = n(),
+    Media_Comorbilidades = mean(N_COMORBILIDADES, na.rm = TRUE),
+    Mediana_Comorbilidades = median(N_COMORBILIDADES, na.rm = TRUE),
+    Max_Comorbilidades = max(N_COMORBILIDADES, na.rm = TRUE)
+  )
+
+knitr::kable(
+  tabla_obj2,
+  caption = "Número de comorbilidades según tipo de paciente"
+)
+```
+
+
+
+```{r}
+
+ggplot(
+  DATOS_FINALES,
+  aes(x = factor(TIPO_PACIENTE), y = N_COMORBILIDADES)
+) +
+  geom_boxplot(fill = "darkgreen", alpha = 0.7) +
+  theme_minimal() +
+  labs(
+    title = "Número de comorbilidades según tipo de paciente",
+    x = "Tipo de paciente (1=Ambulatorio, 2=Hospitalizado)",
+    y = "Número de comorbilidades"
+  ) +
+  # Agregar etiquetas para hacerlo más claro
+  scale_x_discrete(labels = c("1" = "Ambulatorio", "2" = "Hospitalizado"))
+```
+## Objetivo específico 3
+###DISTRIBUCIÓN DE CASOS SEGÚN SEXO Y CLASIFICACIÓN FINAL
+
+### Tabla de contingencia CORREGIDA
+```{r}
+# Primero verifiquemos las categorías
+cat("Categorías únicas de CLASIFICACION_FINAL:\n")
+print(unique(DATOS_FINALES$CLASIFICACION_FINAL))
+cat("\nFrecuencia de cada categoría:\n")
+print(table(DATOS_FINALES$CLASIFICACION_FINAL))
+
+# Crear la tabla de contingencia
+tabla_obj3 <- table(
+  DATOS_FINALES$SEXO,
+  DATOS_FINALES$CLASIFICACION_FINAL
+)
+
+# Ver dimensiones
+cat("\nDimensiones de la tabla:", dim(tabla_obj3), "\n")
+
+# Mostrar tabla con nombres correctos
+# Como CLASIFICACION_FINAL tiene valores 1, 2, 3, 4, 5, 6
+nombres_columnas <- paste("Clasif.", 1:6)
+
+knitr::kable(
+  tabla_obj3,
+  caption = "Distribución de casos según sexo y clasificación final",
+  col.names = nombres_columnas
+)
+
+```
+
+###Gráfico de barras agrupadas - número de casos
+
+```{r}
+# 1. Gráfico de barras agrupadas - número de casos
+barplot(tabla_obj3,
+        beside = TRUE,
+        col = c("lightblue", "pink"),  # Solo HOMBRE y MUJER
+        legend.text = rownames(tabla_obj3),
+        args.legend = list(x = "topright", title = "SEXO", cex = 0.8),
+        main = "Casos por Sexo y Clasificación Final",
+        xlab = "Clasificación Final",
+        ylab = "Número de casos",
+        names.arg = paste("Clasif.", 1:6),
+        cex.names = 0.8)
+```
+###2. Gráfico de barras apiladas - porcentaje
+
+```{r}
+# 2. Gráfico de barras apiladas - porcentaje
+prop_tabla3 <- prop.table(tabla_obj3, 2) * 100
+barplot(prop_tabla3,
+        beside = FALSE,
+        col = c("lightblue", "pink"),
+        legend.text = rownames(tabla_obj3),
+        args.legend = list(x = "topright", title = "SEXO", cex = 0.8),
+        main = "Distribución % por Clasificación Final",
+        xlab = "Clasificación Final",
+        ylab = "Porcentaje (%)",
+        names.arg = paste("Clasif.", 1:6),
+        cex.names = 0.8)
+
+
+```
+
+
+
+
