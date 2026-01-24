@@ -39,11 +39,12 @@ Analizar los casos sospechosos y confirmados de COVID-19 en México durante el a
 
 ### Población de estudio
 
-La población está conformada por los registros acumulados en el **Sistema de Vigilancia Epidemiológica de Enfermedades Respiratorias Viral (SISVER)** correspondientes al año 2021.
+La población está conformada por todos los registros acumulados en el Sistema de Vigilancia Epidemiológica de Enfermedades Respiratorias Viral correspondientes a casos sospechosos y confirmados de COVID-19 en México durante el año 2021.
 
 ### Tipo de muestreo
 
-Se utilizó un **muestreo aleatorio simple**, garantizando que cada individuo tuviera la misma probabilidad de ser seleccionado.
+Se empleó un muestreo no probabilístico por conveniencia.\
+La selección de la muestra no se realizó mediante un mecanismo de aleatorización, sino que se limitó a los registros contenidos en la base de datos secundaria disponible para el periodo de estudio. Al tratarse de un análisis de datos secundarios, se trabajó con la totalidad de observaciones accesibles y validadas en el archivo fuente proporcionado.
 
 ### Unidad muestral
 
@@ -678,8 +679,7 @@ boxplot(DATOS_FINALES$INDICE_GRAVEDAD,
 
 ```
 
-##Objetivo específico 2 ###Riesgo Clínico vs Gravedad Real
-###Tabla resumen
+##Objetivo específico 2 ###Riesgo Clínico vs Gravedad Real ###Tabla resumen
 
 ```{r}
 
