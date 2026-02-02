@@ -1,0 +1,123 @@
+---
+title: "G3_Informe"
+author:
+  - Abanto Romero, Jesus Alejandro
+  - Cachique Moncada, Renato
+  - Flores Guevara, Tamy Kristel
+  - Llerena Silva, Nicolás Alejandro 
+  - Sobenes Obregon, Carlos Sebastian 
+editor: visual
+date: "`r format(Sys.time(), '%d %B %Y')`"
+lang: es
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: cosmo
+    embed-resources: true
+    code-fold: true
+    code-summary: "Mostrar / ocultar código"
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+# Introducción
+
+## Contexto
+
+Escribe aquí una breve descripción del problema o el tema que aborda tu proyecto (ej. análisis de la biomasa de la Anchoveta, impacto del COVID, etc.).
+
+## Objetivos
+
+-   **Objetivo General:** ...
+
+-   **Objetivos Específicos:**
+
+    1.  Analizar el comportamiento de las variables...
+
+    2.  Identificar relaciones entre...
+
+# Datos
+
+## Carga de Librerías
+
+Se utilizarán las siguientes librerías para la manipulación y visualización de datos.
+
+```{r}
+# Cargar librerías necesarias
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, readr, ggplot2, dplyr, kableExtra, summarytools)
+```
+
+## Carga del Dataset
+
+Descripción breve de la fuente de datos.
+
+```{r}
+# Asegúrate de que el archivo CSV esté en la misma carpeta o ajusta la ruta
+# Ejemplo: nombre_archivo <- "Anchoveta_07_17.csv" 
+# df <- read_csv(nombre_archivo)
+
+# Muestra de las primeras filas (descomentar cuando cargues tus datos)
+# head(df) |> kbl() |> kable_styling()
+```
+
+## Descripción de Variables
+
+Tabla o lista describiendo qué significa cada columna del dataset (Tipo de variable: Numérica/Categórica).
+
+# Preprocesamiento (Limpieza de Datos)
+
+En esta sección se realizan las conversiones de tipos de datos, manejo de valores nulos (NA) y limpieza general.
+
+```{r}
+# Ejemplo de limpieza (ajustar según tu proyecto)
+# df_clean <- df |>
+#   filter(!is.na(VariableImportante)) |>
+#   mutate(Fecha = as.Date(Fecha, format = "%Y-%m-%d"))
+```
+
+# Análisis Descriptivo
+
+## Análisis Univariado
+
+Gráficos y estadísticas de una sola variable (Histogramas, Boxplots, Tablas de frecuencia).
+
+```{r}
+# Ejemplo: Histograma
+# ggplot(df_clean, aes(x = VariableNumerica)) +
+#   geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+#   theme_minimal() +
+#   labs(title = "Distribución de la Variable", x = "Valor", y = "Frecuencia")
+```
+
+## Análisis Bivariado
+
+Relación entre dos variables (Scatterplots, Boxplots por categoría, Correlaciones).
+
+```{r}
+# Ejemplo: Scatterplot
+# ggplot(df_clean, aes(x = Var1, y = Var2)) +
+#   geom_point(alpha = 0.6) +
+#   geom_smooth(method = "lm", se = FALSE, color = "red") +
+#   theme_minimal()
+```
+
+# Discusión de Resultados
+
+Interpretación de los hallazgos encontrados en los gráficos y tablas anteriores. ¿Qué nos dicen los datos sobre el problema planteado?
+
+# Conclusiones
+
+Resumen de los puntos clave y respuesta a los objetivos planteados al inicio.
+
+1.  Conclusión 1...
+
+2.  Conclusión 2...
+
+# Bibliografía
+
+-   Autor, A. (Año). Título del artículo/libro.
