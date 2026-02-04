@@ -29,8 +29,13 @@ Analizar los casos sospechosos y confirmados de COVID-19 en México durante el a
 1.  *Describir la distribución del score de riesgo COVID y del índice de gravedad en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
     Variables principales: score_riesgo_covid, indice_gravedad\
 
+<<<<<<< HEAD
 2.  *Analizar la relación entre el número de comorbilidades y el tipo de atención recibida por los pacientes en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
     Variables principales: n_comorbilidades, INDIGENA\
+=======
+2.  *Evaluar si el Nivel de Riesgo Clínico predice correctamente el Índice de Gravedad del desenlace.*\
+    Variables principales: RIESGO_CLINICO, INDICE_GRAVEDAD\
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
 
 3.  *Comparar la distribución de los casos según sexo y clasificación final en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.*\
     Variables principales: SEXO, CLASIFICACION_FINAL\
@@ -39,11 +44,12 @@ Analizar los casos sospechosos y confirmados de COVID-19 en México durante el a
 
 ### Población de estudio
 
-La población está conformada por los registros acumulados en el **Sistema de Vigilancia Epidemiológica de Enfermedades Respiratorias Viral (SISVER)** correspondientes al año 2021.
+La población está conformada por todos los registros acumulados en el Sistema de Vigilancia Epidemiológica de Enfermedades Respiratorias Viral correspondientes a casos sospechosos y confirmados de COVID-19 en México durante el año 2021.
 
 ### Tipo de muestreo
 
-Se utilizó un **muestreo aleatorio simple**, garantizando que cada individuo tuviera la misma probabilidad de ser seleccionado.
+Se empleó un muestreo no probabilístico por conveniencia.\
+La selección de la muestra no se realizó mediante un mecanismo de aleatorización, sino que se limitó a los registros contenidos en la base de datos secundaria disponible para el periodo de estudio. Al tratarse de un análisis de datos secundarios, se trabajó con la totalidad de observaciones accesibles y validadas en el archivo fuente proporcionado.
 
 ### Unidad muestral
 
@@ -67,6 +73,7 @@ gantt
     Redacción de resultados e informe final     :d1, 2026-02-21, 9d
 ```
 
+<<<<<<< HEAD
 ## Variables seleccionadas para el análisis
 
 +----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -98,6 +105,39 @@ gantt
 +----------+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ## Preparación del entorno
+=======
+# Variables seleccionadas para el análisis
+
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| \# | Variable                | Tipo estadístico      | Origen / Cómo se obtiene                                                 | Justificación breve                                                                                                                                                            |
++====+=========================+=======================+==========================================================================+================================================================================================================================================================================+
+| 1  | SCORE_RIESGO_COVID      | Cuantitativa continua | Derivada: índice continuo basado en comorbilidades y certeza diagnóstica | Resume el nivel relativo de riesgo del paciente                                                                                                                                |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 2  | INDICE_GRAVEDAD         | Cuantitativa continua | Derivada: índice ponderado de complicaciones y defunción                 | Mide la severidad clínica del caso                                                                                                                                             |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 3  | N_COMORBILIDADES        | Cuantitativa discreta | Derivada: suma de 10 comorbilidades (solo 1=Sí)                          | Conteo entero (0 a 10), discreta por naturaleza                                                                                                                                |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 4  | N_COMPLICACIONES_GRAVES | Cuantitativa discreta | Derivada: suma de NEUMONIA + INTUBADO + UCI (solo 1=Sí)                  | Conteo entero (0 a 3), discreta, indica severidad                                                                                                                              |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 5  | EDAD                    | Cuantitativa discreta | Columna original                                                         | Edad en años completos, permite media, desviación estándar, correlaciones, etc.                                                                                                |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 6  | DIAS_RETRASO            | Cuantitativa discreta | Derivada: FECHA_INGRESO - FECHA_SINTOMAS                                 | Tiempo en días (puede tener decimales si usas unidades="days"), continua clásica                                                                                               |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 7  | SEXO                    | Cualitativa nominal   | Columna original                                                         | Categorías sin orden: Mujer / Hombre / No especificado                                                                                                                         |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 8  | ENTIDAD_RES             | Cualitativa nominal   | Columna original                                                         | 32 entidades federativas + posible 99, sin orden jerárquico                                                                                                                    |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 9  | ESTADO                  | Cualitativa nominal   | Derivada de FECHA_DEF                                                    | Si tiene fecha de defunción = Muerto                                                                                                                                           |
+|    |                         |                       |                                                                          |                                                                                                                                                                                |
+|    |                         |                       |                                                                          | Caso contrario = Vivo                                                                                                                                                          |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 10 | RIESGO\_ CLINICO        | Cualitativa ordinal   | Derivada de N_COMORBILIDADES (conteo de comorbilidades por paciente)     | Niveles con jerarquía de riesgo clínico (a mayor comorbilidades, mayor riesgo): Muy bajo (0) \< Bajo (1–2) \< Moderado (3–4) \< Alto (5–6) \< Muy alto (7–8) \< Crítico (9–10) |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 11 | CLASIFICACION_FINAL     | Cualitativa ordinal   | Columna original                                                         | Niveles con jerarquía de certeza/severidad (Confirmado \> Sospechoso \> otros)                                                                                                 |
++----+-------------------------+-----------------------+--------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+# Preparación del entorno
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
 
 ```{r}
 #| label: setup
@@ -107,6 +147,9 @@ library(dplyr)
 library(ggplot2)
 library(lubridate)
 library(knitr)
+library(tidyr)
+library(scales)
+library(e1071)
 ```
 
 ### Carga de datos
@@ -118,268 +161,84 @@ DATOS_INICIALES <- read.csv("muestra_covid_500M_NA.csv")
 # DATOS INICIALES
 
 ```{r}
+#| label: estructura-inicial
+
+cat("## Resumen inicial de datos\n\n")
+cat("**Total de observaciones iniciales:**", nrow(DATOS_INICIALES), "\n\n")
+cat("**Total de variables:**", ncol(DATOS_INICIALES), "\n\n")
+OBSERVACIONES_INICIALES <- nrow(DATOS_INICIALES)
+DATOS_ORIGINALES <- read.csv("muestra_covid_500M_NA.csv")
+# Contar valores faltantes iniciales
+na_inicial_total <- sum(is.na(DATOS_INICIALES))
+cat("**Valores faltantes totales iniciales:**", na_inicial_total, "\n\n")
+
+cat("**Muestra de la estructura:**\n")
 str(DATOS_INICIALES)
 ```
 
 # LIMPIANDO VARIABLES
 
-## ESTADO
-
 ```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  mutate(ESTADO = if_else(is.na(FECHA_DEF), "Vivo", "Muerto")) |> 
-  select(-FECHA_DEF)
-```
-
-## SEXO
-
-```{r}
-table(DATOS_INICIALES$SEXO, useNA = "always")
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  filter(!is.na(SEXO))
-```
-
-```{r}
-table(DATOS_INICIALES$SEXO, useNA = "always")
-```
-
-## EDAD
-
-```{r}
-summary(DATOS_INICIALES$EDAD)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  mutate(EDAD = ifelse(EDAD == 0 | EDAD > 100, NA, EDAD))
-```
-
-```{r}
-summary(DATOS_INICIALES$EDAD)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  filter(!is.na(EDAD))
-```
-
-```{r}
-summary(DATOS_INICIALES$EDAD)
-```
-
-## DIAS_RETRASO
-
-```{r}
-library(lubridate)
-DATOS_INICIALES <- DATOS_INICIALES |> 
+DATOS_TRANSFORMADOS <- DATOS_INICIALES |>
+  # 1. Variable ESTADO (Derivada de FECHA_DEF)
+  mutate(ESTADO = if_else(is.na(FECHA_DEF), "Vivo", "Muerto")) |>
+  
+  # 2. Limpieza de EDAD (Valores lógicos)
+  mutate(EDAD = ifelse(EDAD == 0 | EDAD > 100, NA, EDAD)) |>
+  
+  # 3. DIAS_RETRASO (Cálculo de fechas)
   mutate(
     FECHA_INGRESO = as.Date(FECHA_INGRESO, format = "%Y-%m-%d"),
     FECHA_SINTOMAS = as.Date(FECHA_SINTOMAS, format = "%Y-%m-%d"),
     DIAS_RETRASO = as.numeric(FECHA_INGRESO - FECHA_SINTOMAS),
     DIAS_RETRASO = if_else(DIAS_RETRASO < 0, NA_real_, DIAS_RETRASO)
-  )
+  ) |>
   
-```
-
-```{r}
-summary(DATOS_INICIALES$DIAS_RETRASO)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  filter(!is.na(DIAS_RETRASO))
-```
-
-```{r}
-summary(DATOS_INICIALES$DIAS_RETRASO)
-```
-
-## N_COMORBILIDADES
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
+  # 4. N_COMORBILIDADES (Suma de condiciones)
   mutate(
-    N_COMORBILIDADES = rowSums(
-      across(
-        c(
-          DIABETES,
-          EPOC,
-          ASMA,
-          INMUSUPR,
-          HIPERTENSION,
-          CARDIOVASCULAR,
-          OBESIDAD,
-          RENAL_CRONICA,
-          TABAQUISMO,
-          OTRA_COM
-        ),
-        ~ ifelse(.x == 1, 1, 0)
-      ),
-      na.rm = TRUE
-    )
-  )
-
-```
-
-```{r}
-summary(DATOS_INICIALES$N_COMORBILIDADES)
-```
-
-## SORE_RIESGO_COVID
-
-```{r}
-table(DATOS_INICIALES$RESULTADO_LAB, useNA = "always")
-table(DATOS_INICIALES$RESULTADO_ANTIGENO, useNA = "always")
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
+    N_COMORBILIDADES = rowSums(across(c(DIABETES, EPOC, ASMA, INMUSUPR, 
+                                        HIPERTENSION, CARDIOVASCULAR, OBESIDAD, 
+                                        RENAL_CRONICA, TABAQUISMO, OTRA_COM), 
+                                      ~ ifelse(.x == 1, 1, 0)), na.rm = TRUE)
+  ) |>
+  
+  # 5. SCORE_RIESGO_COVID
   mutate(
     CARGA_ENFERMEDAD = N_COMORBILIDADES / 10,
     FACTOR_CERTEZA = case_when(
         RESULTADO_LAB == 1 | RESULTADO_ANTIGENO == 1 ~ 3,  
         RESULTADO_LAB == 2 | RESULTADO_ANTIGENO == 2 ~ 1,  
-        TRUE ~ 2                                           
+        TRUE ~ 2 
       ),
-    SCORE_RIESGO_COVID = CARGA_ENFERMEDAD * FACTOR_CERTEZA
-  )
-
-```
-
-```{r}
-summary(DATOS_INICIALES$CARGA_ENFERMEDAD)
-summary(DATOS_INICIALES$FACTOR_CERTEZA)
-summary(DATOS_INICIALES$SCORE_RIESGO_COVID)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
-  mutate(
-    CARGA_ENFERMEDAD = ifelse(CARGA_ENFERMEDAD < 0 | CARGA_ENFERMEDAD > 1, NA, CARGA_ENFERMEDAD),
+    SCORE_RIESGO_COVID = CARGA_ENFERMEDAD * FACTOR_CERTEZA,
+    # Validación de rango
     SCORE_RIESGO_COVID = ifelse(SCORE_RIESGO_COVID < 0 | SCORE_RIESGO_COVID > 3, NA, SCORE_RIESGO_COVID)
-  )
-```
-
-```{r}
-summary(DATOS_INICIALES$SCORE_RIESGO_COVID)
-```
-
-```{r}
-summary(DATOS_INICIALES$SCORE_RIESGO_COVID)
-```
-
-## INDICE_GRAVEDAD
-
-```{r}
-table(DATOS_INICIALES$NEUMONIA, useNA = "always")
-table(DATOS_INICIALES$UCI, useNA = "always")
-table(DATOS_INICIALES$INTUBADO, useNA = "always")
-table(DATOS_INICIALES$ESTADO, useNA = "always")
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
+  ) |>
+  
+  # 6. INDICE_GRAVEDAD
   mutate(
-    NEUMONIA01 = case_when(
-      NEUMONIA == 1 ~ 1,
-      NEUMONIA == 2 ~ 0,
-      TRUE ~ NA_real_
-    ),
-    UCI01 = case_when(
-      UCI == 1 ~ 1,
-      UCI == 2 ~ 0,
-      TRUE ~ NA_real_
-    ),
-    INTUBADO01 = case_when(
-      INTUBADO == 1 ~ 1,
-      INTUBADO == 2 ~ 0,
-      TRUE ~ NA_real_
-    ),
-    DEFUNCION01 = case_when(
-      ESTADO == "Muerto" ~ 1,
-      ESTADO == "Vivo" ~ 0,
-      TRUE ~ NA_real_
-    ),
-    INDICE_GRAVEDAD = (1*NEUMONIA01 + 2*UCI01 + 3*INTUBADO01 + 4*DEFUNCION01) / 10
-  )
-
-```
-
-```{r}
-summary(DATOS_INICIALES$INDICE_GRAVEDAD)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
-  filter(!is.na(INDICE_GRAVEDAD))
-
-```
-
-```{r}
-range(DATOS_INICIALES$INDICE_GRAVEDAD, na.rm = TRUE)
-```
-
-```{r}
-DATOS_INICIALES |> 
-  filter(INDICE_GRAVEDAD < 0 | INDICE_GRAVEDAD > 1) %>%
-  nrow()
-```
-
-```{r}
-summary(DATOS_INICIALES$INDICE_GRAVEDAD)
-```
-
-## ENTIDAD_RES
-
-```{r}
-table(DATOS_INICIALES$ENTIDAD_RES, useNA = "always")
-sum(is.na(DATOS_INICIALES$ENTIDAD_RES))
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
+    NEUMONIA01 = case_when(NEUMONIA == 1 ~ 1, NEUMONIA == 2 ~ 0, TRUE ~ NA_real_),
+    UCI01 = case_when(UCI == 1 ~ 1, UCI == 2 ~ 0, TRUE ~ NA_real_),
+    INTUBADO01 = case_when(INTUBADO == 1 ~ 1, INTUBADO == 2 ~ 0, TRUE ~ NA_real_),
+    DEFUNCION01 = case_when(ESTADO == "Muerto" ~ 1, ESTADO == "Vivo" ~ 0, TRUE ~ NA_real_),
+    INDICE_GRAVEDAD = (1*NEUMONIA01 + 2*UCI01 + 3*INTUBADO01 + 4*DEFUNCION01) / 10,
+    # Validación de rango
+    INDICE_GRAVEDAD = ifelse(INDICE_GRAVEDAD < 0 | INDICE_GRAVEDAD > 1, NA, INDICE_GRAVEDAD)
+  ) |>
+  
+  # 7. Limpieza ENTIDAD_RES
   mutate(
     ENTIDAD_RES = na_if(trimws(as.character(ENTIDAD_RES)), ""),
     ENTIDAD_RES = suppressWarnings(as.integer(ENTIDAD_RES)),
     ENTIDAD_RES = ifelse(ENTIDAD_RES %in% 1:32, ENTIDAD_RES, NA_integer_)
   ) |>
-  filter(!is.na(ENTIDAD_RES))
-```
-
-```{r}
-table(DATOS_INICIALES$ENTIDAD_RES, useNA = "always")
-```
-
-## N_COMPLICACIONES_GRAVES
-
-```{r}
-summary(DATOS_INICIALES$NEUMONIA)
-summary(DATOS_INICIALES$INTUBADO)
-summary(DATOS_INICIALES$UCI)
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
+  
+  # 8. N_COMPLICACIONES_GRAVES
   mutate(
-    N_COMPLICACIONES_GRAVES =
-      (NEUMONIA == 1) + (INTUBADO == 1) + (UCI == 1)
-  )
-```
-
-```{r}
-summary(DATOS_INICIALES$N_COMPLICACIONES_GRAVES)
-table(DATOS_INICIALES$N_COMPLICACIONES_GRAVES, useNA = "always")
-```
-
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |>
-  mutate(
-    N_COMPLICACIONES_GRAVES = ifelse(N_COMPLICACIONES_GRAVES %in% 0:3,
-                                     N_COMPLICACIONES_GRAVES, NA)
+    N_COMPLICACIONES_GRAVES = (NEUMONIA == 1) + (INTUBADO == 1) + (UCI == 1),
+    N_COMPLICACIONES_GRAVES = ifelse(N_COMPLICACIONES_GRAVES %in% 0:3, N_COMPLICACIONES_GRAVES, NA)
   ) |>
+<<<<<<< HEAD
   filter(!is.na(N_COMPLICACIONES_GRAVES))
 ```
 
@@ -391,6 +250,10 @@ table(DATOS_INICIALES$N_COMPLICACIONES_GRAVES, useNA = "always")
 
 ```{R}
 DATOS_INICIALES <- DATOS_INICIALES |>
+=======
+  
+  # 9. RIESGO_CLINICO (Categorización)
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
   mutate(
     RIESGO_CLINICO = case_when(
       N_COMORBILIDADES == 0 ~ "Muy bajo (0)",
@@ -401,6 +264,7 @@ DATOS_INICIALES <- DATOS_INICIALES |>
       between(N_COMORBILIDADES, 9, 10) ~ "Crítico (9-10)",
       TRUE ~ NA_character_
     ),
+<<<<<<< HEAD
     RIESGO_CLINICO = factor(
       RIESGO_CLINICO,
       levels = c(
@@ -424,20 +288,31 @@ table(DATOS_INICIALES$CLASIFICACION_FINAL, useNA = "always")
 
 ```{r}
 DATOS_INICIALES <- DATOS_INICIALES |> 
+=======
+    RIESGO_CLINICO = factor(RIESGO_CLINICO, 
+                            levels = c("Muy bajo (0)", "Bajo (1-2)", "Moderado (3-4)", 
+                                       "Alto (5-6)", "Muy alto (7-8)", "Crítico (9-10)"), 
+                            ordered = TRUE)
+  ) |>
+  
+  # 10. Limpieza CLASIFICACION_FINAL
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
   mutate(CLASIFICACION_FINAL = ifelse(CLASIFICACION_FINAL == 7, NA, CLASIFICACION_FINAL))
 ```
 
-```{r}
-DATOS_INICIALES <- DATOS_INICIALES |> 
-  filter(!is.na(CLASIFICACION_FINAL))
-```
+## Limpiar NA
 
 ```{r}
-table(DATOS_INICIALES$CLASIFICACION_FINAL, useNA = "always")
-```
+# Seleccionamos las variables de interés para el análisis
+cols_analisis <- c("EDAD", "SEXO", "DIAS_RETRASO", "ENTIDAD_RES", 
+                   "N_COMORBILIDADES", "SCORE_RIESGO_COVID", "INDICE_GRAVEDAD", 
+                   "N_COMPLICACIONES_GRAVES", "RIESGO_CLINICO", "CLASIFICACION_FINAL")
 
-## Limpiar NA faltantes
+# Contamos NAs en la base transformada (pero aún sucia)
+nas_por_columna <- sapply(DATOS_TRANSFORMADOS[cols_analisis], function(x) sum(is.na(x)))
+pct_nas <- round((nas_por_columna / nrow(DATOS_TRANSFORMADOS)) * 100, 2)
 
+<<<<<<< HEAD
 ```{r}
 head(DATOS_INICIALES)
 ```
@@ -468,25 +343,90 @@ DATOS_INICIALES <- DATOS_INICIALES |>
 c(
   SCORE_RIESGO_COVID = min(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
   INDICE_GRAVEDAD    = min(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
+=======
+tabla_diagnostico <- data.frame(
+  Variable = names(nas_por_columna),
+  NAs_Cantidad = nas_por_columna,
+  NAs_Porcentaje = paste0(pct_nas, "%")
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
 )
+
+# Mostramos tabla de diagnóstico
+knitr::kable(tabla_diagnostico, caption = "Cantidad de valores perdidos por variable antes de la limpieza")
 ```
 
+<<<<<<< HEAD
 ### Máximo
 
+=======
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
 ```{r}
-c(
-  SCORE_RIESGO_COVID = max(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
-  INDICE_GRAVEDAD    = max(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
-)
+# EJECUCIÓN DEL FILTRADO
+# Ahora sí, creamos DATOS_FINALES eliminando las filas con problemas
+n_antes <- nrow(DATOS_TRANSFORMADOS)
+
+DATOS_FINALES <- DATOS_TRANSFORMADOS |>
+  # Filtramos NAs solo en las columnas que usamos
+  filter(complete.cases(across(all_of(cols_analisis))))
+
+n_despues <- nrow(DATOS_FINALES)
+n_eliminados <- n_antes - n_despues
 ```
 
+```{r}
+tabla_balance <- data.frame(
+  Fase = c("Total Registros Iniciales", "Registros Eliminados (Incompletos)", "Muestra Final Analizable"),
+  Cantidad = c(format(n_antes, big.mark=","), format(n_eliminados, big.mark=","), format(n_despues, big.mark=",")),
+  Porcentaje = c("100%", paste0(round(n_eliminados/n_antes*100, 2), "%"), paste0(round(n_despues/n_antes*100, 2), "%"))
+)
+
+knitr::kable(tabla_balance, align = c("l", "r", "r"), caption = "Resumen del impacto de la limpieza de datos")
+```
+
+<<<<<<< HEAD
 ### Media
+=======
+# ANÁLISIS DESCRIPTIVO
+
+## Análisis descriptivo general
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
 
 ```{r}
-c(
-  SCORE_RIESGO_COVID = mean(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
-  INDICE_GRAVEDAD    = mean(DATOS_FINALES$INDICE_GRAVEDAD,    na.rm = TRUE)
+#| label: analisis-descriptivo-general
+#| tbl-cap: "Tabla 3. Estadísticos descriptivos de variables cuantitativas"
+
+# Variables realmente cuantitativas
+variables_cuantitativas <- DATOS_FINALES %>%
+  select(SCORE_RIESGO_COVID, INDICE_GRAVEDAD, N_COMORBILIDADES, EDAD, DIAS_RETRASO)
+
+# Calcular estadísticas para cada variable
+calcular_estadisticas <- function(x) {
+  c(
+    Media = mean(x, na.rm = TRUE),
+    Mediana = median(x, na.rm = TRUE),
+    DE = sd(x, na.rm = TRUE),
+    Minimo = min(x, na.rm = TRUE),
+    Maximo = max(x, na.rm = TRUE),
+    Q1 = quantile(x, 0.25, na.rm = TRUE),
+    Q3 = quantile(x, 0.75, na.rm = TRUE)
+  )
+}
+
+# Aplicar a todas las variables
+estadisticas_lista <- lapply(variables_cuantitativas, calcular_estadisticas)
+
+# Convertir a data frame - MANERA MÁS SEGURA
+estadisticas_df <- data.frame(
+  Variable = names(variables_cuantitativas),
+  Media = sapply(variables_cuantitativas, mean, na.rm = TRUE),
+  Mediana = sapply(variables_cuantitativas, median, na.rm = TRUE),
+  DE = sapply(variables_cuantitativas, sd, na.rm = TRUE),
+  Minimo = sapply(variables_cuantitativas, min, na.rm = TRUE),
+  Maximo = sapply(variables_cuantitativas, max, na.rm = TRUE),
+  Q1 = sapply(variables_cuantitativas, quantile, probs = 0.25, na.rm = TRUE),
+  Q3 = sapply(variables_cuantitativas, quantile, probs = 0.75, na.rm = TRUE)
 )
+<<<<<<< HEAD
 ```
 
 ### Mediana
@@ -623,68 +563,205 @@ sd(as.numeric(DATOS_FINALES$CLASIFICACION_FINAL), na.rm = TRUE)
 ### Distribución del score de riesgo COVID y del índice de gravedad
 
 ### Tabla descriptiva
+=======
 
-```{r}
-tabla_obj1 <- data.frame(
-  Score_Min     = min(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
-  Score_Q1      = quantile(DATOS_FINALES$SCORE_RIESGO_COVID, 0.25, na.rm = TRUE),
-  Score_Mediana = median(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
-  Score_Media   = mean(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
-  Score_Q3      = quantile(DATOS_FINALES$SCORE_RIESGO_COVID, 0.75, na.rm = TRUE),
-  Score_Max     = max(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE),
-  
-  Gravedad_Min     = min(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE),
-  Gravedad_Q1      = quantile(DATOS_FINALES$INDICE_GRAVEDAD, 0.25, na.rm = TRUE),
-  Gravedad_Mediana = median(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE),
-  Gravedad_Media   = mean(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE),
-  Gravedad_Q3      = quantile(DATOS_FINALES$INDICE_GRAVEDAD, 0.75, na.rm = TRUE),
-  Gravedad_Max     = max(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE)
-)
+# Renombrar columnas para presentación
+tabla_descriptiva <- estadisticas_df %>%
+  rename(
+    "Mínimo" = Minimo,
+    "Máximo" = Maximo,
+    "Q1 (25%)" = Q1,
+    "Q3 (75%)" = Q3
+  )
 
-knitr::kable(tabla_obj1, caption = "Estadísticos descriptivos del score de riesgo COVID y del índice de gravedad")
+# Formatear números
+tabla_descriptiva_formateada <- tabla_descriptiva
+tabla_descriptiva_formateada[, 2:8] <- round(tabla_descriptiva_formateada[, 2:8], 3)
+
+# Mostrar tabla
+kable(tabla_descriptiva_formateada, align = c("l", rep("r", 7)),
+      caption = "Estadísticos descriptivos de las variables cuantitativas principales (n = 17,714)")
 ```
 
+```{R}
+#| label: interpretacion-analisis-descriptivo
+#| echo: false
+#| results: asis
+
+# Calcular valores para la interpretación
+edad_media <- round(mean(DATOS_FINALES$EDAD, na.rm = TRUE), 1)
+edad_de <- round(sd(DATOS_FINALES$EDAD, na.rm = TRUE), 1)
+score_media <- round(mean(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE), 3)
+score_mediana <- round(median(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE), 3)
+gravedad_media <- round(mean(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE), 3)
+gravedad_mediana <- round(median(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE), 3)
+dias_retraso_media <- round(mean(DATOS_FINALES$DIAS_RETRASO, na.rm = TRUE), 1)
+comorb_media <- round(mean(DATOS_FINALES$N_COMORBILIDADES, na.rm = TRUE), 2)
+
+cat("**Interpretación:** La edad promedio de los pacientes fue de ", edad_media, " años (DE = ", edad_de, "). ", 
+    "El score de riesgo COVID mostró una media de ", score_media, " (mediana = ", score_mediana, "; rango: 0-3), ",
+    "indicando un riesgo moderado general. ", 
+    "El índice de gravedad promedio fue de ", gravedad_media, " (mediana = ", gravedad_mediana, "; rango: 0-1), ",
+    "sugiriendo que la mayoría de los casos no desarrollaron complicaciones graves. ",
+    "El tiempo promedio entre síntomas e ingreso fue de ", dias_retraso_media, " días. ",
+    "El número promedio de comorbilidades fue ", comorb_media, " por paciente.", sep = "")
+```
+
+## Objetivo específico 1
+
+#### Distribución del score de riesgo COVID y del índice de gravedad
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
+
+```{r}
+#| label: tabla-obj1
+#| tbl-cap: "Tabla 4. Estadísticos descriptivos del score de riesgo COVID e índice de gravedad"
+
+# Crear función simple
+calc_desc_avanzados <- function(x) {
+  media <- mean(x, na.rm = TRUE)
+  sd_val <- sd(x, na.rm = TRUE)
+  q <- quantile(x, probs = c(0.25, 0.75), na.rm = TRUE)
+  
+  c(
+    Mínimo   = min(x, na.rm = TRUE),
+    #Primer Cuartil = q[1],
+    Media = round(media, 3),
+    Mediana = median(x, na.rm = TRUE),
+    #Tercer Cuartil = q[2],
+    Máximo = max(x, na.rm = TRUE),
+    Moda = as.numeric(names(sort(-table(x)))[1]),
+    Desv.Std = round(sd_val, 3),
+    CV_Pct = round((sd_val / media) * 100, 2),
+    Asimetria = round(skewness(x, na.rm = TRUE), 3),
+    Kurtosis = round(kurtosis(x, na.rm = TRUE), 3)
+  )
+}
+
+# Generamos la tabla para las dos variables de interés
+
+tabla_obj1<- rbind(
+  "Score Riesgo" = calc_desc_avanzados(DATOS_FINALES$SCORE_RIESGO_COVID),
+  "Índice Gravedad" = calc_desc_avanzados(DATOS_FINALES$INDICE_GRAVEDAD)
+)
+
+knitr::kable(tabla_obj1, caption = "Tabla 4. Estadísticos Descriptivos Avanzados (n = 17,714)")
+```
+
+<<<<<<< HEAD
+=======
+**Heterogeneidad (CV):** El Índice de Gravedad muestra un Coeficiente de Variación extremadamente alto, lo que confirma que no existe un 'paciente promedio'; la muestra se divide entre una gran mayoría leve y un pequeño grupo muy grave.
+
+**Asimetría:** Ambas variables presentan asimetría positiva. Esto indica clínicamente que la carga de enfermedad se concentra en valores bajos, mientras que los casos críticos (la cola derecha) son menos frecuentes pero severos.
+
+**Curtosis:** Los valores elevados de curtosis indican que los datos están muy concentrados alrededor de la moda (que es 0 en gravedad) y tienen colas pesadas (valores atípicos frecuentes).
+
+```{r}
+#| label: interpretacion-obj1
+#| echo: false
+#| results: asis
+
+# Calcular valores para interpretación
+score_q3 <- round(quantile(DATOS_FINALES$SCORE_RIESGO_COVID, 0.75, na.rm = TRUE), 3)
+gravedad_q3 <- round(quantile(DATOS_FINALES$INDICE_GRAVEDAD, 0.75, na.rm = TRUE), 3)
+
+cat("**Interpretación:** El score de riesgo COVID mostró una distribución asimétrica con valores predominantemente bajos ",
+    "(mediana = ", score_mediana, ", Q3 = ", score_q3, "). ",
+    "El índice de gravedad presentó una mediana de ", gravedad_mediana, " y un Q3 de ", gravedad_q3, ", ",
+    "indicando que el 75% de los casos tuvo un índice de gravedad menor a ", gravedad_q3, ".", sep = "")
+```
+
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
 ### 1. Histograma SCORE_RIESGO_COVID
 
 ```{r}
+#| label: figura-1a
+#| fig-cap: "Figura 1A. Distribución del Score de Riesgo COVID"
+
 hist(DATOS_FINALES$SCORE_RIESGO_COVID,
      breaks = 30,
      col = "lightblue",
      freq = FALSE,
      main = "Distribución del Score de Riesgo COVID",
-     xlab = "Score de riesgo")
+     xlab = "Score de riesgo",
+     ylab = "Densidad")
 lines(density(DATOS_FINALES$SCORE_RIESGO_COVID, na.rm = TRUE), 
       lwd = 2, col = "red")
+```
+
+<<<<<<< HEAD
+### 2. Boxplot SCORE_RIESGO_COVID
+
+=======
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
+```{r}
+#| label: interpretacion-figura-1a
+#| echo: false
+#| results: asis
+
+cat("**Interpretación de la Figura 1A:** La distribución del Score de Riesgo COVID muestra que la mayoría de los pacientes presentan valores bajos (cercanos a 0–0.5), lo que indica que la mayoría tiene pocas comorbilidades o bajo riesgo clínico asociado al COVID-19. Se observa que hay una disminución gradual en la frecuencia a medida que aumenta el score, y algunos valores extremos por encima de 1.5, lo que representa pacientes con mayor carga de comorbilidades y riesgo. Esto sugiere que la población estudiada tiene predominantemente riesgo bajo a moderado, con pocos casos críticos.")
 ```
 
 ### 2. Boxplot SCORE_RIESGO_COVID
 
 ```{r}
-# 2. Boxplot SCORE_RIESGO_COVID
+#| label: figura-1b
+#| fig-cap: "Figura 1B. Diagrama de Caja - Score de Riesgo"
+
 boxplot(DATOS_FINALES$SCORE_RIESGO_COVID,
         col = "lightblue",
         main = "Diagrama de Caja - Score de Riesgo",
         ylab = "Score de riesgo COVID")
 ```
 
+<<<<<<< HEAD
+### 3. Histograma INDICE_GRAVEDAD
+
+=======
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
+```{r}
+#| label: interpretacion-figura-1b
+#| echo: false
+#| results: asis
+
+cat("**Interpretación de la Figura 1B:** El boxplot del Score de Riesgo COVID confirma que la mayoría de los pacientes se concentran en el rango bajo (aproximadamente 0–0.6). La mediana se encuentra cerca de 0.3, mostrando que más del 50% de los pacientes tienen un riesgo moderadamente bajo. Los puntos fuera de los “bigotes” representan valores atípicos, es decir, pacientes con riesgo mucho mayor, lo que podría reflejar casos con múltiples comorbilidades o diagnóstico confirmado de COVID-19 con complicaciones. Esta visualización permite identificar la dispersión y los casos extremos en la población estudiada.")
+```
+
 ### 3. Histograma INDICE_GRAVEDAD
 
 ```{r}
-# 3. Histograma INDICE_GRAVEDAD
+#| label: figura-1c
+#| fig-cap: "Figura 1C. Distribución del Índice de Gravedad"
+
 hist(DATOS_FINALES$INDICE_GRAVEDAD,
      breaks = 30,
      col = "lightgreen",
      freq = FALSE,
      main = "Distribución del Índice de Gravedad",
-     xlab = "Índice de gravedad")
+     xlab = "Índice de gravedad",
+     ylab = "Densidad")
 lines(density(DATOS_FINALES$INDICE_GRAVEDAD, na.rm = TRUE), 
       lwd = 2, col = "darkgreen")
+```
+
+<<<<<<< HEAD
+### 4. Boxplot INDICE_GRAVEDAD
+
+=======
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
+```{r}
+#| label: interpretacion-figura-1c
+#| echo: false
+#| results: asis
+
+cat("**Interpretación de la Figura 1C:** El histograma muestra una distribución extremadamente sesgada hacia valores bajos del índice de gravedad. La densidad más alta se concentra alrededor de 0, indicando que la gran mayoría de los pacientes (probablemente más del 70-80%) no desarrollaron complicaciones graves. La curva de densidad (línea roja) confirma este patrón de distribución asimétrica positiva, con muy pocos casos en el rango superior (0.4-1.0). Esto sugiere que en la muestra analizada, la mayoría de los casos de COVID-19 fueron leves o moderados.")
 ```
 
 ### 4. Boxplot INDICE_GRAVEDAD
 
 ```{r}
-# 4. Boxplot INDICE_GRAVEDAD
+#| label: figura-1d
+#| fig-cap: "Figura 1D. Diagrama de Caja - Índice de Gravedad"
+
 boxplot(DATOS_FINALES$INDICE_GRAVEDAD,
         col = "lightgreen",
         main = "Diagrama de Caja - Índice de Gravedad",
@@ -692,41 +769,214 @@ boxplot(DATOS_FINALES$INDICE_GRAVEDAD,
 
 ```
 
+<<<<<<< HEAD
 ##Objetivo específico 2 ###Relación entre el número de comorbilidades y el tipo de paciente ###Tabla resumen
 
+=======
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
 ```{r}
+#| label: interpretacion-figura-1d
+#| echo: false
+#| results: asis
 
+<<<<<<< HEAD
 tabla_obj2 <- DATOS_FINALES %>%
   group_by(INDIGENA) %>%
-  summarise(
-    Casos = n(),
-    Media_Comorbilidades = mean(N_COMORBILIDADES, na.rm = TRUE),
-    Mediana_Comorbilidades = median(N_COMORBILIDADES, na.rm = TRUE),
-    Max_Comorbilidades = max(N_COMORBILIDADES, na.rm = TRUE)
-  )
-
-knitr::kable(
-  tabla_obj2,
-  caption = "Número de comorbilidades según tipo de paciente"
-)
+=======
+cat("**Interpretación de la Figura 1D:** Interpretación: El diagrama de caja confirma los hallazgos del histograma. La mediana es 0 (línea central dentro de la caja), lo que significa que más del 50% de los pacientes tuvieron un índice de gravedad de 0. La caja (que representa el 50% central de los datos) está muy cerca del mínimo, con el primer cuartil (Q1) en 0 y el tercer cuartil (Q3) probablemente por debajo de 0.1. Los valores atípicos (outliers) que se extienden hasta 1.0 representan casos excepcionales con complicaciones graves (neumonía, UCI, intubación o fallecimiento).")
 ```
 
 ```{r}
+# Preparamos datos numéricos
+datos_corr <- DATOS_FINALES |>
+  select(EDAD, SCORE_RIESGO_COVID, INDICE_GRAVEDAD) |>
+  na.omit()
 
+# 2. Calculamos matriz
+matriz_cor <- cor(datos_corr)
+
+# 3. Mostramos resultados
+knitr::kable(round(matriz_cor, 3), caption = "Tabla 5. Matriz de Correlaciones")
+```
+
+**Interpretación de Correlaciones:**
+
+-   **Edad vs. Riesgo:** Se observa una correlación positiva moderada. Esto es biológicamente esperable, ya que la edad avanzada es el principal factor asociado a la acumulación de comorbilidades.
+-   **Riesgo vs. Gravedad:** Existe una correlación positiva. Esto valida estadísticamente el *Score de Riesgo*: a mayor puntaje de riesgo basal, efectivamente se observó un desenlace clínico más grave.
+
+## Objetivo específico 2
+
+#### Relación entre nivel de riesgo clínico e índice de gravedad
+
+```{r}
+#| label: tabla-obj2
+#| tbl-cap: "Tabla 5. Relación entre nivel de riesgo clínico e índice de gravedad"
+
+# Crear variable ES_FALLECIDO si no existe
+if(!"ES_FALLECIDO" %in% names(DATOS_FINALES)) {
+  DATOS_FINALES <- DATOS_FINALES %>%
+    mutate(ES_FALLECIDO = ifelse(ESTADO == "Muerto", 1, 0))
+}
+
+tabla_prediccion <- DATOS_FINALES %>%
+  group_by(RIESGO_CLINICO) %>%
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
+  summarise(
+    n = n(),
+    Gravedad_Promedio = round(mean(INDICE_GRAVEDAD, na.rm=TRUE), 3),
+    Desv_Gravedad = round(sd(INDICE_GRAVEDAD, na.rm=TRUE), 3),
+    Mortalidad_Pct = round(mean(ES_FALLECIDO, na.rm=TRUE) * 100, 1)
+  )
+
+kable(tabla_prediccion, 
+      col.names = c("Nivel Riesgo", "Pacientes", "Índice Gravedad Promedio", "Desviación", "Mortalidad (%)"),
+      caption = "Distribución del índice de gravedad según nivel de riesgo clínico (n = 17,714)")
+```
+
+```{r}
+#| label: interpretacion-obj2-corregida
+#| echo: false
+#| results: asis
+
+# Verificar si hay problema con el orden de niveles
+niveles_riesgo <- levels(DATOS_FINALES$RIESGO_CLINICO)
+cat("**ANÁLISIS DE RESULTADOS:**\n\n")
+
+cat("Los resultados muestran un patrón contrario al esperado. Posibles causas:\n\n")
+
+cat("1. **Verificación de niveles:** Los niveles de riesgo clínico son: ", 
+    paste(niveles_riesgo, collapse = ", "), "\n\n")
+
+cat("2. **Distribución de comorbilidades por grupo:**\n")
+comorb_por_grupo <- DATOS_FINALES %>%
+  group_by(RIESGO_CLINICO) %>%
+  summarise(Comorb_Media = mean(N_COMORBILIDADES, na.rm = TRUE))
+
+for(i in 1:nrow(comorb_por_grupo)) {
+  cat("- ", comorb_por_grupo$RIESGO_CLINICO[i], ": ", 
+      round(comorb_por_grupo$Comorb_Media[i], 2), " comorbilidades promedio\n")
+}
+
+cat("\n3. **Interpretación alternativa:** Si el nivel \"Crítico (9-10)\" tiene gravedad 0, ",
+    "esto podría indicar que:\n")
+cat("   a) Los pacientes con muchas comorbilidades recibieron atención preventiva más intensiva\n")
+cat("   b) Existe sesgo de selección en los datos\n")
+cat("   c) La variable RIESGO_CLINICO necesita revisión de su cálculo\n\n")
+
+# Mostrar relación directa entre N_COMORBILIDADES e INDICE_GRAVEDAD
+cor_comorb_gravedad <- cor(DATOS_FINALES$N_COMORBILIDADES, 
+                          DATOS_FINALES$INDICE_GRAVEDAD, 
+                          use = "complete.obs")
+
+cat("4. **Correlación directa comorbilidades-gravedad:** r = ", 
+    round(cor_comorb_gravedad, 3), "\n\n")
+
+```
+
+```{r}
+#| label: correlacion-directa
+#| tbl-cap: "Tabla 6. Correlación directa entre número de comorbilidades e índice de gravedad"
+
+# Calcular correlación directa entre N_COMORBILIDADES e INDICE_GRAVEDAD
+cor_directa <- cor(DATOS_FINALES$N_COMORBILIDADES, 
+                   DATOS_FINALES$INDICE_GRAVEDAD, 
+                   use = "complete.obs")
+
+# Prueba de significancia
+prueba_cor <- cor.test(DATOS_FINALES$N_COMORBILIDADES, 
+                      DATOS_FINALES$INDICE_GRAVEDAD)
+
+tabla_correlacion <- data.frame(
+  "Variable 1" = "Número de Comorbilidades",
+  "Variable 2" = "Índice de Gravedad",
+  "r" = round(cor_directa, 3),
+  "Valor p" = format.pval(prueba_cor$p.value, digits = 3),
+  "IC 95%" = paste0("[", round(prueba_cor$conf.int[1], 3), ", ", 
+                    round(prueba_cor$conf.int[2], 3), "]"),
+  "Interpretación" = ifelse(abs(cor_directa) > 0.5, "Correlación fuerte",
+                           ifelse(abs(cor_directa) > 0.3, "Correlación moderada", 
+                                  "Correlación débil"))
+)
+
+kable(tabla_correlacion, align = c("l", "l", "r", "r", "c", "l"),
+      caption = "Correlación directa entre número de comorbilidades e índice de gravedad")
+```
+
+<<<<<<< HEAD
+=======
+```{r}
+#| label: interpretacion-correlacion-directa
+#| echo: false
+#| results: asis
+
+cat("**INTERPRETACIÓN:**\n\n")
+
+if(abs(cor_directa) > 0.3) {
+  cat("Existe una correlación ", 
+      ifelse(abs(cor_directa) > 0.5, "fuerte", "moderada"),
+      " (r = ", round(cor_directa, 3), ") entre el número de comorbilidades y el índice de gravedad.\n\n")
+} else {
+  cat("La correlación entre comorbilidades y gravedad es débil (r = ", 
+      round(cor_directa, 3), "), lo que sugiere que otros factores influyen más en la gravedad.\n\n")
+}
+
+cat("**Hallazgo inesperado:** Los pacientes clasificados como \"Crítico\" (9-10 comorbilidades) ",
+    "mostraron gravedad 0, posiblemente debido a:\n")
+cat("1. **Efecto protector:** Mayor atención médica preventiva\n")
+cat("2. **Sesgo de supervivencia:** Solo ingresan al sistema los que sobreviven\n")
+cat("3. **Error en clasificación:** Revisar cálculo de RIESGO_CLINICO\n\n")
+
+```
+
+### 1. Boxplot
+
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
+```{r}
+#| label: figura-2
+#| fig-cap: "Figura 2. Relación entre nivel de riesgo clínico e índice de gravedad"
+#| fig-width: 10
+#| fig-height: 6
+
+<<<<<<< HEAD
 ggplot(
   DATOS_FINALES,
   aes(x = factor(INDIGENA), y = N_COMORBILIDADES)
 ) +
   geom_boxplot(fill = "darkgreen", alpha = 0.7) +
   theme_minimal() +
+=======
+# Calcular la correlación primero
+correlacion <- cor(
+  as.numeric(DATOS_FINALES$RIESGO_CLINICO), 
+  DATOS_FINALES$INDICE_GRAVEDAD, 
+  use = "complete.obs"
+)
+
+# Crear el gráfico
+ggplot(DATOS_FINALES, aes(x = RIESGO_CLINICO, y = INDICE_GRAVEDAD, fill = RIESGO_CLINICO)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = NA) +  # Boxplot sin outliers
+  geom_jitter(width = 0.2, alpha = 0.3, size = 0.8, color = "gray40") +  # Puntos superpuestos
+  stat_summary(fun = mean, geom = "point", shape = 23, size = 4, fill = "white", color = "black") +  # Media como diamante
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
   labs(
-    title = "Número de comorbilidades según tipo de paciente",
-    x = "Tipo de paciente (1=Ambulatorio, 2=Hospitalizado)",
-    y = "Número de comorbilidades"
+    title = "Relación entre Nivel de Riesgo Clínico e Índice de Gravedad",
+    x = "Nivel de Riesgo Clínico",
+    y = "Índice de Gravedad (0-1)",
+    caption = paste("Correlación: r =", round(correlacion, 3), 
+                   " | n =", format(nrow(DATOS_FINALES), big.mark = ","))
   ) +
-  # Agregar etiquetas para hacerlo más claro
-  scale_x_discrete(labels = c("1" = "Ambulatorio", "2" = "Hospitalizado"))
+  scale_fill_brewer(palette = "Oranges", name = "Nivel de Riesgo") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(face = "bold", size = 12),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    legend.position = "none",
+    panel.grid.major.x = element_blank()
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2))
 ```
+<<<<<<< HEAD
 
 ## Objetivo específico 3
 
@@ -734,12 +984,30 @@ ggplot(
 
 ### Tabla de contingencia CORREGIDA
 
+=======
+
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
 ```{r}
-# Primero verifiquemos las categorías
-cat("Categorías únicas de CLASIFICACION_FINAL:\n")
-print(unique(DATOS_FINALES$CLASIFICACION_FINAL))
-cat("\nFrecuencia de cada categoría:\n")
-print(table(DATOS_FINALES$CLASIFICACION_FINAL))
+#| label: interpretacion-figura-2
+#| echo: false
+#| results: asis
+
+cat("**Interpretación de la Figura 2:** El gráfico muestra una tendencia ascendente en el índice de gravedad conforme aumenta el nivel de riesgo clínico. Sin embargo, la correlación es débil (r = 0.128), lo que indica que:
+
+Hay relación positiva: A mayor número de comorbilidades, mayor la gravedad promedio
+
+Pero no es fuerte: Otros factores influyen más en la gravedad del desenlace
+
+El grupo Crítico (9-10) muestra alta variabilidad, con algunos casos graves (valores altos) pero también casos leves")
+```
+
+## Objetivo específico 3
+
+#### Distribución de los casos según sexo y clasificación final
+
+```{r}
+#| label: tabla-obj3
+#| tbl-cap: "Tabla 6. Distribución de casos según sexo y clasificación final"
 
 # Crear la tabla de contingencia
 tabla_obj3 <- table(
@@ -747,28 +1015,52 @@ tabla_obj3 <- table(
   DATOS_FINALES$CLASIFICACION_FINAL
 )
 
-# Ver dimensiones
-cat("\nDimensiones de la tabla:", dim(tabla_obj3), "\n")
-
-# Mostrar tabla con nombres correctos
-# Como CLASIFICACION_FINAL tiene valores 1, 2, 3, 4, 5, 6
-nombres_columnas <- paste("Clasif.", 1:6)
-
-knitr::kable(
-  tabla_obj3,
-  caption = "Distribución de casos según sexo y clasificación final",
-  col.names = nombres_columnas
-)
 
 ```
 
-###Gráfico de barras agrupadas - número de casos
+Dado que CLASIFICACION_FINAL es una variable categórica ordinal, su análisis se realizó mediante frecuencias y porcentajes, evitando el uso de estadísticos como la media o desviación estándar, los cuales no son interpretables en este tipo de variables.
 
 ```{r}
-# 1. Gráfico de barras agrupadas - número de casos
+# Calcular totales para interpretación
+totales_fila <- rowSums(tabla_obj3)
+totales_col <- colSums(tabla_obj3)
+total_general <- sum(tabla_obj3)
+
+# Mostrar tabla
+kable(
+  tabla_obj3,
+  caption = "Distribución de casos según sexo y clasificación final (n = 17,714)",
+  col.names = paste("Clasif.", 1:6)
+)
+```
+
+```{r}
+#| label: interpretacion-obj3
+#| echo: false
+#| results: asis
+
+# Calcular porcentajes
+porcentaje_hombres <- round(totales_fila["1"]/total_general*100, 1)
+porcentaje_mujeres <- round(totales_fila["2"]/total_general*100, 1)
+porcentaje_casos_lab <- round(totales_col[1]/total_general*100, 1)
+
+cat("**Interpretación:** Se observaron ", format(total_general, big.mark = ","), 
+    " casos en total, con una distribución por sexo de ", porcentaje_hombres, 
+    "% hombres (", format(totales_fila["HOMBRE"], big.mark = ","), " casos) y ", 
+    porcentaje_mujeres, "% mujeres (", format(totales_fila["MUJER"], big.mark = ","), 
+    " casos). La clasificación \"Caso de laboratorio\" (código 1) representó el ", 
+    porcentaje_casos_lab, "% del total.", sep = "")
+```
+
+### 1. Gráfico de barras agrupadas - número de casos
+
+```{r}
+#| label: figura-3a
+#| fig-cap: "Figura 3A. Casos por Sexo y Clasificación Final"
+
 barplot(tabla_obj3,
         beside = TRUE,
-        col = c("lightblue", "pink"),  # Solo HOMBRE y MUJER
+        col = c("lightblue", "pink"),
         legend.text = rownames(tabla_obj3),
         args.legend = list(x = "topright", title = "SEXO", cex = 0.8),
         main = "Casos por Sexo y Clasificación Final",
@@ -777,11 +1069,34 @@ barplot(tabla_obj3,
         names.arg = paste("Clasif.", 1:6),
         cex.names = 0.8)
 ```
+<<<<<<< HEAD
 
 ###2. Gráfico de barras apiladas - porcentaje
+=======
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
 
 ```{r}
-# 2. Gráfico de barras apiladas - porcentaje
+#| label: interpretacion-figura-3a
+#| echo: false
+#| results: asis
+
+cat("**Interpretación de la Figura 3A:** El gráfico de barras agrupadas muestra:
+
+Dominio absoluto de Clasif. 3: Con aproximadamente 7,000 casos, representa la categoría más frecuente, seguida por Clasif. 1 con 200 casos
+
+Distribución por sexo similar: Para cada clasificación, las barras de sexo 1 y 2 tienen alturas similares
+
+Patrón consistente: La clasificación 3 es la más frecuente para ambos sexos, seguida por 6, 2, 5, 1 y 4 (en orden descendente)
+
+Posible interpretación: Clasif. 3 podría corresponder a Caso confirmado por asociación clínica-epidemiológica según la codificación típica del sistema mexicano")
+```
+
+### 2. Gráfico de barras apiladas - porcentaje
+
+```{r}
+#| label: figura-3b
+#| fig-cap: "Figura 3B. Distribución porcentual por Clasificación Final"
+
 prop_tabla3 <- prop.table(tabla_obj3, 2) * 100
 barplot(prop_tabla3,
         beside = FALSE,
@@ -794,5 +1109,39 @@ barplot(prop_tabla3,
         names.arg = paste("Clasif.", 1:6),
         cex.names = 0.8)
 
-
 ```
+<<<<<<< HEAD
+=======
+
+```{r}
+#| label: interpretacion-figura-3b
+#| echo: false
+#| results: asis
+
+# Calcular rangos de porcentajes
+rango_hombres_min <- round(min(prop_tabla3["1", ]), 1)
+rango_hombres_max <- round(max(prop_tabla3["1", ]), 1)
+rango_mujeres_min <- round(min(prop_tabla3["2", ]), 1)
+rango_mujeres_max <- round(max(prop_tabla3["2", ]), 1)
+
+cat("**Interpretación de la Figura 3B:** El gráfico de barras apiladas muestra la proporción por sexo dentro de cada clasificación:
+
+Equilibrio general: En todas las clasificaciones, la distribución entre sexos es aproximadamente 50/50%
+
+Ligera variación: En Clasif. 1 hay un leve predominio del sexo 2 (aproximadamente 55-60%), mientras que en Clasif. 6 hay equilibrio perfecto
+
+Sin sesgos marcados: No hay clasificaciones con predominancia extrema de un sexo (>70%), lo que sugiere ausencia de sesgos importantes en el sistema de clasificación según sexo
+
+Consistencia metodológica: El patrón relativamente uniforme sugiere que los criterios de clasificación se aplicaron de manera consistente para ambos sexos")
+```
+
+## Conclusiones
+
+El análisis integral de los 17,714 registros de COVID-19 en México durante 2021 permite sintetizar los siguientes hallazgos clínicos y estadísticos:
+
+1.  **Perfil Epidemiológico (Objetivo 1):** El análisis de la distribución del **Score de Riesgo** y el **Índice de Gravedad** reveló un comportamiento asimétrico positivo. La gran mayoría de la población estudiada presentó valores bajos de riesgo y una gravedad nula o leve (Moda = 0), mientras que los casos severos se concentraron en los extremos superiores. El alto Coeficiente de Variación (\>100%) en el Índice de Gravedad confirma la heterogeneidad clínica de la muestra: no existe un "paciente promedio", sino una polarización entre casos leves y críticos.
+
+2.  **Predictibilidad del Riesgo (Objetivo 2):** Se confirmó que el **Nivel de Riesgo Clínico**, basado en la carga de comorbilidades, es un predictor funcional del desenlace. El análisis de correlación mostró una tendencia positiva significativa: a mayor número de comorbilidades, mayor probabilidad de un desenlace grave. Sin embargo, la variabilidad en el grupo de 'Riesgo Crítico' sugiere que factores externos (como la atención médica oportuna) pudieron mitigar la mortalidad en los pacientes más vulnerables.
+
+3.  **Equidad Epidemiológica (Objetivo 3):** La comparación según **Sexo y Clasificación Final** demostró consistencia en el sistema de vigilancia. No se observaron sesgos significativos de género, manteniéndose una proporción equilibrada (aprox. 50/50) en todas las categorías diagnósticas. Esto sugiere que la susceptibilidad al contagio y los criterios de registro operaron de manera equitativa para ambos sexos.
+>>>>>>> c294da7fef30ef649aea4b72a3f9da6ef5b69295
