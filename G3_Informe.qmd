@@ -308,29 +308,186 @@ ggplot(tabla_sexo, aes(x = Etiqueta, y = Frecuencia, fill = Etiqueta)) +
 
 > **Interpretación:** Se observa una distribución equilibrada entre hombres y mujeres en la muestra analizada.
 
-## Análisis Bivariado
+# Analisis De Interaccion
 
-Relación entre dos variables (Scatterplots, Boxplots por categoría, Correlaciones).
+## Variables Categóricas: SEXO vs ESTADO
 
 ```{r}
-# Ejemplo: Scatterplot
-# ggplot(df_clean, aes(x = Var1, y = Var2)) +
-#   geom_point(alpha = 0.6) +
-#   geom_smooth(method = "lm", se = FALSE, color = "red") +
-#   theme_minimal()
+# Crear tabla de contingencia
+tabla_categorica <- table(DATOS_FINALES$SEXO, DATOS_FINALES$ESTADO)
+colnames(tabla_categorica) <- c("Vivo", "Muerto")
+rownames(tabla_categorica) <- c("Mujer", "Hombre")
+
+# Mostrar tabla con kable
+cat("**Tabla 7: Distribución de casos por Sexo y Estado**\n\n")
+kbl(tabla_categorica, 
+    caption = "Frecuencias absolutas: Sexo vs Estado",
+    align = 'c') |>
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
+
+
+```{r}
+# Calcular porcentajes por fila
+prop_tabla <- prop.table(tabla_categorica, 1) * 100
+cat("\n**Tabla 8: Porcentajes por Sexo**\n\n")
+kbl(round(prop_tabla, 1), 
+    caption = "Porcentajes por fila (%)",
+    align = 'c') |>
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+
+
+```{r}
+# Gráfico de barras agrupadas 
+cat("\n**Figura 4: Distribución del Estado por Sexo**\n\n")
+barplot(tabla_categorica,
+        beside = TRUE,
+        col = c("lightblue", "pink"),
+        main = "Distribución del Estado por Sexo",
+        xlab = "Estado",
+        ylab = "Número de casos",
+        legend.text = rownames(tabla_categorica),
+        args.legend = list(x = "topright", title = "Sexo", cex = 0.8))
+```
+
+> **Interpretación:** La tabla de contingencia y el gráfico de barras muestran la distribución del estado (vivo o fallecido) según el sexo. Se observa que tanto en mujeres (aproximadamente ", round(prop_tabla[1,1], 1), "% vivos) como en hombres (aproximadamente ", round(prop_tabla[2,1], 1), "% vivos), la gran mayoría de los casos corresponden a personas vivas. Al comparar porcentajes por sexo, se evidencian diferencias mínimas en la proporción de fallecidos (mujeres: ", round(prop_tabla[1,2], 1), "%, hombres: ", round(prop_tabla[2,2], 1), "%). El gráfico refuerza visualmente esta similitud entre sexos. En conjunto, los resultados sugieren que el sexo no parece estar fuertemente asociado al estado final del paciente en esta muestra."
+
+
+
+## Variables Numéricas: EDAD vs DIAS_RETRASO
+
+```{r}
+# Calcular correlación PRIMERO
+cor_edad_retraso <- cor(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO, 
+                        use = "complete.obs")
+
+# Tabla con estadísticas de AMBAS variables y su relación
+resumen_numericas <- data.frame(
+  " " = c("EDAD (años)", "DIAS_RETRASO (días)", "CORRELACIÓN"),
+  "Media" = c(
+    round(mean(DATOS_FINALES$EDAD, na.rm = TRUE), 1),
+    round(mean(DATOS_FINALES$DIAS_RETRASO, na.rm = TRUE), 1),
+    paste("r =", round(cor_edad_retraso, 3))
+  ),
+  "DE" = c(
+    round(sd(DATOS_FINALES$EDAD, na.rm = TRUE), 1),
+    round(sd(DATOS_FINALES$DIAS_RETRASO, na.rm = TRUE), 1),
+    ""
+  ),
+  "Mínimo" = c(
+    min(DATOS_FINALES$EDAD, na.rm = TRUE),
+    min(DATOS_FINALES$DIAS_RETRASO, na.rm = TRUE),
+    ""
+  ),
+  "Máximo" = c(
+    max(DATOS_FINALES$EDAD, na.rm = TRUE),
+    max(DATOS_FINALES$DIAS_RETRASO, na.rm = TRUE),
+    ""
+  )
+
+)
+
+cat("**Tabla 9: Estadísticas descriptivas y correlación entre variables numéricas**\n\n")
+kbl(resumen_numericas, 
+    caption = "Análisis de la relación Edad vs Días de Retraso",
+    col.names = c("Variable", "Media", "Desv. Estándar", "Mín", "Máx")) |>
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+
+
+```{r}
+cat("\n**Figura 5: Edad vs Días de Retraso**\n\n")
+# Gráfico básico de dispersión
+plot(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO, 
+     pch = 20, 
+     col = "blue", 
+     main = paste("Edad vs Días de Retraso\nr =", round(cor_edad_retraso, 3)),
+     xlab = "Edad (años)",
+     ylab = "Días de retraso(ingreso - síntomas)")
+
+# Calcular correlación para incluir en el título
+cor_edad_retraso <- cor(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO, 
+                        use = "complete.obs")
+cat("**Coeficiente de correlación:** r =", round(cor_edad_retraso, 3), "\n\n")
+
+cat("\n**Figura 6: Densidad: Edad vs Días de Retraso**\n\n")
+smoothScatter(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO,
+              pch = 20,
+              col = "red",
+              main = "Densidad: Edad vs Días de Retraso",
+              xlab = "Edad (años)",
+              ylab = "Días de retraso")
+```
+> **Interpretación:** El gráfico de dispersión muestra la relación entre la edad de los pacientes y los días de retraso entre la aparición de síntomas y el ingreso. Los puntos se encuentran dispersos sin formar un patrón claramente definido, lo que sugiere que la relación entre ambas variables es muy débil. El coeficiente de correlación obtenido (r = ", round(cor_edad_retraso, 3), ") confirma una asociación prácticamente nula entre la edad y los días de retraso, por lo que no se observa una relación lineal. Esto implica que la edad del paciente no parece ser un factor determinante en el tiempo de retraso para el ingreso. El gráfico de densidad (smoothScatter) muestra una concentración de casos entre 0-10 días de retraso para todas las edades, pero sin una tendencia clara que indique dependencia entre ambas variables."
+
+
+
+## Variables Categórica Y Numérica: RIESGO_CLINICO vs INDICE_GRAVEDAD
+
+```{r}
+# Resumen estadístico por grupo (igual que antes)
+resumen_riesgo <- DATOS_FINALES |>
+  group_by(RIESGO_CLINICO) |>
+  summarise(
+    n = n(),
+    Media = round(mean(INDICE_GRAVEDAD), 3),
+    Mediana = round(median(INDICE_GRAVEDAD), 3),
+    DE = round(sd(INDICE_GRAVEDAD), 3),
+    Min = round(min(INDICE_GRAVEDAD), 3),
+    Max = round(max(INDICE_GRAVEDAD), 3)
+  )
+
+cat("**Tabla 10: Estadísticos del Índice de Gravedad por Nivel de Riesgo**\n\n")
+kbl(resumen_riesgo, 
+    caption = "Resumen por grupo de riesgo",
+    align = c('l', rep('r', 6))) |>
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+
+
+```{r}
+# Boxplot por categoría - USANDO TU ESTILO (base R)
+cat("\n**Figura 7: Distribución del Índice de Gravedad por Nivel de Riesgo**\n\n")
+boxplot(INDICE_GRAVEDAD ~ RIESGO_CLINICO, data = DATOS_FINALES,
+        col = heat.colors(6, alpha = 0.7),
+        main = "Índice de Gravedad por Nivel de Riesgo Clínico",
+        xlab = "Nivel de Riesgo Clínico",
+        ylab = "Índice de Gravedad (0-1)",
+        las = 2,  # Etiquetas verticales en eje X
+        cex.axis = 0.8)
+
+# Agregar puntos de las medias
+means <- tapply(DATOS_FINALES$INDICE_GRAVEDAD, DATOS_FINALES$RIESGO_CLINICO, mean)
+points(1:length(means), means, pch = 23, col = "red", bg = "yellow", cex = 1.5)
+```
+
+> **Interpretación:** El análisis descriptivo del índice de gravedad según el nivel de riesgo clínico muestra diferencias entre los grupos. A medida que aumenta el nivel de riesgo clínico, se observa un incremento en la media del índice de gravedad (desde 0.246 en 'Muy bajo' hasta 0.343 en 'Alto'). El boxplot evidencia que los grupos de mayor riesgo presentan valores más altos del índice de gravedad, aunque con amplia dispersión, mientras que los grupos de menor riesgo muestran valores más bajos. La ubicación de las medias (diamantes amarillos) refuerza esta tendencia ascendente. En conjunto, estos resultados indican que el nivel de riesgo clínico está asociado con la gravedad del cuadro, lo cual es coherente desde el punto de vista clínico: pacientes con más comorbilidades tienden a presentar desenlaces más graves."
+
 
 # Discusión de Resultados
 
-Interpretación de los hallazgos encontrados en los gráficos y tablas anteriores. ¿Qué nos dicen los datos sobre el problema planteado?
+Los análisis realizados permiten responder a los objetivos planteados:
+
+**Objetivo 1 - Distribución del riesgo y gravedad:** Se encontró que el Score de Riesgo COVID presenta una distribución asimétrica positiva, con la mayoría de los casos concentrados en valores bajos (0-0.8). Esto sugiere que la población estudiada tenía, en general, una carga de comorbilidades moderada. El Índice de Gravedad mostró una distribución aún más sesgada, con más del 75% de los casos presentando valores de 0 a 0.1, indicando que la mayoría de los pacientes no desarrolló complicaciones graves. Sin embargo, la presencia de outliers en valores cercanos a 1 señala la existencia de casos críticos que requirieron UCI, intubación o culminaron en defunción.
+
+**Objetivo 2 - Riesgo Clínico como predictor:** La relación entre el Nivel de Riesgo Clínico (basado en comorbilidades) y el Índice de Gravedad mostró una tendencia positiva pero con variabilidad significativa. Mientras los grupos de riesgo "Bajo" y "Moderado" presentaron índices de gravedad consistentemente bajos, el grupo "Crítico" mostró una dispersión amplia. Esto sugiere que, aunque las comorbilidades son un factor de riesgo importante, no son determinantes absolutos del desenlace. Factores como la atención médica oportuna, la edad y posiblemente la variante viral podrían moderar esta relación.
+
+**Objetivo 3 - Distribución por sexo y clasificación:** No se encontraron diferencias marcadas en la distribución por sexo, manteniéndose una proporción cercana al 50% para cada categoría de clasificación final. Esto indica ausencia de sesgos de género en el registro y clasificación de casos. La categoría más frecuente fue la clasificación 3, que podría corresponder a "caso confirmado por asociación clínico-epidemiológica" según la normativa mexicana.
+
+**Limitaciones:** El estudio presenta limitaciones propias de los datos secundarios, incluyendo posible subregistro de casos leves, variabilidad en la calidad del registro entre entidades federativas, y la imposibilidad de establecer relaciones causales debido al diseño observacional.
 
 # Conclusiones
 
-Resumen de los puntos clave y respuesta a los objetivos planteados al inicio.
+1.  **Perfil de riesgo predominante:** La mayoría de los casos de COVID-19 registrados en México durante 2021 correspondieron a pacientes con riesgo clínico bajo a moderado y evolución clínica leve, sin complicaciones graves.
 
-1.  Conclusión 1...
+2.  **Valor predictivo limitado del riesgo basal:** Aunque existe una correlación positiva entre el número de comorbilidades y la gravedad del desenlace, esta relación no es determinista. Pacientes con múltiples comorbilidades (riesgo "Crítico") pueden tener desenlaces variables, sugiriendo la influencia de otros factores protectores o de atención.
 
-2.  Conclusión 2...
+3.  **Equidad en el sistema de vigilancia:** La distribución equilibrada de casos por sexo en todas las categorías de clasificación sugiere que el sistema de vigilancia epidemiológica operó sin sesgos de género evidentes en el registro y clasificación de casos.
+
+4.  **Implicaciones para salud pública:** Estos hallazgos resaltan la importancia de mantener sistemas de vigilancia que capturen no solo los casos graves, sino también el espectro completo de la enfermedad. Además, sugieren que las estrategias de prevención deben considerar que los pacientes con múltiples comorbilidades, aunque en mayor riesgo, pueden tener desenlaces favorables con atención médica adecuada y oportuna.
+
+5. **Independencia del tiempo de respuesta:** La ausencia de correlación entre edad y días de retraso (r = "0.045") sugiere que los tiempos de respuesta del sistema de salud fueron similares para pacientes de todas las edades, sin evidenciar discriminación por edad en la atención médica. 
 
 # Bibliografía
 
