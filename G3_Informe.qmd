@@ -89,7 +89,7 @@ La recolección se basó en la descarga y procesamiento de la base de datos abie
 A continuación se definen las variables seleccionadas y su clasificación:
 
 | \# | Variable | Tipo Estadístico | Origen / Descripción |
-|:---|:---|:---|:---|
+|:-----------------|:-----------------|:-----------------|:-----------------|
 | 1 | `SCORE_RIESGO_COVID` | Cuantitativa continua | **Derivada:** Índice continuo basado en la carga de comorbilidades y la certeza diagnóstica (Rango 0-3). Resume el nivel relativo de riesgo del paciente. |
 | 2 | `INDICE_GRAVEDAD` | Cuantitativa continua | **Derivada:** Índice ponderado de complicaciones (neumonía, UCI, intubación) y defunción. Mide la severidad clínica del caso (Rango 0-1). |
 | 3 | `N_COMORBILIDADES` | Cuantitativa discreta | **Derivada:** Suma simple de 10 comorbilidades crónicas (Diabetes, EPOC, Asma, etc.). Valor entero de 0 a 10. |
@@ -230,6 +230,9 @@ En esta sección se describen las variables principales del estudio mediante est
 
 Analizamos la distribución del riesgo acumulado en la población.
 
+**Tabla 1**\
+*Estadísticos descriptivos: Distribución del score de Riesgo COVID*
+
 ```{r}
 # Estadísticos descriptivos
 desc_score <- DATOS_FINALES |>
@@ -241,21 +244,26 @@ desc_score <- DATOS_FINALES |>
     Max = max(SCORE_RIESGO_COVID)
   )
 
-kbl(desc_score, caption = "Estadísticos descriptivos: Score de Riesgo COVID", digits = 2) |>
+kbl(desc_score, digits = 2) |>
   kable_styling(full_width = F)
+```
 
+**Figura 1**\
+*Distribución del score de riesgo COVID en la población estudiada*
+
+```{r}
 # Histograma
 ggplot(DATOS_FINALES, aes(x = SCORE_RIESGO_COVID)) +
   geom_histogram(bins = 30, fill = "#2C3E50", color = "white", alpha = 0.8) +
   geom_vline(aes(xintercept = mean(SCORE_RIESGO_COVID)), color = "red", linetype = "dashed", size = 1) +
   labs(
-    title = "Distribución del Score de Riesgo COVID",
-    subtitle = "La línea roja indica el promedio",
     x = "Score de Riesgo (0-3)",
     y = "Frecuencia"
   ) +
   theme_minimal()
 ```
+
+Nota. La línea roja vertical discontinua representa el valor promedio del score de riesgo COVID.
 
 > **Interpretación:** La mayoría de los casos presentan un score de riesgo bajo a moderado (concentración a la izquierda). La asimetría positiva sugiere que los pacientes con múltiples factores de riesgo y certeza diagnóstica alta son menos frecuentes pero representan el grupo crítico.
 
@@ -263,12 +271,14 @@ ggplot(DATOS_FINALES, aes(x = SCORE_RIESGO_COVID)) +
 
 Evaluamos la severidad clínica de los casos.
 
+**Figura 2**\
+*Distribución del Índice de Gravedad*
+
 ```{r}
 # Boxplot para visualizar outliers y distribución
 ggplot(DATOS_FINALES, aes(y = INDICE_GRAVEDAD)) +
   geom_boxplot(fill = "#E74C3C", alpha = 0.7) +
   labs(
-    title = "Distribución del Índice de Gravedad",
     y = "Índice (0-1)"
   ) +
   theme_minimal() +
@@ -281,6 +291,9 @@ ggplot(DATOS_FINALES, aes(y = INDICE_GRAVEDAD)) +
 
 Distribución de la muestra según género.
 
+**Tabla 2**\
+*Distribución de casos por Sexo*
+
 ```{r}
 # Tabla de frecuencias
 tabla_sexo <- DATOS_FINALES |>
@@ -291,8 +304,15 @@ tabla_sexo <- DATOS_FINALES |>
   ) |>
   mutate(Etiqueta = ifelse(SEXO == 1, "Mujer", "Hombre"))
 
-kbl(tabla_sexo, caption = "Distribución de casos por Sexo", digits = 1) |>
+kbl(tabla_sexo, digits = 1) |>
   kable_styling(full_width = F)
+
+```
+
+**Figura 3**\
+*Distribución de casos por Sexo*
+
+```{r}
 
 # Gráfico de barras
 ggplot(tabla_sexo, aes(x = Etiqueta, y = Frecuencia, fill = Etiqueta)) +
@@ -300,7 +320,6 @@ ggplot(tabla_sexo, aes(x = Etiqueta, y = Frecuencia, fill = Etiqueta)) +
   geom_text(aes(label = paste0(round(Porcentaje, 1), "%")), vjust = -0.5) +
   scale_fill_manual(values = c("steelblue", "lightpink")) +
   labs(
-    title = "Proporción de Casos por Sexo",
     x = "", y = "Cantidad de Casos"
   ) +
   theme_classic()
@@ -312,6 +331,9 @@ ggplot(tabla_sexo, aes(x = Etiqueta, y = Frecuencia, fill = Etiqueta)) +
 
 ## Variables Categóricas: SEXO vs ESTADO
 
+**Tabla 3**\
+*Distribución de casos por Sexo y Estado*
+
 ```{r}
 # Crear tabla de contingencia
 tabla_categorica <- table(DATOS_FINALES$SEXO, DATOS_FINALES$ESTADO)
@@ -319,26 +341,29 @@ colnames(tabla_categorica) <- c("Vivo", "Muerto")
 rownames(tabla_categorica) <- c("Mujer", "Hombre")
 
 # Mostrar tabla con kable
-cat("**Tabla 7: Distribución de casos por Sexo y Estado**\n\n")
 kbl(tabla_categorica, 
     caption = "Frecuencias absolutas: Sexo vs Estado",
     align = 'c') |>
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
 
+**Tabla 4**\
+*Porcentajes por Sexo*
+
 ```{r}
 # Calcular porcentajes por fila
 prop_tabla <- prop.table(tabla_categorica, 1) * 100
-cat("\n**Tabla 8: Porcentajes por Sexo**\n\n")
 kbl(round(prop_tabla, 1), 
     caption = "Porcentajes por fila (%)",
     align = 'c') |>
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
 
+**Figura 4**\
+*Distribución del Estado por Sexo*
+
 ```{r}
 # Gráfico de barras agrupadas 
-cat("\n**Figura 4: Distribución del Estado por Sexo**\n\n")
 barplot(tabla_categorica,
         beside = TRUE,
         col = c("lightblue", "pink"),
@@ -348,6 +373,11 @@ barplot(tabla_categorica,
         legend.text = rownames(tabla_categorica),
         args.legend = list(x = "topright", title = "Sexo", cex = 0.8))
 ```
+
+**Figura 5**\
+*Distribución del Estado según Sexo\
+*Frecuencia absoluta de casos
+
 ```{r}
 # Gráfico de barras agrupadas con ggplot2
 ggplot(DATOS_FINALES, aes(x = factor(SEXO, labels = c("Mujer", "Hombre")), fill = ESTADO)) +
@@ -358,8 +388,6 @@ ggplot(DATOS_FINALES, aes(x = factor(SEXO, labels = c("Mujer", "Hombre")), fill 
 
   scale_y_continuous(expand = expansion(mult = c(0, 0.15))) + 
   labs(
-    title = "Distribución del Estado según Sexo",
-    subtitle = "Frecuencia absoluta de casos",
     x = "Sexo del paciente",
     y = "Número de casos (Frecuencia)",
     fill = "Estado Final"
@@ -371,6 +399,9 @@ ggplot(DATOS_FINALES, aes(x = factor(SEXO, labels = c("Mujer", "Hombre")), fill 
 > **Interpretación:** La tabla de contingencia y el gráfico de barras muestran la distribución del estado (vivo o fallecido) según el sexo. Se observa que tanto en mujeres (aproximadamente ", round(prop_tabla\[1,1\], 1), "% vivos) como en hombres (aproximadamente ", round(prop_tabla\[2,1\], 1), "% vivos), la gran mayoría de los casos corresponden a personas vivas. Al comparar porcentajes por sexo, se evidencian diferencias mínimas en la proporción de fallecidos (mujeres: ", round(prop_tabla\[1,2\], 1), "%, hombres: ", round(prop_tabla\[2,2\], 1), "%). El gráfico refuerza visualmente esta similitud entre sexos. En conjunto, los resultados sugieren que el sexo no parece estar fuertemente asociado al estado final del paciente en esta muestra."
 
 ## Variables Numéricas: EDAD vs DIAS_RETRASO
+
+**Tabla 6**\
+*Estadísticas descriptivas y correlación entre variables numéricas*
 
 ```{r}
 # Calcular correlación PRIMERO
@@ -403,15 +434,16 @@ resumen_numericas <- data.frame(
 
 )
 
-cat("**Tabla 9: Estadísticas descriptivas y correlación entre variables numéricas**\n\n")
 kbl(resumen_numericas, 
     caption = "Análisis de la relación Edad vs Días de Retraso",
     col.names = c("Variable", "Media", "Desv. Estándar", "Mín", "Máx")) |>
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
 
+**Figura 6**\
+*Edad vs Días de Retraso*
+
 ```{r}
-cat("\n**Figura 5: Edad vs Días de Retraso**\n\n")
 # Gráfico básico de dispersión
 plot(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO, 
      pch = 20, 
@@ -423,9 +455,18 @@ plot(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO,
 # Calcular correlación para incluir en el título
 cor_edad_retraso <- cor(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO, 
                         use = "complete.obs")
-cat("**Coeficiente de correlación:** r =", round(cor_edad_retraso, 3), "\n\n")
+```
 
-cat("\n**Figura 6: Densidad: Edad vs Días de Retraso**\n\n")
+Coeficiente de correlacion:
+
+```{r}
+round(cor_edad_retraso, 3)
+```
+
+**Figura 7**\
+Densidad: *Edad vs Días de Retraso*
+
+```{r}
 smoothScatter(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO,
               pch = 20,
               col = "red",
@@ -437,6 +478,9 @@ smoothScatter(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO,
 > **Interpretación:** El gráfico de dispersión muestra la relación entre la edad de los pacientes y los días de retraso entre la aparición de síntomas y el ingreso. Los puntos se encuentran dispersos sin formar un patrón claramente definido, lo que sugiere que la relación entre ambas variables es muy débil. El coeficiente de correlación obtenido (r = ", round(cor_edad_retraso, 3), ") confirma una asociación prácticamente nula entre la edad y los días de retraso, por lo que no se observa una relación lineal. Esto implica que la edad del paciente no parece ser un factor determinante en el tiempo de retraso para el ingreso. El gráfico de densidad (smoothScatter) muestra una concentración de casos entre 0-10 días de retraso para todas las edades, pero sin una tendencia clara que indique dependencia entre ambas variables."
 
 ## Variables Categórica Y Numérica: RIESGO_CLINICO vs INDICE_GRAVEDAD
+
+**Tabla 7**\
+*Estadísticos del Índice de Gravedad por Nivel de Riesgo*
 
 ```{r}
 # Resumen estadístico por grupo (igual que antes)
@@ -451,16 +495,17 @@ resumen_riesgo <- DATOS_FINALES |>
     Max = round(max(INDICE_GRAVEDAD), 3)
   )
 
-cat("**Tabla 10: Estadísticos del Índice de Gravedad por Nivel de Riesgo**\n\n")
 kbl(resumen_riesgo, 
     caption = "Resumen por grupo de riesgo",
     align = c('l', rep('r', 6))) |>
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
 
+**Figura 8**\
+*Distribución del Índice de Gravedad por Nivel de Riesgo*
+
 ```{r}
 # Boxplot por categoría - USANDO TU ESTILO (base R)
-cat("\n**Figura 7: Distribución del Índice de Gravedad por Nivel de Riesgo**\n\n")
 boxplot(INDICE_GRAVEDAD ~ RIESGO_CLINICO, data = DATOS_FINALES,
         col = heat.colors(6, alpha = 0.7),
         main = "Índice de Gravedad por Nivel de Riesgo Clínico",
@@ -499,7 +544,6 @@ Los análisis realizados permiten responder a los objetivos planteados:
 4.  **Implicaciones para salud pública:** Los hallazgos subrayan la relevancia de conservar sistemas de vigilancia epidemiológica completos que detecten tanto los casos severos como los leves. Igualmente, muestran que los pacientes con diversas comorbilidades, a pesar de tener un mayor riesgo clínico, pueden experimentar una evolución positiva si reciben atención médica oportuna y adecuada.
 
 5.  **Independencia del tiempo de respuesta:** La falta de una correlación relevante entre la edad y los días de demora en el acceso a los servicios de salud indica que los tiempos de respuesta del sistema sanitario fueron parecidos entre los diversos grupos etarios, sin mostrar una relación lineal entre ambas variables a lo largo del periodo de estudio.
-
 
 # Bibliografía
 
