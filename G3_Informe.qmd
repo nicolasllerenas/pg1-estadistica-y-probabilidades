@@ -66,7 +66,7 @@ Analizar los casos sospechosos y confirmados de COVID-19 en México durante el a
 
 1.  Describir la distribución del score de riesgo COVID y del índice de gravedad en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.
 
-2.  Evaluar si el Nivel de Riesgo Clínico predice correctamente el Índice de Gravedad del desenlace.
+2.  Analizar la asociación entre el Nivel de Riesgo Clínico y el Índice de Gravedad del desenlace.
 
 3.  Comparar la distribución de los casos según sexo y clasificación final en los casos sospechosos y confirmados.
 
@@ -347,6 +347,25 @@ barplot(tabla_categorica,
         ylab = "Número de casos",
         legend.text = rownames(tabla_categorica),
         args.legend = list(x = "topright", title = "Sexo", cex = 0.8))
+```
+```{r}
+# Gráfico de barras agrupadas con ggplot2
+ggplot(DATOS_FINALES, aes(x = factor(SEXO, labels = c("Mujer", "Hombre")), fill = ESTADO)) +
+  geom_bar(position = "dodge", color = "black", alpha = 0.8) +
+  geom_text(stat = 'count', aes(label = ..count..), 
+            position = position_dodge(width = 0.9), vjust = -0.5, size = 3) +
+  scale_fill_manual(values = c("Muerto" = "#E74C3C", "Vivo" = "#2ECC71")) +
+
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) + 
+  labs(
+    title = "Distribución del Estado según Sexo",
+    subtitle = "Frecuencia absoluta de casos",
+    x = "Sexo del paciente",
+    y = "Número de casos (Frecuencia)",
+    fill = "Estado Final"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
 ```
 
 > **Interpretación:** La tabla de contingencia y el gráfico de barras muestran la distribución del estado (vivo o fallecido) según el sexo. Se observa que tanto en mujeres (aproximadamente ", round(prop_tabla\[1,1\], 1), "% vivos) como en hombres (aproximadamente ", round(prop_tabla\[2,1\], 1), "% vivos), la gran mayoría de los casos corresponden a personas vivas. Al comparar porcentajes por sexo, se evidencian diferencias mínimas en la proporción de fallecidos (mujeres: ", round(prop_tabla\[1,2\], 1), "%, hombres: ", round(prop_tabla\[2,2\], 1), "%). El gráfico refuerza visualmente esta similitud entre sexos. En conjunto, los resultados sugieren que el sexo no parece estar fuertemente asociado al estado final del paciente en esta muestra."
