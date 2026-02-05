@@ -36,9 +36,11 @@ Este informe presenta un análisis descriptivo de los **casos sospechosos y conf
 
 A continuación se presenta el cronograma de actividades realizado para este proyecto:
 
+**Figura 1**\
+*Cronograma de actividades del proyecto*
+
 ```{mermaid}
 gantt
-    title Planificación del Proyecto
     dateFormat YYYY-MM-DD
     axisFormat %d/%m
     todayMarker off
@@ -82,11 +84,16 @@ Se empleó un muestreo no probabilístico por conveniencia. Al tratarse de un an
 
 ## Recolección de datos
 
-La recolección se basó en la descarga y procesamiento de la base de datos abierta del gobierno de México. No se utilizaron instrumentos de recolección primaria (encuestas), sino que se procesó el archivo `muestra_covid_500M_NA.csv`.
+La recolección de datos se basó en el uso de una fuente secundaria: la base de datos histórica de **Datos Abiertos de la Dirección General de Epidemiología (DGE)** de la Secretaría de Salud de México. 
+
+Para este proyecto académico, no se realizó una recolección primaria (encuestas), sino que se trabajó con el archivo `muestra_covid_500M_NA.csv`. Este dataset es una muestra didáctica procesada por el equipo docente (Prado Urbano, 2026) que contiene registros correspondientes al año **2021**, conservando la estructura y las variables clínicas originales validadas por la autoridad sanitaria mexicana.
 
 ## Variables
 
 A continuación se definen las variables seleccionadas y su clasificación:
+
+**Tabla 1**\
+*Descripción y clasificación de las variables seleccionadas para el estudio*
 
 | \# | Variable | Tipo Estadístico | Origen / Descripción |
 |:-----------------|:-----------------|:-----------------|:-----------------|
@@ -185,6 +192,10 @@ DATOS_TRANSFORMADOS <- DATOS_INICIALES |>
 
 A continuación, se cuantifican los valores perdidos y se aplica el filtro para obtener la muestra final ("DATOS_FINALES"), asegurando la calidad de la información analizada.
 
+**Tabla 2**\
+
+*Conteo de valores perdidos por variable antes del filtrado*
+
 ```{r}
 # 1. Selección de columnas de interés
 cols_analisis <- c("EDAD", "SEXO", "DIAS_RETRASO", "ENTIDAD_RES", 
@@ -201,9 +212,16 @@ data.frame(
   NAs_Cantidad = nas_por_columna,
   NAs_Porcentaje = paste0(pct_nas, "%")
 ) |>
-  kbl(caption = "Conteo de valores perdidos por variable antes del filtrado") |>
+  kbl() |>
   kable_styling(bootstrap_options = "striped", full_width = F)
 
+```
+
+**Tabla 3**\
+
+*Resumen del impacto de la limpieza de datos*
+
+```{r}
 # 3. Ejecución del Filtrado
 n_antes <- nrow(DATOS_TRANSFORMADOS)
 DATOS_FINALES <- DATOS_TRANSFORMADOS |>
@@ -216,7 +234,7 @@ data.frame(
   Cantidad = c(format(n_antes, big.mark=","), format(n_antes - n_despues, big.mark=","), format(n_despues, big.mark=",")),
   Porcentaje = c("100%", paste0(round((n_antes - n_despues)/n_antes*100, 2), "%"), paste0(round(n_despues/n_antes*100, 2), "%"))
 ) |>
-  kbl(caption = "Resumen del impacto de la limpieza de datos") |>
+  kbl() |>
   kable_styling(bootstrap_options = "hover", full_width = F)
 ```
 
@@ -230,7 +248,7 @@ En esta sección se describen las variables principales del estudio mediante est
 
 Analizamos la distribución del riesgo acumulado en la población.
 
-**Tabla 1**\
+**Tabla 4**\
 *Estadísticos descriptivos: Distribución del score de Riesgo COVID*
 
 ```{r}
@@ -248,7 +266,7 @@ kbl(desc_score, digits = 2) |>
   kable_styling(full_width = F)
 ```
 
-**Figura 1**\
+**Figura 2**\
 *Distribución del score de riesgo COVID en la población estudiada*
 
 ```{r}
@@ -271,7 +289,7 @@ Nota. La línea roja vertical discontinua representa el valor promedio del score
 
 Evaluamos la severidad clínica de los casos.
 
-**Figura 2**\
+**Figura 3**\
 *Distribución del Índice de Gravedad*
 
 ```{r}
@@ -291,7 +309,7 @@ ggplot(DATOS_FINALES, aes(y = INDICE_GRAVEDAD)) +
 
 Distribución de la muestra según género.
 
-**Tabla 2**\
+**Tabla 5**\
 *Distribución de casos por Sexo*
 
 ```{r}
@@ -309,7 +327,7 @@ kbl(tabla_sexo, digits = 1) |>
 
 ```
 
-**Figura 3**\
+**Figura 4**\
 *Distribución de casos por Sexo*
 
 ```{r}
@@ -327,11 +345,11 @@ ggplot(tabla_sexo, aes(x = Etiqueta, y = Frecuencia, fill = Etiqueta)) +
 
 > **Interpretación:** Se observa una distribución equilibrada entre hombres y mujeres en la muestra analizada.
 
-# Analisis De Interaccion
+## Analisis De Interaccion
 
-## Variables Categóricas: SEXO vs ESTADO
+### Variables Categóricas: SEXO vs ESTADO
 
-**Tabla 3**\
+**Tabla 6**\
 *Distribución de casos por Sexo y Estado*
 
 ```{r}
@@ -347,7 +365,7 @@ kbl(tabla_categorica,
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
 
-**Tabla 4**\
+**Tabla 7**\
 *Porcentajes por Sexo*
 
 ```{r}
@@ -359,7 +377,7 @@ kbl(round(prop_tabla, 1),
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
 
-**Figura 4**\
+**Figura 5**\
 *Distribución del Estado por Sexo*
 
 ```{r}
@@ -374,7 +392,7 @@ barplot(tabla_categorica,
         args.legend = list(x = "topright", title = "Sexo", cex = 0.8))
 ```
 
-**Figura 5**\
+**Figura 6**\
 *Distribución del Estado según Sexo\
 *Frecuencia absoluta de casos
 
@@ -396,11 +414,11 @@ ggplot(DATOS_FINALES, aes(x = factor(SEXO, labels = c("Mujer", "Hombre")), fill 
   theme(legend.position = "top")
 ```
 
-> **Interpretación:** La tabla de contingencia y el gráfico de barras muestran la distribución del estado (vivo o fallecido) según el sexo. Se observa que tanto en mujeres (aproximadamente ", round(prop_tabla\[1,1\], 1), "% vivos) como en hombres (aproximadamente ", round(prop_tabla\[2,1\], 1), "% vivos), la gran mayoría de los casos corresponden a personas vivas. Al comparar porcentajes por sexo, se evidencian diferencias mínimas en la proporción de fallecidos (mujeres: ", round(prop_tabla\[1,2\], 1), "%, hombres: ", round(prop_tabla\[2,2\], 1), "%). El gráfico refuerza visualmente esta similitud entre sexos. En conjunto, los resultados sugieren que el sexo no parece estar fuertemente asociado al estado final del paciente en esta muestra."
+> **Interpretación:** La tabla de contingencia y el gráfico de barras muestran la distribución del estado (vivo o fallecido) según el sexo. Se observa que tanto en mujeres (aproximadamente `round(prop_tabla[1,1], 1)`% vivos) como en hombres (aproximadamente `round(prop_tabla[2,1], 1)`% vivos), la gran mayoría de los casos corresponden a personas vivas. Al comparar porcentajes por sexo, se evidencian diferencias mínimas en la proporción de fallecidos (mujeres: `round(prop_tabla[1,2], 1)`%, hombres: `round(prop_tabla[2,2], 1)`%). El gráfico refuerza visualmente esta similitud entre sexos. En conjunto, los resultados sugieren que el sexo no parece estar fuertemente asociado al estado final del paciente en esta muestra.
 
-## Variables Numéricas: EDAD vs DIAS_RETRASO
+### Variables Numéricas: EDAD vs DIAS_RETRASO
 
-**Tabla 6**\
+**Tabla 8**\
 *Estadísticas descriptivas y correlación entre variables numéricas*
 
 ```{r}
@@ -440,7 +458,7 @@ kbl(resumen_numericas,
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
 
-**Figura 6**\
+**Figura 7**\
 *Edad vs Días de Retraso*
 
 ```{r}
@@ -463,11 +481,11 @@ Coeficiente de correlacion:
 round(cor_edad_retraso, 3)
 ```
 
-**Figura 7**\
-Densidad: *Edad vs Días de Retraso*
+**Figura 8**\
+*Densidad: Edad vs Días de Retraso*
 
 ```{r}
-smoothScatter(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO,
+  smoothScatter(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO,
               pch = 20,
               col = "red",
               main = "Densidad: Edad vs Días de Retraso",
@@ -475,11 +493,11 @@ smoothScatter(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO,
               ylab = "Días de retraso")
 ```
 
-> **Interpretación:** El gráfico de dispersión muestra la relación entre la edad de los pacientes y los días de retraso entre la aparición de síntomas y el ingreso. Los puntos se encuentran dispersos sin formar un patrón claramente definido, lo que sugiere que la relación entre ambas variables es muy débil. El coeficiente de correlación obtenido (r = ", round(cor_edad_retraso, 3), ") confirma una asociación prácticamente nula entre la edad y los días de retraso, por lo que no se observa una relación lineal. Esto implica que la edad del paciente no parece ser un factor determinante en el tiempo de retraso para el ingreso. El gráfico de densidad (smoothScatter) muestra una concentración de casos entre 0-10 días de retraso para todas las edades, pero sin una tendencia clara que indique dependencia entre ambas variables."
+> **Interpretación:** El gráfico de dispersión muestra la relación entre la edad de los pacientes y los días de retraso entre la aparición de síntomas y el ingreso. Los puntos se encuentran dispersos sin formar un patrón claramente definido, lo que sugiere que la relación entre ambas variables es muy débil. El coeficiente de correlación obtenido (r = `round(cor_edad_retraso, 3)`) confirma una asociación prácticamente nula entre la edad y los días de retraso, por lo que no se observa una relación lineal. Esto implica que la edad del paciente no parece ser un factor determinante en el tiempo de retraso para el ingreso. El gráfico de densidad (smoothScatter) muestra una concentración de casos entre 0-10 días de retraso para todas las edades, pero sin una tendencia clara que indique dependencia entre ambas variables.
 
-## Variables Categórica Y Numérica: RIESGO_CLINICO vs INDICE_GRAVEDAD
+### Variables Categórica Y Numérica: RIESGO_CLINICO vs INDICE_GRAVEDAD
 
-**Tabla 7**\
+**Tabla 9**\
 *Estadísticos del Índice de Gravedad por Nivel de Riesgo*
 
 ```{r}
@@ -501,7 +519,7 @@ kbl(resumen_riesgo,
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
 
-**Figura 8**\
+**Figura 9**\
 *Distribución del Índice de Gravedad por Nivel de Riesgo*
 
 ```{r}
@@ -521,30 +539,19 @@ points(1:length(means), means, pch = 23, col = "red", bg = "yellow", cex = 1.5)
 
 > **Interpretación:** El análisis descriptivo del índice de gravedad según el nivel de riesgo clínico muestra diferencias entre los grupos. A medida que aumenta el nivel de riesgo clínico, se observa un incremento en la media del índice de gravedad (desde 0.246 en 'Muy bajo' hasta 0.343 en 'Alto'). El boxplot evidencia que los grupos de mayor riesgo presentan valores más altos del índice de gravedad, aunque con amplia dispersión, mientras que los grupos de menor riesgo muestran valores más bajos. La ubicación de las medias (diamantes amarillos) refuerza esta tendencia ascendente. En conjunto, estos resultados indican que el nivel de riesgo clínico está asociado con la gravedad del cuadro, lo cual es coherente desde el punto de vista clínico: pacientes con más comorbilidades tienden a presentar desenlaces más graves."
 
-# Discusión de Resultados
-
-Los análisis realizados permiten responder a los objetivos planteados:
-
-**Objetivo 1 - Distribución del riesgo y gravedad:** Se encontró que el Score de Riesgo COVID presenta una distribución asimétrica positiva, con la mayoría de los casos concentrados en valores bajos (0-0.8). Esto sugiere que la población estudiada tenía, en general, una carga de comorbilidades moderada. El Índice de Gravedad mostró una distribución aún más sesgada, con más del 75% de los casos presentando valores de 0 a 0.1, indicando que la mayoría de los pacientes no desarrolló complicaciones graves. Sin embargo, la presencia de outliers en valores cercanos a 1 señala la existencia de casos críticos que requirieron UCI, intubación o culminaron en defunción.
-
-**Objetivo 2 - Riesgo Clínico como predictor:** La relación entre el Nivel de Riesgo Clínico (basado en comorbilidades) y el Índice de Gravedad mostró una tendencia positiva pero con variabilidad significativa. Mientras los grupos de riesgo "Bajo" y "Moderado" presentaron índices de gravedad consistentemente bajos, el grupo "Crítico" mostró una dispersión amplia. Esto sugiere que, aunque las comorbilidades son un factor de riesgo importante, no son determinantes absolutos del desenlace. Factores como la atención médica oportuna, la edad y posiblemente la variante viral podrían moderar esta relación.
-
-**Objetivo 3 - Distribución por sexo y clasificación:** No se encontraron diferencias marcadas en la distribución por sexo, manteniéndose una proporción cercana al 50% para cada categoría de clasificación final. Esto indica ausencia de sesgos de género en el registro y clasificación de casos. La categoría más frecuente fue la clasificación 3, que podría corresponder a "caso confirmado por asociación clínico-epidemiológica" según la normativa mexicana.
-
-**Limitaciones:** El estudio presenta limitaciones propias de los datos secundarios, incluyendo posible subregistro de casos leves, variabilidad en la calidad del registro entre entidades federativas, y la imposibilidad de establecer relaciones causales debido al diseño observacional.
-
 # Conclusiones
 
-1.  **Perfil de riesgo predominante:** La mayor parte de los casos de COVID-19 en México durante el año 2021 fueron de pacientes con riesgo clínico bajo a moderado y una evolución clínica mayormente leve, sin presentar complicaciones graves. Esto se observa en la distribución asimétrica positiva del Score de Riesgo COVID, con una gran concentración de valores bajos, lo que indica una carga de comorbilidades generalmente moderada en la población estudiada.
+El análisis de los 17,714 registros de casos COVID-19 en México durante el 2021 permite establecer las siguientes conclusiones en respuesta a los objetivos planteados:
 
-2.  **Valor predictivo limitado del riesgo basal:** Aunque se encontró una relación positiva entre la cantidad de comorbilidades y la severidad del desenlace clínico, esta conexión no fue determinista. Los pacientes catalogados en niveles de riesgo clínico altos mostraron una notable variabilidad en el Índice de Severidad, lo que sugiere que el riesgo inicial, por sí solo, no predice de forma absoluta la gravedad del cuadro clínico, y que otros factores clínicos y contextuales pueden tener un impacto considerable en el resultado.
+1.  **Perfil de riesgo predominante:** La mayor parte de los casos presentaron un riesgo clínico bajo a moderado y una evolución clínica leve. La distribución asimétrica del *Score de Riesgo COVID* confirma que la carga de comorbilidades fue generalmente moderada en la población estudiada, lo que explica la alta frecuencia de desenlaces sin complicaciones graves.
 
-3.  **Equidad en el sistema de vigilancia:** La distribución equitativa de los casos por sexo en todas las categorías de clasificación final indica que el sistema de vigilancia epidemiológica funcionó sin sesgos de género evidentes en el registro y clasificación de los casos de COVID-19 durante el periodo analizado.
+2.  **Valor predictivo del riesgo basal:** Aunque existe una correlación positiva entre la cantidad de comorbilidades y la severidad del desenlace (r > 0), esta relación no es determinista. La variabilidad observada en pacientes con *Riesgo Crítico* sugiere que el riesgo inicial por sí solo no dicta el desenlace, y que factores externos (como la atención médica oportuna) juegan un rol crucial.
 
-4.  **Implicaciones para salud pública:** Los hallazgos subrayan la relevancia de conservar sistemas de vigilancia epidemiológica completos que detecten tanto los casos severos como los leves. Igualmente, muestran que los pacientes con diversas comorbilidades, a pesar de tener un mayor riesgo clínico, pueden experimentar una evolución positiva si reciben atención médica oportuna y adecuada.
+3.  **Equidad en el sistema de vigilancia:** La proporción equilibrada de casos entre hombres y mujeres en todas las categorías de clasificación final (aprox. 50/50) evidencia que el sistema de vigilancia epidemiológica operó sin sesgos de género significativos en el registro y diagnóstico.
 
-5.  **Independencia del tiempo de respuesta:** La falta de una correlación relevante entre la edad y los días de demora en el acceso a los servicios de salud indica que los tiempos de respuesta del sistema sanitario fueron parecidos entre los diversos grupos etarios, sin mostrar una relación lineal entre ambas variables a lo largo del periodo de estudio.
+4.  **Independencia del tiempo de respuesta:** El análisis bivariado demostró una correlación prácticamente nula entre la edad del paciente y los días de retraso en la atención. Esto implica que el tiempo de búsqueda de atención sanitaria fue homogéneo entre los distintos grupos etarios.
 
 # Bibliografía
 
--   Autor, A. (Año). Título del artículo/libro.
+* **Dirección General de Epidemiología.** (2021). *Datos Abiertos de COVID-19 en México* [Conjunto de datos]. Secretaría de Salud. https://www.gob.mx/salud/documentos/datos-abiertos-bases-historicas-direccion-general-de-epidemiologia
+* **Prado Urbano, M. I.** (2026). *Datos para el proyecto: COVID19 MEXICO 2021* [Documento de clase]. Universidad de Ingeniería y Tecnología (UTEC).
