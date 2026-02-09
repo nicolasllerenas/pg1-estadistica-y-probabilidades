@@ -539,6 +539,102 @@ points(1:length(means), means, pch = 23, col = "red", bg = "yellow", cex = 1.5)
 
 > **Interpretación:** El análisis descriptivo del índice de gravedad según el nivel de riesgo clínico muestra diferencias entre los grupos. A medida que aumenta el nivel de riesgo clínico, se observa un incremento en la media del índice de gravedad (desde 0.246 en 'Muy bajo' hasta 0.343 en 'Alto'). El boxplot evidencia que los grupos de mayor riesgo presentan valores más altos del índice de gravedad, aunque con amplia dispersión, mientras que los grupos de menor riesgo muestran valores más bajos. La ubicación de las medias (diamantes amarillos) refuerza esta tendencia ascendente. En conjunto, estos resultados indican que el nivel de riesgo clínico está asociado con la gravedad del cuadro, lo cual es coherente desde el punto de vista clínico: pacientes con más comorbilidades tienden a presentar desenlaces más graves."
 
+# Análisis Probabilístico
+
+## Probabilidad Empírica
+
+Definimos un experimento aleatorio para analizar la variable **Nivel de Riesgo Clínico** (`RIESGO_CLINICO`), calculando las probabilidades basándonos en las frecuencias observadas en la muestra de **17,714 pacientes**.
+
+### Definición del Experimento ($\varepsilon$)
+
+-   **Experimento:** Seleccionar al azar un paciente de la base de datos de vigilancia epidemiológica de COVID-19 (México, 2021) y observar su categoría de riesgo clínico.
+-   **Variable aleatoria (**$X$): Nivel de Riesgo Clínico (Ordinal).
+-   **Espacio Muestral (**$\Omega$): El conjunto de todos los posibles resultados (niveles de riesgo). $$\Omega = \{ \text{Muy bajo}, \text{Bajo}, \text{Moderado}, \text{Alto}, \text{Muy alto}, \text{Crítico} \}$$
+
+### Eventos Atómicos
+
+Definimos los eventos $E_i$ correspondientes a cada categoría:
+
+-   $E_1$: El paciente tiene riesgo **Muy bajo** (0 comorbilidades).
+
+-   $E_2$: El paciente tiene riesgo **Bajo** (1-2 comorbilidades).
+
+-   $E_3$: El paciente tiene riesgo **Moderado** (3-4 comorbilidades).
+
+-   $E_4$: El paciente tiene riesgo **Alto** (5-6 comorbilidades).
+
+-   $E_5$: El paciente tiene riesgo **Muy alto** (7-8 comorbilidades).
+
+-   $E_6$: El paciente tiene riesgo **Crítico** (9-10 comorbilidades).
+
+### Cálculo de Probabilidades
+
+Utilizamos la frecuencia relativa: $P(E_i) = \frac{f_i}{n}$.
+
+```{r}
+# Crear tabla de probabilidades empíricas
+tabla_probabilidad <- DATOS_FINALES |>
+  group_by(RIESGO_CLINICO) |>
+  summarise(
+    Frecuencia = n(),
+    Probabilidad = n() / nrow(DATOS_FINALES)
+  ) |>
+  mutate(
+    Porcentaje = paste0(round(Probabilidad * 100, 2), "%"),
+    Evento = paste0("E", row_number())
+  ) |>
+  select(Evento, RIESGO_CLINICO, Frecuencia, Probabilidad, Porcentaje)
+
+# Mostrar tabla
+kbl(tabla_probabilidad, 
+    col.names = c("Evento", "Nivel de Riesgo", "Frecuencia (f)", "Probabilidad P(E)", "%"),
+    align = "c",
+    caption = "Probabilidades Empíricas del Nivel de Riesgo") |>
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+**Interpretación:** El evento más probable es $E_1$ (Riesgo Muy bajo), con una probabilidad de **`tabla_probabilidad$Porcentaje[1]`**. Esto indica que la mayoría de la población captada no presentaba comorbilidades múltiples. Por otro lado, el evento menos probable es $E_6$ (Riesgo Crítico), con una probabilidad de **`tabla_probabilidad$Porcentaje[6]`**.
+
+## Probabilidad Condicional
+
+Analizamos la probabilidad de fallecer ($M$) dado un cierto nivel de riesgo clínico ($R$). Esto nos permite cuantificar la letalidad asociada a las comorbilidades.
+
+### Definición de Eventos
+
+-   $A$: El paciente **Fallece** (Estado = "Muerto").
+
+-   $B_i$: El paciente pertenece al nivel de riesgo $i$ (ej. "Crítico").
+
+### Tabla de Contingencia y Cálculo
+
+Calculamos la probabilidad condicional $P(A | B_i) = \frac{P(A \cap B_i)}{P(B_i)}$, que equivale a la proporción de fallecidos dentro de cada grupo de riesgo.
+
+```{r}
+# Tabla de contingencia (Filas: Riesgo, Col: Estado)
+tabla_condicional <- table(DATOS_FINALES$RIESGO_CLINICO, DATOS_FINALES$ESTADO)
+
+# Calcular proporciones por fila (Probabilidad Condicional)
+prob_condicional <- prop.table(tabla_condicional, margin = 1)
+
+# Convertir a Data Frame para visualizar mejor
+df_condicional <- as.data.frame.matrix(prob_condicional) |>
+  mutate(
+    Prob_Fallecer = round(Muerto, 4),
+    Prob_Sobrevivir = round(Vivo, 4)
+  ) |>
+  select(Prob_Sobrevivir, Prob_Fallecer)
+
+kbl(df_condicional, 
+    caption = "Probabilidad de fallecer dado el nivel de riesgo: P(Muerto | Riesgo)",
+    align = "c") |>
+  kable_styling(bootstrap_options = "hover", full_width = F) |>
+  column_spec(3, bold = TRUE, color = "red") # Resaltar col de muerte
+```
+
+**Interpretación:** Se observa un patrón creciente en la probabilidad condicional. \* Para un paciente con **Riesgo Muy Bajo**, la probabilidad de fallecer es apenas **`df_condicional$Prob_Fallecer[1]`** ($P(\text{Muerto}|\text{Muy bajo})$). \* Sin embargo, si el paciente tiene **Riesgo Crítico**, la probabilidad de fallecer aumenta drásticamente a **`df_condicional$Prob_Fallecer[6]`** ($P(\text{Muerto}|\text{Crítico})$).
+
+> **Conclusión del análisis:** Existe una clara dependencia estocástica: la probabilidad de muerte está condicionada positivamente por el nivel de riesgo clínico acumulado.
+
 # Conclusiones
 
 El análisis de los 17,714 registros de casos COVID-19 en México durante el 2021 permite establecer las siguientes conclusiones en respuesta a los objetivos planteados:
