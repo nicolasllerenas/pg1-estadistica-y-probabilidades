@@ -1,5 +1,5 @@
 ---
-title: "G3_Informe"
+title: "G3_Presentación"
 author:
   - Abanto Romero, Jesus Alejandro
   - Cachique Moncada, Renato
@@ -84,7 +84,7 @@ Se empleó un muestreo no probabilístico por conveniencia. Al tratarse de un an
 
 ## Recolección de datos
 
-La recolección de datos se basó en el uso de una fuente secundaria: la base de datos histórica de **Datos Abiertos de la Dirección General de Epidemiología (DGE)** de la Secretaría de Salud de México. 
+La recolección de datos se basó en el uso de una fuente secundaria: la base de datos histórica de **Datos Abiertos de la Dirección General de Epidemiología (DGE)** de la Secretaría de Salud de México.
 
 Para este proyecto académico, no se realizó una recolección primaria (encuestas), sino que se trabajó con el archivo `muestra_covid_500M_NA.csv`. Este dataset es una muestra didáctica procesada por el equipo docente (Prado Urbano, 2026) que contiene registros correspondientes al año **2021**, conservando la estructura y las variables clínicas originales validadas por la autoridad sanitaria mexicana.
 
@@ -545,7 +545,7 @@ El análisis de los 17,714 registros de casos COVID-19 en México durante el 202
 
 1.  **Perfil de riesgo predominante:** La mayor parte de los casos presentaron un riesgo clínico bajo a moderado y una evolución clínica leve. La distribución asimétrica del *Score de Riesgo COVID* confirma que la carga de comorbilidades fue generalmente moderada en la población estudiada, lo que explica la alta frecuencia de desenlaces sin complicaciones graves.
 
-2.  **Valor predictivo del riesgo basal:** Aunque existe una correlación positiva entre la cantidad de comorbilidades y la severidad del desenlace (r > 0), esta relación no es determinista. La variabilidad observada en pacientes con *Riesgo Crítico* sugiere que el riesgo inicial por sí solo no dicta el desenlace, y que factores externos (como la atención médica oportuna) juegan un rol crucial.
+2.  **Valor predictivo del riesgo basal:** Aunque existe una correlación positiva entre la cantidad de comorbilidades y la severidad del desenlace (r \> 0), esta relación no es determinista. La variabilidad observada en pacientes con *Riesgo Crítico* sugiere que el riesgo inicial por sí solo no dicta el desenlace, y que factores externos (como la atención médica oportuna) juegan un rol crucial.
 
 3.  **Equidad en el sistema de vigilancia:** La proporción equilibrada de casos entre hombres y mujeres en todas las categorías de clasificación final (aprox. 50/50) evidencia que el sistema de vigilancia epidemiológica operó sin sesgos de género significativos en el registro y diagnóstico.
 
@@ -553,5 +553,5 @@ El análisis de los 17,714 registros de casos COVID-19 en México durante el 202
 
 # Bibliografía
 
-* **Dirección General de Epidemiología.** (2021). *Datos Abiertos de COVID-19 en México* [Conjunto de datos]. Secretaría de Salud. https://www.gob.mx/salud/documentos/datos-abiertos-bases-historicas-direccion-general-de-epidemiologia
-* **Prado Urbano, M. I.** (2026). *Datos para el proyecto: COVID19 MEXICO 2021* [Documento de clase]. Universidad de Ingeniería y Tecnología (UTEC).
+-   **Dirección General de Epidemiología.** (2021). *Datos Abiertos de COVID-19 en México* \[Conjunto de datos\]. Secretaría de Salud. https://www.gob.mx/salud/documentos/datos-abiertos-bases-historicas-direccion-general-de-epidemiologia
+-   **Prado Urbano, M. I.** (2026). *Datos para el proyecto: COVID19 MEXICO 2021* \[Documento de clase\]. Universidad de Ingeniería y Tecnología (UTEC).
