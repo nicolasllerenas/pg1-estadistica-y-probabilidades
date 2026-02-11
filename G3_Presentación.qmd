@@ -343,7 +343,7 @@ ggplot(tabla_sexo, aes(x = Etiqueta, y = Frecuencia, fill = Etiqueta)) +
   theme_classic()
 ```
 
-> **Interpretación:** Se observa una distribución equilibrada entre hombres y mujeres en la muestra analizada.
+> **Interpretación:** En la muestra analizada se observa una ligera preponderancia de casos en hombres respecto a mujeres, lo que representa una distribución moderadamente asimétrica por sexo, aunque sin alcanzar una diferencia extrema.
 
 ## Analisis De Interaccion
 
@@ -414,7 +414,7 @@ ggplot(DATOS_FINALES, aes(x = factor(SEXO, labels = c("Mujer", "Hombre")), fill 
   theme(legend.position = "top")
 ```
 
-> **Interpretación:** La tabla de contingencia y el gráfico de barras muestran la distribución del estado (vivo o fallecido) según el sexo. Se observa que tanto en mujeres (aproximadamente `round(prop_tabla[1,1], 1)`% vivos) como en hombres (aproximadamente `round(prop_tabla[2,1], 1)`% vivos), la gran mayoría de los casos corresponden a personas vivas. Al comparar porcentajes por sexo, se evidencian diferencias mínimas en la proporción de fallecidos (mujeres: `round(prop_tabla[1,2], 1)`%, hombres: `round(prop_tabla[2,2], 1)`%). El gráfico refuerza visualmente esta similitud entre sexos. En conjunto, los resultados sugieren que el sexo no parece estar fuertemente asociado al estado final del paciente en esta muestra.
+> **Interpretación:** En la muestra analizable (n = 17 714 casos completos), la letalidad fue superior en mujeres (56,9 %) frente a hombres (51,8 %), diferencia de 5,1 puntos porcentuales. Este resultado contradice la tendencia nacional de COVID-19 en México (2020-2022), donde los hombres concentraron ≈60-62 % de las defunciones y exhibieron tasas de letalidad 1,5-2 veces mayores (DGE/SSA). La inversión observada se atribuye probablemente al filtrado estricto por casos completos, que puede generar sesgo hacia desenlaces graves en mujeres, así como a particularidades del conjunto de datos didáctico utilizado, limitando su representatividad y exigiendo precaución en la generalización de los hallazgos.
 
 ### Variables Numéricas: EDAD vs DIAS_RETRASO
 
@@ -643,7 +643,7 @@ El análisis de los 17,714 registros de casos COVID-19 en México durante el 202
 
 2.  **Valor predictivo del riesgo basal:** Aunque existe una correlación positiva entre la cantidad de comorbilidades y la severidad del desenlace (r \> 0), esta relación no es determinista. La variabilidad observada en pacientes con *Riesgo Crítico* sugiere que el riesgo inicial por sí solo no dicta el desenlace, y que factores externos (como la atención médica oportuna) juegan un rol crucial.
 
-3.  **Equidad en el sistema de vigilancia:** La proporción equilibrada de casos entre hombres y mujeres en todas las categorías de clasificación final (aprox. 50/50) evidencia que el sistema de vigilancia epidemiológica operó sin sesgos de género significativos en el registro y diagnóstico.
+3.  **Equidad en el sistema de vigilancia:** La distribución por sexo muestra un moderado predominio masculino (57.3%), alineado con patrones epidemiológicos nacionales de COVID-19 en México durante 2021, aunque la letalidad aparente por sexo en esta muestra fue similar entre ambos grupos.
 
 4.  **Independencia del tiempo de respuesta:** El análisis bivariado demostró una correlación prácticamente nula entre la edad del paciente y los días de retraso en la atención. Esto implica que el tiempo de búsqueda de atención sanitaria fue homogéneo entre los distintos grupos etarios.
 
