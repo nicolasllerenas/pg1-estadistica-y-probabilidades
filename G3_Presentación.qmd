@@ -631,10 +631,7 @@ kbl(df_condicional,
   column_spec(3, bold = TRUE, color = "red") # Resaltar col de muerte
 ```
 
-**Interpretación:**
-Se observa un comportamiento mixto en la probabilidad condicional.
- En los primeros niveles, existe una **relación directa**: la probabilidad de fallecer aumenta progresivamente desde el **Riesgo Muy Bajo** (`r df_condicional$Prob_Fallecer[1]`) hasta alcanzar su pico en el **Riesgo Alto** (`r df_condicional$Prob_Fallecer[4]`).
- Sin embargo, en los niveles extremos (**Muy Alto y Crítico**), la probabilidad de fallecer desciende, llegando incluso a **`r df_condicional$Prob_Fallecer[6]`** en el grupo Crítico.
+**Interpretación:** Se observa un comportamiento mixto en la probabilidad condicional. En los primeros niveles, existe una **relación directa**: la probabilidad de fallecer aumenta progresivamente desde el **Riesgo Muy Bajo** (`r df_condicional$Prob_Fallecer[1]`) hasta alcanzar su pico en el **Riesgo Alto** (`r df_condicional$Prob_Fallecer[4]`). Sin embargo, en los niveles extremos (**Muy Alto y Crítico**), la probabilidad de fallecer desciende, llegando incluso a **`r df_condicional$Prob_Fallecer[6]`** en el grupo Crítico.
 
 > **Conclusión del análisis:** La dependencia positiva entre riesgo y letalidad se confirma claramente hasta el nivel "Alto". La caída inesperada en los niveles superiores ("Crítico") sugiere un **sesgo por tamaño de muestra pequeño** en esos grupos extremos (pocos casos registrados), lo que genera estimaciones estadísticas menos representativas que rompen la tendencia general.
 
