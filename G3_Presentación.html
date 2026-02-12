@@ -5106,7 +5106,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Fecha de publicación</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">10 de febrero de 2026</p>
+      <p class="date">11 de febrero de 2026</p>
     </div>
   </div>
   
@@ -6236,7 +6236,7 @@ window.Quarto = {
 </table>
 </div>
 </div>
-<p><strong>Interpretación:</strong> El evento más probable es <span class="math inline">\(E_1\)</span> (Riesgo Muy bajo), con una probabilidad de <strong><code>tabla_probabilidad$Porcentaje[1]</code></strong>. Esto indica que la mayoría de la población captada no presentaba comorbilidades múltiples. Por otro lado, el evento menos probable es <span class="math inline">\(E_6\)</span> (Riesgo Crítico), con una probabilidad de <strong><code>tabla_probabilidad$Porcentaje[6]</code></strong>.</p>
+<p><strong>Interpretación:</strong> El evento más probable es <span class="math inline">\(E_1\)</span> (Riesgo Muy bajo), con una probabilidad de <strong>39.23%</strong>. Esto indica que la mayoría de la población captada no presentaba comorbilidades múltiples. Por otro lado, el evento menos probable es <span class="math inline">\(E_6\)</span> (Riesgo Crítico), con una probabilidad de <strong>0.01%</strong>.</p>
 </section>
 </section>
 <section id="probabilidad-condicional" class="level2" data-number="4.2">
@@ -6320,9 +6320,9 @@ window.Quarto = {
 </table>
 </div>
 </div>
-<p><strong>Interpretación:</strong> Se observa un patrón creciente en la probabilidad condicional. * Para un paciente con <strong>Riesgo Muy Bajo</strong>, la probabilidad de fallecer es apenas <strong><code>df_condicional$Prob_Fallecer[1]</code></strong> (<span class="math inline">\(P(\text{Muerto}|\text{Muy bajo})\)</span>). * Sin embargo, si el paciente tiene <strong>Riesgo Crítico</strong>, la probabilidad de fallecer aumenta drásticamente a <strong><code>df_condicional$Prob_Fallecer[6]</code></strong> (<span class="math inline">\(P(\text{Muerto}|\text{Crítico})\)</span>).</p>
+<p><strong>Interpretación:</strong> Se observa un comportamiento mixto en la probabilidad condicional. * En los primeros niveles, existe una <strong>relación directa</strong>: la probabilidad de fallecer aumenta progresivamente desde el <strong>Riesgo Muy Bajo</strong> (0.3747) hasta alcanzar su pico en el <strong>Riesgo Alto</strong> (0.5746). * Sin embargo, en los niveles extremos (<strong>Muy Alto y Crítico</strong>), la probabilidad de fallecer desciende, llegando incluso a <strong>0</strong> en el grupo Crítico.</p>
 <blockquote class="blockquote">
-<p><strong>Conclusión del análisis:</strong> Existe una clara dependencia estocástica: la probabilidad de muerte está condicionada positivamente por el nivel de riesgo clínico acumulado.</p>
+<p><strong>Conclusión del análisis:</strong> La dependencia positiva entre riesgo y letalidad se confirma claramente hasta el nivel “Alto”. La caída inesperada en los niveles superiores (“Crítico”) sugiere un <strong>sesgo por tamaño de muestra pequeño</strong> en esos grupos extremos (pocos casos registrados), lo que genera estimaciones estadísticas menos representativas que rompen la tendencia general.</p>
 </blockquote>
 </section>
 </section>

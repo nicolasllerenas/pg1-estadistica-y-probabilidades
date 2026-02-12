@@ -593,7 +593,7 @@ kbl(tabla_probabilidad,
   kable_styling(bootstrap_options = "striped", full_width = F)
 ```
 
-**Interpretación:** El evento más probable es $E_1$ (Riesgo Muy bajo), con una probabilidad de **`tabla_probabilidad$Porcentaje[1]`**. Esto indica que la mayoría de la población captada no presentaba comorbilidades múltiples. Por otro lado, el evento menos probable es $E_6$ (Riesgo Crítico), con una probabilidad de **`tabla_probabilidad$Porcentaje[6]`**.
+**Interpretación:** El evento más probable es $E_1$ (Riesgo Muy bajo), con una probabilidad de **`r tabla_probabilidad$Porcentaje[1]`**. Esto indica que la mayoría de la población captada no presentaba comorbilidades múltiples. Por otro lado, el evento menos probable es $E_6$ (Riesgo Crítico), con una probabilidad de **`r tabla_probabilidad$Porcentaje[6]`**.
 
 ## Probabilidad Condicional
 
@@ -631,9 +631,12 @@ kbl(df_condicional,
   column_spec(3, bold = TRUE, color = "red") # Resaltar col de muerte
 ```
 
-**Interpretación:** Se observa un patrón creciente en la probabilidad condicional. \* Para un paciente con **Riesgo Muy Bajo**, la probabilidad de fallecer es apenas **`df_condicional$Prob_Fallecer[1]`** ($P(\text{Muerto}|\text{Muy bajo})$). \* Sin embargo, si el paciente tiene **Riesgo Crítico**, la probabilidad de fallecer aumenta drásticamente a **`df_condicional$Prob_Fallecer[6]`** ($P(\text{Muerto}|\text{Crítico})$).
+**Interpretación:**
+Se observa un comportamiento mixto en la probabilidad condicional.
+ En los primeros niveles, existe una **relación directa**: la probabilidad de fallecer aumenta progresivamente desde el **Riesgo Muy Bajo** (`r df_condicional$Prob_Fallecer[1]`) hasta alcanzar su pico en el **Riesgo Alto** (`r df_condicional$Prob_Fallecer[4]`).
+ Sin embargo, en los niveles extremos (**Muy Alto y Crítico**), la probabilidad de fallecer desciende, llegando incluso a **`r df_condicional$Prob_Fallecer[6]`** en el grupo Crítico.
 
-> **Conclusión del análisis:** Existe una clara dependencia estocástica: la probabilidad de muerte está condicionada positivamente por el nivel de riesgo clínico acumulado.
+> **Conclusión del análisis:** La dependencia positiva entre riesgo y letalidad se confirma claramente hasta el nivel "Alto". La caída inesperada en los niveles superiores ("Crítico") sugiere un **sesgo por tamaño de muestra pequeño** en esos grupos extremos (pocos casos registrados), lo que genera estimaciones estadísticas menos representativas que rompen la tendencia general.
 
 # Conclusiones
 
