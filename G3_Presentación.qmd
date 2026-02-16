@@ -691,6 +691,7 @@ $$P(B|A) = \frac{P(A|B)\cdot P(B)}{P(A_{Total})} =
 
 > **Interpretación:** Dado que el paciente falleció, la probabilidad de que proviniera del grupo de **Riesgo Crítico** es del **`r round(((P_A_dado_B * P_B)/P_Total_Calculada)*100, 2)`%**.
 
+
 # Conclusiones
 
 El análisis de los 17,714 registros de casos COVID-19 en México durante el 2021 permite establecer las siguientes conclusiones en respuesta a los objetivos planteados:
