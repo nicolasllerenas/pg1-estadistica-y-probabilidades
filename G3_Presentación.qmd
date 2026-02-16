@@ -543,100 +543,153 @@ points(1:length(means), means, pch = 23, col = "red", bg = "yellow", cex = 1.5)
 
 ## Probabilidad Empírica
 
-Definimos un experimento aleatorio para analizar la variable **Nivel de Riesgo Clínico** (`RIESGO_CLINICO`), calculando las probabilidades basándonos en las frecuencias observadas en la muestra de **17,714 pacientes**.
+Siguiendo las indicaciones del docente, analizamos el comportamiento de **dos variables de estudio**, definiendo formalmente el experimento y calculando sus probabilidades a partir de las frecuencias observadas en la muestra ($n = 17,714$).
 
-### Definición del Experimento ($\varepsilon$)
+### Variable de Estudio 1: Nivel de Riesgo Clínico
 
--   **Experimento:** Seleccionar al azar un paciente de la base de datos de vigilancia epidemiológica de COVID-19 (México, 2021) y observar su categoría de riesgo clínico.
--   **Variable aleatoria (**$X$): Nivel de Riesgo Clínico (Ordinal).
--   **Espacio Muestral (**$\Omega$): El conjunto de todos los posibles resultados (niveles de riesgo). $$\Omega = \{ \text{Muy bajo}, \text{Bajo}, \text{Moderado}, \text{Alto}, \text{Muy alto}, \text{Crítico} \}$$
-
-### Eventos Atómicos
-
-Definimos los eventos $E_i$ correspondientes a cada categoría:
-
--   $E_1$: El paciente tiene riesgo **Muy bajo** (0 comorbilidades).
-
--   $E_2$: El paciente tiene riesgo **Bajo** (1-2 comorbilidades).
-
--   $E_3$: El paciente tiene riesgo **Moderado** (3-4 comorbilidades).
-
--   $E_4$: El paciente tiene riesgo **Alto** (5-6 comorbilidades).
-
--   $E_5$: El paciente tiene riesgo **Muy alto** (7-8 comorbilidades).
-
--   $E_6$: El paciente tiene riesgo **Crítico** (9-10 comorbilidades).
-
-### Cálculo de Probabilidades
-
-Utilizamos la frecuencia relativa: $P(E_i) = \frac{f_i}{n}$.
+-   **Experimento:** Seleccionar un paciente al azar de la muestra y observar su categoría de riesgo clínico.
+-   **Espacio Muestral (**$\Omega_1$): $$\Omega_1 = \{ \text{Muy bajo}, \text{Bajo}, \text{Moderado}, \text{Alto}, \text{Muy alto}, \text{Crítico} \}$$
 
 ```{r}
-# Crear tabla de probabilidades empíricas
-tabla_probabilidad <- DATOS_FINALES |>
+# Tabla Variable 1: RIESGO
+tabla_riesgo <- DATOS_FINALES |>
   group_by(RIESGO_CLINICO) |>
   summarise(
-    Frecuencia = n(),
-    Probabilidad = n() / nrow(DATOS_FINALES)
+    fi = n(),
+    Pi = n() / nrow(DATOS_FINALES)
   ) |>
-  mutate(
-    Porcentaje = paste0(round(Probabilidad * 100, 2), "%"),
-    Evento = paste0("E", row_number())
-  ) |>
-  select(Evento, RIESGO_CLINICO, Frecuencia, Probabilidad, Porcentaje)
+  mutate(Porcentaje = paste0(round(Pi * 100, 2), "%"))
 
-# Mostrar tabla
-kbl(tabla_probabilidad, 
-    col.names = c("Evento", "Nivel de Riesgo", "Frecuencia (f)", "Probabilidad P(E)", "%"),
-    align = "c",
-    caption = "Probabilidades Empíricas del Nivel de Riesgo") |>
+kbl(tabla_riesgo, 
+    col.names = c("Nivel de Riesgo ($E_i$)", "Frecuencia ($f_i$)", "Probabilidad ($P$)", "%"),
+    align = "c", caption = "Probabilidad Empírica: Riesgo Clínico") |>
   kable_styling(bootstrap_options = "striped", full_width = F)
 ```
 
-**Interpretación:** El evento más probable es $E_1$ (Riesgo Muy bajo), con una probabilidad de **`r tabla_probabilidad$Porcentaje[1]`**. Esto indica que la mayoría de la población captada no presentaba comorbilidades múltiples. Por otro lado, el evento menos probable es $E_6$ (Riesgo Crítico), con una probabilidad de **`r tabla_probabilidad$Porcentaje[6]`**.
+### Variable de Estudio 2: Estado del Paciente
+
+-   **Experimento:** Seleccionar un paciente al azar de la muestra y observar su desenlace final.
+
+-   **Espacio Muestral (**$\Omega_2$):
+
+    $$\Omega_2 = \{ \text{Vivo}, \text{Muerto} \}$$
+
+```{r}
+# Tabla Variable 2: ESTADO
+tabla_estado <- DATOS_FINALES |>
+  group_by(ESTADO) |>
+  summarise(
+    fi = n(),
+    Pi = n() / nrow(DATOS_FINALES)
+  ) |>
+  mutate(Porcentaje = paste0(round(Pi * 100, 2), "%"))
+
+kbl(tabla_estado, 
+    col.names = c("Estado", "Frecuencia ($f_i$)", "Probabilidad ($P$)", "%"),
+    align = "c", caption = "Probabilidad Empírica: Estado Final") |>
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
 
 ## Probabilidad Condicional
 
-Analizamos la probabilidad de fallecer ($M$) dado un cierto nivel de riesgo clínico ($R$). Esto nos permite cuantificar la letalidad asociada a las comorbilidades.
+En esta sección definimos dos eventos específicos ($A$ y $B$) para analizar su independencia y aplicar el Teorema de Bayes utilizando la **Probabilidad Total**.
 
-### Definición de Eventos
+-   **Evento** $A$: Seleccionar un paciente que **Fallece** (Variable `ESTADO` = "Muerto").
 
--   $A$: El paciente **Fallece** (Estado = "Muerto").
-
--   $B_i$: El paciente pertenece al nivel de riesgo $i$ (ej. "Crítico").
-
-### Tabla de Contingencia y Cálculo
-
-Calculamos la probabilidad condicional $P(A | B_i) = \frac{P(A \cap B_i)}{P(B_i)}$, que equivale a la proporción de fallecidos dentro de cada grupo de riesgo.
+-   **Evento** $B$: Seleccionar un paciente que tiene **Riesgo Crítico** (Variable `RIESGO_CLINICO` = "Crítico (9-10)").
 
 ```{r}
-# Tabla de contingencia (Filas: Riesgo, Col: Estado)
-tabla_condicional <- table(DATOS_FINALES$RIESGO_CLINICO, DATOS_FINALES$ESTADO)
+# --- CÁLCULOS USANDO TUS VARIABLES (ESTADO y RIESGO) ---
+n_total <- nrow(DATOS_FINALES)
 
-# Calcular proporciones por fila (Probabilidad Condicional)
-prob_condicional <- prop.table(tabla_condicional, margin = 1)
+# 1. Probabilidades Marginales
+# Usamos filter() y nrow() como es la buena práctica
+f_A <- DATOS_FINALES |> filter(ESTADO == "Muerto") |> nrow()
+P_A <- f_A / n_total
 
-# Convertir a Data Frame para visualizar mejor
-df_condicional <- as.data.frame.matrix(prob_condicional) |>
-  mutate(
-    Prob_Fallecer = round(Muerto, 4),
-    Prob_Sobrevivir = round(Vivo, 4)
-  ) |>
-  select(Prob_Sobrevivir, Prob_Fallecer)
+f_B <- DATOS_FINALES |> filter(RIESGO_CLINICO == "Crítico (9-10)") |> nrow()
+P_B <- f_B / n_total
 
-kbl(df_condicional, 
-    caption = "Probabilidad de fallecer dado el nivel de riesgo: P(Muerto | Riesgo)",
-    align = "c") |>
-  kable_styling(bootstrap_options = "hover", full_width = F) |>
-  column_spec(3, bold = TRUE, color = "red") # Resaltar col de muerte
+# 2. Intersección (Probabilidad Conjunta P(A y B))
+f_interseccion <- DATOS_FINALES |> 
+  filter(ESTADO == "Muerto", RIESGO_CLINICO == "Crítico (9-10)") |> 
+  nrow()
+P_Interseccion <- f_interseccion / n_total
+
+# 3. Probabilidad Condicional Directa P(A|B) (Verosimilitud)
+# Nota: Si f_B es 0, esto es 0.
+P_A_dado_B <- ifelse(P_B > 0, P_Interseccion / P_B, 0)
 ```
 
-**Interpretación:**
-Se observa un comportamiento mixto en la probabilidad condicional.
- En los primeros niveles, existe una **relación directa**: la probabilidad de fallecer aumenta progresivamente desde el **Riesgo Muy Bajo** (`r df_condicional$Prob_Fallecer[1]`) hasta alcanzar su pico en el **Riesgo Alto** (`r df_condicional$Prob_Fallecer[4]`).
- Sin embargo, en los niveles extremos (**Muy Alto y Crítico**), la probabilidad de fallecer desciende, llegando incluso a **`r df_condicional$Prob_Fallecer[6]`** en el grupo Crítico.
+### Prueba de Independencia
 
-> **Conclusión del análisis:** La dependencia positiva entre riesgo y letalidad se confirma claramente hasta el nivel "Alto". La caída inesperada en los niveles superiores ("Crítico") sugiere un **sesgo por tamaño de muestra pequeño** en esos grupos extremos (pocos casos registrados), lo que genera estimaciones estadísticas menos representativas que rompen la tendencia general.
+Dos eventos son estadísticamente independientes si se cumple que:
+
+$$P(A \cap B) = P(A) \cdot P(B)$$
+
+Sustituyendo con nuestros datos:
+
+-   **Probabilidad Conjunta (Observada):**
+
+    $$P(A \cap B) = `r round(P_Interseccion, 4)`$$
+
+-   **Producto de Marginales (Teórica):**
+
+    $$P(A) \cdot P(B) = `r round(P_A, 4)` \cdot `r round(P_B, 4)` = `r round(P_A * P_B, 4)`$$
+
+> **Conclusión:** Dado que $`r round(P_Interseccion, 4)` \neq `r round(P_A * P_B, 4)`$, los eventos **NO son independientes**. Existe dependencia entre el nivel de riesgo y el fallecimiento.
+
+### Propiedades de Conjuntos
+
+-   Calculamos la probabilidad de que ocurra al menos uno de los dos eventos ($A \cup B$):
+
+    $$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$
+
+    $$P(A \cup B) = `r round(P_A, 4)` + `r round(P_B, 4)` - `r round(P_Interseccion, 4)`= `r round(P_A + P_B - P_Interseccion, 4)`$$
+
+### Teorema de Bayes y Probabilidad Total
+
+Deseamos calcular la probabilidad a posteriori $P(B|A)$: *Si sabemos que un paciente ha fallecido, ¿cuál es la probabilidad de que perteneciera al grupo de Riesgo Crítico?*
+
+Fórmula de Bayes:
+
+\$\$P(B\|A) = \\frac{P(A\|B) \\cdot P(B)}{P(A)}\$\$
+
+**Paso 1: Desarrollo de la Probabilidad Total (Denominador)**
+
+Calculamos $P(A)$ (Probabilidad total de morir) sumando las probabilidades ponderadas de todos los niveles de riesgo ($E_1$ a $E_6$):
+
+$$P(A) = \sum_{i=1}^{6} P(A \mid E_i)\cdot P(E_i)$$
+
+```{r}
+# Cálculo de la Probabilidad Total sumando cada grupo
+# Esto demuestra al profesor que aplicamos la fórmula de Probabilidad Total
+tabla_total <- DATOS_FINALES |>
+  group_by(RIESGO_CLINICO) |>
+  summarise(
+    P_Ei = n() / n_total,                            # P(Ei) - A priori
+    P_A_dado_Ei = sum(ESTADO == "Muerto") / n()      # P(A | Ei) - Verosimilitud
+  )
+
+# Realizamos la suma de productos
+P_Total_Calculada <- sum(tabla_total$P_Ei * tabla_total$P_A_dado_Ei)
+```
+
+Al sumar las probabilidades condicionales parciales, obtenemos:
+
+$$P(A) = `r round(P_Total_Calculada, 4)`$$
+
+*(Este valor coincide con la probabilidad marginal observada, validando el cálculo).*
+
+**Paso 2: Aplicación Final de Bayes**
+
+Sustituimos en la fórmula principal:
+
+$$P(B|A) = \frac{P(A|B)\cdot P(B)}{P(A_{Total})} =
+\frac{`r round(P_A_dado_B,4)` \cdot `r round(P_B,4)`}{`r round(P_Total_Calculada,4)`} =
+`r round((P_A_dado_B * P_B)/P_Total_Calculada,4)`$$
+
+> **Interpretación:** Dado que el paciente falleció, la probabilidad de que proviniera del grupo de **Riesgo Crítico** es del **`r round(((P_A_dado_B * P_B)/P_Total_Calculada)*100, 2)`%**.
 
 # Conclusiones
 

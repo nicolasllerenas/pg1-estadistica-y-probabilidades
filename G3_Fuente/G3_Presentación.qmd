@@ -1,0 +1,656 @@
+---
+title: "G3_Presentación"
+author:
+  - Abanto Romero, Jesus Alejandro
+  - Cachique Moncada, Renato
+  - Flores Guevara, Tamy Kristel
+  - Llerena Silva, Nicolás Alejandro 
+  - Sobenes Obregon, Carlos Sebastian 
+editor: visual
+date: "`r format(Sys.time(), '%d %B %Y')`"
+lang: es
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: cosmo
+    embed-resources: true
+    code-fold: true
+    code-summary: "Mostrar / ocultar código"
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+# Introducción
+
+## Relevancia
+
+La pandemia por COVID-19 ha tenido un impacto significativo en la salud pública a nivel mundial. El análisis de datos epidemiológicos permite comprender mejor las características de los casos y los factores asociados a la gravedad de la enfermedad.
+
+Este informe presenta un análisis descriptivo de los **casos sospechosos y confirmados de COVID-19 en México durante el año 2021**, utilizando una muestra de datos oficiales del sistema de vigilancia epidemiológica. Entender estos patrones es crucial para mejorar la respuesta ante futuras emergencias sanitarias.
+
+## Planificación
+
+A continuación se presenta el cronograma de actividades realizado para este proyecto:
+
+**Figura 1**\
+*Cronograma de actividades del proyecto*
+
+```{mermaid}
+gantt
+    dateFormat YYYY-MM-DD
+    axisFormat %d/%m
+    todayMarker off
+    
+    section Investigación y Diseño
+    Definición del tema de investigación        :a1, 2026-01-05, 7d
+    Definición de variables relevantes          :a2, 2026-01-12, 10d
+    Creación de la herramienta de recolección   :a3, 2026-01-22, 10d
+    
+    section Análisis de Datos
+    Análisis descriptivo de los datos           :b1, 2026-02-01, 9d
+    Análisis de interacción                     :b2, 2026-02-10, 11d
+    
+    section Redacción
+    Redacción de resultados e informe final     :d1, 2026-02-21, 9d
+```
+
+## Objetivos
+
+### Objetivo General
+
+Analizar los casos sospechosos y confirmados de COVID-19 en México durante el año 2021, describiendo sus principales características demográficas y clínicas.
+
+### Objetivos Específicos
+
+1.  Describir la distribución del score de riesgo COVID y del índice de gravedad en los casos sospechosos y confirmados de COVID-19 en México durante el año 2021.
+
+2.  Analizar la asociación entre el Nivel de Riesgo Clínico y el Índice de Gravedad del desenlace.
+
+3.  Comparar la distribución de los casos según sexo y clasificación final en los casos sospechosos y confirmados.
+
+# Datos
+
+## Población objetivo
+
+La población está conformada por todos los registros acumulados en el Sistema de Vigilancia Epidemiológica de Enfermedades Respiratorias Viral correspondientes a casos sospechosos y confirmados de COVID-19 en México durante el año 2021. La unidad muestral es el **individuo (paciente)**.
+
+## Tipo de muestreo
+
+Se empleó un muestreo no probabilístico por conveniencia. Al tratarse de un análisis de datos secundarios, se trabajó con la totalidad de observaciones accesibles y validadas en el archivo fuente proporcionado.
+
+## Recolección de datos
+
+La recolección de datos se basó en el uso de una fuente secundaria: la base de datos histórica de **Datos Abiertos de la Dirección General de Epidemiología (DGE)** de la Secretaría de Salud de México.
+
+Para este proyecto académico, no se realizó una recolección primaria (encuestas), sino que se trabajó con el archivo `muestra_covid_500M_NA.csv`. Este dataset es una muestra didáctica procesada por el equipo docente (Prado Urbano, 2026) que contiene registros correspondientes al año **2021**, conservando la estructura y las variables clínicas originales validadas por la autoridad sanitaria mexicana.
+
+## Variables
+
+A continuación se definen las variables seleccionadas y su clasificación:
+
+**Tabla 1**\
+*Descripción y clasificación de las variables seleccionadas para el estudio*
+
+| \# | Variable | Tipo Estadístico | Origen / Descripción |
+|:-----------------|:-----------------|:-----------------|:-----------------|
+| 1 | `SCORE_RIESGO_COVID` | Cuantitativa continua | **Derivada:** Índice continuo basado en la carga de comorbilidades y la certeza diagnóstica (Rango 0-3). Resume el nivel relativo de riesgo del paciente. |
+| 2 | `INDICE_GRAVEDAD` | Cuantitativa continua | **Derivada:** Índice ponderado de complicaciones (neumonía, UCI, intubación) y defunción. Mide la severidad clínica del caso (Rango 0-1). |
+| 3 | `N_COMORBILIDADES` | Cuantitativa discreta | **Derivada:** Suma simple de 10 comorbilidades crónicas (Diabetes, EPOC, Asma, etc.). Valor entero de 0 a 10. |
+| 4 | `N_COMPLICACIONES_GRAVES` | Cuantitativa discreta | **Derivada:** Suma de eventos graves: NEUMONIA + INTUBADO + UCI. Indica severidad aguda (0 a 3). |
+| 5 | `EDAD` | Cuantitativa discreta | **Original:** Edad del paciente en años completos. |
+| 6 | `DIAS_RETRASO` | Cuantitativa discreta | **Derivada:** Diferencia en días entre `FECHA_INGRESO` y `FECHA_SINTOMAS`. Indica la demora en buscar atención médica. |
+| 7 | `SEXO` | Cualitativa nominal | **Original:** Sexo del paciente (1: Mujer / 2: Hombre). |
+| 8 | `ENTIDAD_RES` | Cualitativa nominal | **Original:** Entidad federativa de residencia (Códigos 1-32). |
+| 9 | `ESTADO` | Cualitativa nominal | **Derivada:** Clasificación del desenlace final basada en si existe fecha de defunción (Vivo / Muerto). |
+| 10 | `RIESGO_CLINICO` | Cualitativa ordinal | **Derivada:** Categorización del nº de comorbilidades en niveles jerárquicos: Muy bajo (0), Bajo (1-2), Moderado (3-4), Alto (5-6), Muy alto (7-8), Crítico (9-10). |
+| 11 | `CLASIFICACION_FINAL` | Cualitativa ordinal | **Original:** Nivel de confirmación del caso (1-7), donde los valores más bajos indican mayor certeza diagnóstica (confirmado por lab, asociación, etc.). |
+
+## Limpieza
+
+En esta sección se detalla la política de manejo de datos faltantes y la creación de variables derivadas.
+
+### Carga y Preprocesamiento
+
+```{r}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(dplyr, ggplot2, lubridate, knitr, tidyr, scales, e1071, kableExtra)
+```
+
+```{r}
+# Carga de datos
+DATOS_INICIALES <- read.csv("muestra_covid_500M_NA.csv")
+
+# Transformación y Creación de Variables
+DATOS_TRANSFORMADOS <- DATOS_INICIALES |>
+  # Variable ESTADO
+  mutate(ESTADO = if_else(is.na(FECHA_DEF), "Vivo", "Muerto")) |>
+  # Limpieza EDAD
+  mutate(EDAD = ifelse(EDAD == 0 | EDAD > 100, NA, EDAD)) |>
+  # DIAS_RETRASO
+  mutate(
+    FECHA_INGRESO = as.Date(FECHA_INGRESO, format = "%Y-%m-%d"),
+    FECHA_SINTOMAS = as.Date(FECHA_SINTOMAS, format = "%Y-%m-%d"),
+    DIAS_RETRASO = as.numeric(FECHA_INGRESO - FECHA_SINTOMAS),
+    DIAS_RETRASO = if_else(DIAS_RETRASO < 0, NA_real_, DIAS_RETRASO)
+  ) |>
+  # N_COMORBILIDADES
+  mutate(
+    N_COMORBILIDADES = rowSums(across(c(DIABETES, EPOC, ASMA, INMUSUPR, 
+                                        HIPERTENSION, CARDIOVASCULAR, OBESIDAD, 
+                                        RENAL_CRONICA, TABAQUISMO, OTRA_COM), 
+                                      ~ ifelse(.x == 1, 1, 0)), na.rm = TRUE)
+  ) |>
+  # SCORE_RIESGO_COVID
+  mutate(
+    CARGA_ENFERMEDAD = N_COMORBILIDADES / 10,
+    FACTOR_CERTEZA = case_when(
+        RESULTADO_LAB == 1 | RESULTADO_ANTIGENO == 1 ~ 3,  
+        RESULTADO_LAB == 2 | RESULTADO_ANTIGENO == 2 ~ 1,  
+        TRUE ~ 2 
+      ),
+    SCORE_RIESGO_COVID = CARGA_ENFERMEDAD * FACTOR_CERTEZA,
+    SCORE_RIESGO_COVID = ifelse(SCORE_RIESGO_COVID < 0 | SCORE_RIESGO_COVID > 3, NA, SCORE_RIESGO_COVID)
+  ) |>
+  # INDICE_GRAVEDAD
+  mutate(
+    NEUMONIA01 = case_when(NEUMONIA == 1 ~ 1, NEUMONIA == 2 ~ 0, TRUE ~ NA_real_),
+    UCI01 = case_when(UCI == 1 ~ 1, UCI == 2 ~ 0, TRUE ~ NA_real_),
+    INTUBADO01 = case_when(INTUBADO == 1 ~ 1, INTUBADO == 2 ~ 0, TRUE ~ NA_real_),
+    DEFUNCION01 = case_when(ESTADO == "Muerto" ~ 1, ESTADO == "Vivo" ~ 0, TRUE ~ NA_real_),
+    INDICE_GRAVEDAD = (1*NEUMONIA01 + 2*UCI01 + 3*INTUBADO01 + 4*DEFUNCION01) / 10,
+    INDICE_GRAVEDAD = ifelse(INDICE_GRAVEDAD < 0 | INDICE_GRAVEDAD > 1, NA, INDICE_GRAVEDAD)
+  ) |>
+  # Limpieza ENTIDAD_RES y N_COMPLICACIONES
+  mutate(
+    ENTIDAD_RES = suppressWarnings(as.integer(ENTIDAD_RES)),
+    ENTIDAD_RES = ifelse(ENTIDAD_RES %in% 1:32, ENTIDAD_RES, NA_integer_),
+    N_COMPLICACIONES_GRAVES = (NEUMONIA == 1) + (INTUBADO == 1) + (UCI == 1),
+    N_COMPLICACIONES_GRAVES = ifelse(N_COMPLICACIONES_GRAVES %in% 0:3, N_COMPLICACIONES_GRAVES, NA)
+  ) |>
+  # RIESGO_CLINICO
+  mutate(
+    RIESGO_CLINICO = case_when(
+      N_COMORBILIDADES == 0 ~ "Muy bajo (0)",
+      between(N_COMORBILIDADES, 1, 2) ~ "Bajo (1-2)",
+      between(N_COMORBILIDADES, 3, 4) ~ "Moderado (3-4)",
+      between(N_COMORBILIDADES, 5, 6) ~ "Alto (5-6)",
+      between(N_COMORBILIDADES, 7, 8) ~ "Muy alto (7-8)",
+      between(N_COMORBILIDADES, 9, 10) ~ "Crítico (9-10)",
+      TRUE ~ NA_character_
+    ),
+    RIESGO_CLINICO = factor(RIESGO_CLINICO, levels = c("Muy bajo (0)", "Bajo (1-2)", "Moderado (3-4)", "Alto (5-6)", "Muy alto (7-8)", "Crítico (9-10)"), ordered = TRUE)
+  ) |>
+  # Limpieza CLASIFICACION_FINAL
+  mutate(CLASIFICACION_FINAL = ifelse(CLASIFICACION_FINAL == 7, NA, CLASIFICACION_FINAL))
+```
+
+### Manejo de Datos Faltantes (NAs)
+
+A continuación, se cuantifican los valores perdidos y se aplica el filtro para obtener la muestra final ("DATOS_FINALES"), asegurando la calidad de la información analizada.
+
+**Tabla 2**\
+
+*Conteo de valores perdidos por variable antes del filtrado*
+
+```{r}
+# 1. Selección de columnas de interés
+cols_analisis <- c("EDAD", "SEXO", "DIAS_RETRASO", "ENTIDAD_RES", 
+                   "N_COMORBILIDADES", "SCORE_RIESGO_COVID", "INDICE_GRAVEDAD", 
+                   "N_COMPLICACIONES_GRAVES", "RIESGO_CLINICO", "CLASIFICACION_FINAL")
+
+# 2. Diagnóstico previo (Conteo de NAs)
+nas_por_columna <- colSums(is.na(DATOS_TRANSFORMADOS[cols_analisis]))
+pct_nas <- round((nas_por_columna / nrow(DATOS_TRANSFORMADOS)) * 100, 2)
+
+# Tabla de diagnóstico
+data.frame(
+  Variable = names(nas_por_columna),
+  NAs_Cantidad = nas_por_columna,
+  NAs_Porcentaje = paste0(pct_nas, "%")
+) |>
+  kbl() |>
+  kable_styling(bootstrap_options = "striped", full_width = F)
+
+```
+
+**Tabla 3**\
+
+*Resumen del impacto de la limpieza de datos*
+
+```{r}
+# 3. Ejecución del Filtrado
+n_antes <- nrow(DATOS_TRANSFORMADOS)
+DATOS_FINALES <- DATOS_TRANSFORMADOS |>
+  filter(complete.cases(across(all_of(cols_analisis))))
+n_despues <- nrow(DATOS_FINALES)
+
+# 4. Tabla de Balance de Limpieza
+data.frame(
+  Fase = c("Total Registros Iniciales", "Registros Eliminados (Incompletos)", "Muestra Final Analizable"),
+  Cantidad = c(format(n_antes, big.mark=","), format(n_antes - n_despues, big.mark=","), format(n_despues, big.mark=",")),
+  Porcentaje = c("100%", paste0(round((n_antes - n_despues)/n_antes*100, 2), "%"), paste0(round(n_despues/n_antes*100, 2), "%"))
+) |>
+  kbl() |>
+  kable_styling(bootstrap_options = "hover", full_width = F)
+```
+
+# Análisis Descriptivo
+
+En esta sección se describen las variables principales del estudio mediante estadísticos de posición (media, mediana), dispersión (desviación estándar) y gráficos exploratorios.
+
+## Análisis Univariado
+
+### Variable Cuantitativa: Score de Riesgo COVID
+
+Analizamos la distribución del riesgo acumulado en la población.
+
+**Tabla 4**\
+*Estadísticos descriptivos: Distribución del score de Riesgo COVID*
+
+```{r}
+# Estadísticos descriptivos
+desc_score <- DATOS_FINALES |>
+  summarise(
+    Media = mean(SCORE_RIESGO_COVID),
+    Mediana = median(SCORE_RIESGO_COVID),
+    Desv.Std = sd(SCORE_RIESGO_COVID),
+    Min = min(SCORE_RIESGO_COVID),
+    Max = max(SCORE_RIESGO_COVID)
+  )
+
+kbl(desc_score, digits = 2) |>
+  kable_styling(full_width = F)
+```
+
+**Figura 2**\
+*Distribución del score de riesgo COVID en la población estudiada*
+
+```{r}
+# Histograma
+ggplot(DATOS_FINALES, aes(x = SCORE_RIESGO_COVID)) +
+  geom_histogram(bins = 30, fill = "#2C3E50", color = "white", alpha = 0.8) +
+  geom_vline(aes(xintercept = mean(SCORE_RIESGO_COVID)), color = "red", linetype = "dashed", size = 1) +
+  labs(
+    x = "Score de Riesgo (0-3)",
+    y = "Frecuencia"
+  ) +
+  theme_minimal()
+```
+
+Nota. La línea roja vertical discontinua representa el valor promedio del score de riesgo COVID.
+
+> **Interpretación:** La mayoría de los casos presentan un score de riesgo bajo a moderado (concentración a la izquierda). La asimetría positiva sugiere que los pacientes con múltiples factores de riesgo y certeza diagnóstica alta son menos frecuentes pero representan el grupo crítico.
+
+### Variable Cuantitativa: Índice de Gravedad
+
+Evaluamos la severidad clínica de los casos.
+
+**Figura 3**\
+*Distribución del Índice de Gravedad*
+
+```{r}
+# Boxplot para visualizar outliers y distribución
+ggplot(DATOS_FINALES, aes(y = INDICE_GRAVEDAD)) +
+  geom_boxplot(fill = "#E74C3C", alpha = 0.7) +
+  labs(
+    y = "Índice (0-1)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())
+```
+
+> **Interpretación:** El diagrama de caja muestra que la mediana del índice de gravedad es muy baja (cercana a 0), lo que indica que una gran proporción de la muestra no desarrolló complicaciones graves (UCI, intubación). Los valores atípicos (puntos superiores) corresponden a los casos severos y defunciones.
+
+### Variable Cualitativa: Sexo
+
+Distribución de la muestra según género.
+
+**Tabla 5**\
+*Distribución de casos por Sexo*
+
+```{r}
+# Tabla de frecuencias
+tabla_sexo <- DATOS_FINALES |>
+  group_by(SEXO) |>
+  summarise(
+    Frecuencia = n(),
+    Porcentaje = n() / nrow(DATOS_FINALES) * 100
+  ) |>
+  mutate(Etiqueta = ifelse(SEXO == 1, "Mujer", "Hombre"))
+
+kbl(tabla_sexo, digits = 1) |>
+  kable_styling(full_width = F)
+
+```
+
+**Figura 4**\
+*Distribución de casos por Sexo*
+
+```{r}
+
+# Gráfico de barras
+ggplot(tabla_sexo, aes(x = Etiqueta, y = Frecuencia, fill = Etiqueta)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(Porcentaje, 1), "%")), vjust = -0.5) +
+  scale_fill_manual(values = c("steelblue", "lightpink")) +
+  labs(
+    x = "", y = "Cantidad de Casos"
+  ) +
+  theme_classic()
+```
+
+> **Interpretación:** En la muestra analizada se observa una ligera preponderancia de casos en hombres respecto a mujeres, lo que representa una distribución moderadamente asimétrica por sexo, aunque sin alcanzar una diferencia extrema.
+
+## Analisis De Interaccion
+
+### Variables Categóricas: SEXO vs ESTADO
+
+**Tabla 6**\
+*Distribución de casos por Sexo y Estado*
+
+```{r}
+# Crear tabla de contingencia
+tabla_categorica <- table(DATOS_FINALES$SEXO, DATOS_FINALES$ESTADO)
+colnames(tabla_categorica) <- c("Vivo", "Muerto")
+rownames(tabla_categorica) <- c("Mujer", "Hombre")
+
+# Mostrar tabla con kable
+kbl(tabla_categorica, 
+    caption = "Frecuencias absolutas: Sexo vs Estado",
+    align = 'c') |>
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+
+**Tabla 7**\
+*Porcentajes por Sexo*
+
+```{r}
+# Calcular porcentajes por fila
+prop_tabla <- prop.table(tabla_categorica, 1) * 100
+kbl(round(prop_tabla, 1), 
+    caption = "Porcentajes por fila (%)",
+    align = 'c') |>
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+
+**Figura 5**\
+*Distribución del Estado por Sexo*
+
+```{r}
+# Gráfico de barras agrupadas 
+barplot(tabla_categorica,
+        beside = TRUE,
+        col = c("lightblue", "pink"),
+        main = "Distribución del Estado por Sexo",
+        xlab = "Estado",
+        ylab = "Número de casos",
+        legend.text = rownames(tabla_categorica),
+        args.legend = list(x = "topright", title = "Sexo", cex = 0.8))
+```
+
+**Figura 6**\
+*Distribución del Estado según Sexo\
+*Frecuencia absoluta de casos
+
+```{r}
+# Gráfico de barras agrupadas con ggplot2
+ggplot(DATOS_FINALES, aes(x = factor(SEXO, labels = c("Mujer", "Hombre")), fill = ESTADO)) +
+  geom_bar(position = "dodge", color = "black", alpha = 0.8) +
+  geom_text(stat = 'count', aes(label = ..count..), 
+            position = position_dodge(width = 0.9), vjust = -0.5, size = 3) +
+  scale_fill_manual(values = c("Muerto" = "#E74C3C", "Vivo" = "#2ECC71")) +
+
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) + 
+  labs(
+    x = "Sexo del paciente",
+    y = "Número de casos (Frecuencia)",
+    fill = "Estado Final"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+> **Interpretación:** En la muestra analizable (n = 17 714 casos completos), la letalidad fue superior en mujeres (56,9 %) frente a hombres (51,8 %), diferencia de 5,1 puntos porcentuales. Este resultado contradice la tendencia nacional de COVID-19 en México (2020-2022), donde los hombres concentraron ≈60-62 % de las defunciones y exhibieron tasas de letalidad 1,5-2 veces mayores (DGE/SSA). La inversión observada se atribuye probablemente al filtrado estricto por casos completos, que puede generar sesgo hacia desenlaces graves en mujeres, así como a particularidades del conjunto de datos didáctico utilizado, limitando su representatividad y exigiendo precaución en la generalización de los hallazgos.
+
+### Variables Numéricas: EDAD vs DIAS_RETRASO
+
+**Tabla 8**\
+*Estadísticas descriptivas y correlación entre variables numéricas*
+
+```{r}
+# Calcular correlación PRIMERO
+cor_edad_retraso <- cor(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO, 
+                        use = "complete.obs")
+
+# Tabla con estadísticas de AMBAS variables y su relación
+resumen_numericas <- data.frame(
+  " " = c("EDAD (años)", "DIAS_RETRASO (días)", "CORRELACIÓN"),
+  "Media" = c(
+    round(mean(DATOS_FINALES$EDAD, na.rm = TRUE), 1),
+    round(mean(DATOS_FINALES$DIAS_RETRASO, na.rm = TRUE), 1),
+    paste("r =", round(cor_edad_retraso, 3))
+  ),
+  "DE" = c(
+    round(sd(DATOS_FINALES$EDAD, na.rm = TRUE), 1),
+    round(sd(DATOS_FINALES$DIAS_RETRASO, na.rm = TRUE), 1),
+    ""
+  ),
+  "Mínimo" = c(
+    min(DATOS_FINALES$EDAD, na.rm = TRUE),
+    min(DATOS_FINALES$DIAS_RETRASO, na.rm = TRUE),
+    ""
+  ),
+  "Máximo" = c(
+    max(DATOS_FINALES$EDAD, na.rm = TRUE),
+    max(DATOS_FINALES$DIAS_RETRASO, na.rm = TRUE),
+    ""
+  )
+
+)
+
+kbl(resumen_numericas, 
+    caption = "Análisis de la relación Edad vs Días de Retraso",
+    col.names = c("Variable", "Media", "Desv. Estándar", "Mín", "Máx")) |>
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+
+**Figura 7**\
+*Edad vs Días de Retraso*
+
+```{r}
+# Gráfico básico de dispersión
+plot(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO, 
+     pch = 20, 
+     col = "blue", 
+     main = paste("Edad vs Días de Retraso\nr =", round(cor_edad_retraso, 3)),
+     xlab = "Edad (años)",
+     ylab = "Días de retraso(ingreso - síntomas)")
+
+# Calcular correlación para incluir en el título
+cor_edad_retraso <- cor(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO, 
+                        use = "complete.obs")
+```
+
+Coeficiente de correlacion:
+
+```{r}
+round(cor_edad_retraso, 3)
+```
+
+**Figura 8**\
+*Densidad: Edad vs Días de Retraso*
+
+```{r}
+  smoothScatter(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO,
+              pch = 20,
+              col = "red",
+              main = "Densidad: Edad vs Días de Retraso",
+              xlab = "Edad (años)",
+              ylab = "Días de retraso")
+```
+
+> **Interpretación:** El gráfico de dispersión muestra la relación entre la edad de los pacientes y los días de retraso entre la aparición de síntomas y el ingreso. Los puntos se encuentran dispersos sin formar un patrón claramente definido, lo que sugiere que la relación entre ambas variables es muy débil. El coeficiente de correlación obtenido (r = `round(cor_edad_retraso, 3)`) confirma una asociación prácticamente nula entre la edad y los días de retraso, por lo que no se observa una relación lineal. Esto implica que la edad del paciente no parece ser un factor determinante en el tiempo de retraso para el ingreso. El gráfico de densidad (smoothScatter) muestra una concentración de casos entre 0-10 días de retraso para todas las edades, pero sin una tendencia clara que indique dependencia entre ambas variables.
+
+### Variables Categórica Y Numérica: RIESGO_CLINICO vs INDICE_GRAVEDAD
+
+**Tabla 9**\
+*Estadísticos del Índice de Gravedad por Nivel de Riesgo*
+
+```{r}
+# Resumen estadístico por grupo (igual que antes)
+resumen_riesgo <- DATOS_FINALES |>
+  group_by(RIESGO_CLINICO) |>
+  summarise(
+    n = n(),
+    Media = round(mean(INDICE_GRAVEDAD), 3),
+    Mediana = round(median(INDICE_GRAVEDAD), 3),
+    DE = round(sd(INDICE_GRAVEDAD), 3),
+    Min = round(min(INDICE_GRAVEDAD), 3),
+    Max = round(max(INDICE_GRAVEDAD), 3)
+  )
+
+kbl(resumen_riesgo, 
+    caption = "Resumen por grupo de riesgo",
+    align = c('l', rep('r', 6))) |>
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+
+**Figura 9**\
+*Distribución del Índice de Gravedad por Nivel de Riesgo*
+
+```{r}
+# Boxplot por categoría - USANDO TU ESTILO (base R)
+boxplot(INDICE_GRAVEDAD ~ RIESGO_CLINICO, data = DATOS_FINALES,
+        col = heat.colors(6, alpha = 0.7),
+        main = "Índice de Gravedad por Nivel de Riesgo Clínico",
+        xlab = "Nivel de Riesgo Clínico",
+        ylab = "Índice de Gravedad (0-1)",
+        las = 2,  # Etiquetas verticales en eje X
+        cex.axis = 0.8)
+
+# Agregar puntos de las medias
+means <- tapply(DATOS_FINALES$INDICE_GRAVEDAD, DATOS_FINALES$RIESGO_CLINICO, mean)
+points(1:length(means), means, pch = 23, col = "red", bg = "yellow", cex = 1.5)
+```
+
+> **Interpretación:** El análisis descriptivo del índice de gravedad según el nivel de riesgo clínico muestra diferencias entre los grupos. A medida que aumenta el nivel de riesgo clínico, se observa un incremento en la media del índice de gravedad (desde 0.246 en 'Muy bajo' hasta 0.343 en 'Alto'). El boxplot evidencia que los grupos de mayor riesgo presentan valores más altos del índice de gravedad, aunque con amplia dispersión, mientras que los grupos de menor riesgo muestran valores más bajos. La ubicación de las medias (diamantes amarillos) refuerza esta tendencia ascendente. En conjunto, estos resultados indican que el nivel de riesgo clínico está asociado con la gravedad del cuadro, lo cual es coherente desde el punto de vista clínico: pacientes con más comorbilidades tienden a presentar desenlaces más graves."
+
+# Análisis Probabilístico
+
+## Probabilidad Empírica
+
+Definimos un experimento aleatorio para analizar la variable **Nivel de Riesgo Clínico** (`RIESGO_CLINICO`), calculando las probabilidades basándonos en las frecuencias observadas en la muestra de **17,714 pacientes**.
+
+### Definición del Experimento ($\varepsilon$)
+
+-   **Experimento:** Seleccionar al azar un paciente de la base de datos de vigilancia epidemiológica de COVID-19 (México, 2021) y observar su categoría de riesgo clínico.
+-   **Variable aleatoria (**$X$): Nivel de Riesgo Clínico (Ordinal).
+-   **Espacio Muestral (**$\Omega$): El conjunto de todos los posibles resultados (niveles de riesgo). $$\Omega = \{ \text{Muy bajo}, \text{Bajo}, \text{Moderado}, \text{Alto}, \text{Muy alto}, \text{Crítico} \}$$
+
+### Eventos Atómicos
+
+Definimos los eventos $E_i$ correspondientes a cada categoría:
+
+-   $E_1$: El paciente tiene riesgo **Muy bajo** (0 comorbilidades).
+
+-   $E_2$: El paciente tiene riesgo **Bajo** (1-2 comorbilidades).
+
+-   $E_3$: El paciente tiene riesgo **Moderado** (3-4 comorbilidades).
+
+-   $E_4$: El paciente tiene riesgo **Alto** (5-6 comorbilidades).
+
+-   $E_5$: El paciente tiene riesgo **Muy alto** (7-8 comorbilidades).
+
+-   $E_6$: El paciente tiene riesgo **Crítico** (9-10 comorbilidades).
+
+### Cálculo de Probabilidades
+
+Utilizamos la frecuencia relativa: $P(E_i) = \frac{f_i}{n}$.
+
+```{r}
+# Crear tabla de probabilidades empíricas
+tabla_probabilidad <- DATOS_FINALES |>
+  group_by(RIESGO_CLINICO) |>
+  summarise(
+    Frecuencia = n(),
+    Probabilidad = n() / nrow(DATOS_FINALES)
+  ) |>
+  mutate(
+    Porcentaje = paste0(round(Probabilidad * 100, 2), "%"),
+    Evento = paste0("E", row_number())
+  ) |>
+  select(Evento, RIESGO_CLINICO, Frecuencia, Probabilidad, Porcentaje)
+
+# Mostrar tabla
+kbl(tabla_probabilidad, 
+    col.names = c("Evento", "Nivel de Riesgo", "Frecuencia (f)", "Probabilidad P(E)", "%"),
+    align = "c",
+    caption = "Probabilidades Empíricas del Nivel de Riesgo") |>
+  kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+**Interpretación:** El evento más probable es $E_1$ (Riesgo Muy bajo), con una probabilidad de **`r tabla_probabilidad$Porcentaje[1]`**. Esto indica que la mayoría de la población captada no presentaba comorbilidades múltiples. Por otro lado, el evento menos probable es $E_6$ (Riesgo Crítico), con una probabilidad de **`r tabla_probabilidad$Porcentaje[6]`**.
+
+## Probabilidad Condicional
+
+Analizamos la probabilidad de fallecer ($M$) dado un cierto nivel de riesgo clínico ($R$). Esto nos permite cuantificar la letalidad asociada a las comorbilidades.
+
+### Definición de Eventos
+
+-   $A$: El paciente **Fallece** (Estado = "Muerto").
+
+-   $B_i$: El paciente pertenece al nivel de riesgo $i$ (ej. "Crítico").
+
+### Tabla de Contingencia y Cálculo
+
+Calculamos la probabilidad condicional $P(A | B_i) = \frac{P(A \cap B_i)}{P(B_i)}$, que equivale a la proporción de fallecidos dentro de cada grupo de riesgo.
+
+```{r}
+# Tabla de contingencia (Filas: Riesgo, Col: Estado)
+tabla_condicional <- table(DATOS_FINALES$RIESGO_CLINICO, DATOS_FINALES$ESTADO)
+
+# Calcular proporciones por fila (Probabilidad Condicional)
+prob_condicional <- prop.table(tabla_condicional, margin = 1)
+
+# Convertir a Data Frame para visualizar mejor
+df_condicional <- as.data.frame.matrix(prob_condicional) |>
+  mutate(
+    Prob_Fallecer = round(Muerto, 4),
+    Prob_Sobrevivir = round(Vivo, 4)
+  ) |>
+  select(Prob_Sobrevivir, Prob_Fallecer)
+
+kbl(df_condicional, 
+    caption = "Probabilidad de fallecer dado el nivel de riesgo: P(Muerto | Riesgo)",
+    align = "c") |>
+  kable_styling(bootstrap_options = "hover", full_width = F) |>
+  column_spec(3, bold = TRUE, color = "red") # Resaltar col de muerte
+```
+
+**Interpretación:**
+Se observa un comportamiento mixto en la probabilidad condicional.
+ En los primeros niveles, existe una **relación directa**: la probabilidad de fallecer aumenta progresivamente desde el **Riesgo Muy Bajo** (`r df_condicional$Prob_Fallecer[1]`) hasta alcanzar su pico en el **Riesgo Alto** (`r df_condicional$Prob_Fallecer[4]`).
+ Sin embargo, en los niveles extremos (**Muy Alto y Crítico**), la probabilidad de fallecer desciende, llegando incluso a **`r df_condicional$Prob_Fallecer[6]`** en el grupo Crítico.
+
+> **Conclusión del análisis:** La dependencia positiva entre riesgo y letalidad se confirma claramente hasta el nivel "Alto". La caída inesperada en los niveles superiores ("Crítico") sugiere un **sesgo por tamaño de muestra pequeño** en esos grupos extremos (pocos casos registrados), lo que genera estimaciones estadísticas menos representativas que rompen la tendencia general.
+
+# Conclusiones
+
+El análisis de los 17,714 registros de casos COVID-19 en México durante el 2021 permite establecer las siguientes conclusiones en respuesta a los objetivos planteados:
+
+1.  **Perfil de riesgo predominante:** La mayor parte de los casos presentaron un riesgo clínico bajo a moderado y una evolución clínica leve. La distribución asimétrica del *Score de Riesgo COVID* confirma que la carga de comorbilidades fue generalmente moderada en la población estudiada, lo que explica la alta frecuencia de desenlaces sin complicaciones graves.
+
+2.  **Valor predictivo del riesgo basal:** Aunque existe una correlación positiva entre la cantidad de comorbilidades y la severidad del desenlace (r \> 0), esta relación no es determinista. La variabilidad observada en pacientes con *Riesgo Crítico* sugiere que el riesgo inicial por sí solo no dicta el desenlace, y que factores externos (como la atención médica oportuna) juegan un rol crucial.
+
+3.  **Equidad en el sistema de vigilancia:** La distribución por sexo muestra un moderado predominio masculino (57.3%), alineado con patrones epidemiológicos nacionales de COVID-19 en México durante 2021, aunque la letalidad aparente por sexo en esta muestra fue similar entre ambos grupos.
+
+4.  **Independencia del tiempo de respuesta:** El análisis bivariado demostró una correlación prácticamente nula entre la edad del paciente y los días de retraso en la atención. Esto implica que el tiempo de búsqueda de atención sanitaria fue homogéneo entre los distintos grupos etarios.
+
+# Bibliografía
+
+-   **Dirección General de Epidemiología.** (2021). *Datos Abiertos de COVID-19 en México* \[Conjunto de datos\]. Secretaría de Salud. https://www.gob.mx/salud/documentos/datos-abiertos-bases-historicas-direccion-general-de-epidemiologia
+-   **Prado Urbano, M. I.** (2026). *Datos para el proyecto: COVID19 MEXICO 2021* \[Documento de clase\]. Universidad de Ingeniería y Tecnología (UTEC).
