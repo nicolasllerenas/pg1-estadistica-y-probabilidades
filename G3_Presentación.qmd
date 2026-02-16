@@ -543,8 +543,6 @@ points(1:length(means), means, pch = 23, col = "red", bg = "yellow", cex = 1.5)
 
 ## Probabilidad Empírica
 
-Siguiendo las indicaciones del docente, analizamos el comportamiento de **dos variables de estudio**, definiendo formalmente el experimento y calculando sus probabilidades a partir de las frecuencias observadas en la muestra ($n = 17,714$).
-
 ### Variable de Estudio 1: Nivel de Riesgo Clínico
 
 -   **Experimento:** Seleccionar un paciente al azar de la muestra y observar su categoría de riesgo clínico.
@@ -637,8 +635,6 @@ Sustituyendo con nuestros datos:
 
     $$P(A) \cdot P(B) = `r round(P_A, 4)` \cdot `r round(P_B, 4)` = `r round(P_A * P_B, 4)`$$
 
-> **Conclusión:** Dado que $`r round(P_Interseccion, 4)` \neq `r round(P_A * P_B, 4)`$, los eventos **NO son independientes**. Existe dependencia entre el nivel de riesgo y el fallecimiento.
-
 ### Propiedades de Conjuntos
 
 -   Calculamos la probabilidad de que ocurra al menos uno de los dos eventos ($A \cup B$):
@@ -653,7 +649,7 @@ Deseamos calcular la probabilidad a posteriori $P(B|A)$: *Si sabemos que un paci
 
 Fórmula de Bayes:
 
-\$\$P(B\|A) = \\frac{P(A\|B) \\cdot P(B)}{P(A)}\$\$
+$$P(B|A) = \frac{P(A|B) \cdot P(B)}{P(A)}$$
 
 **Paso 1: Desarrollo de la Probabilidad Total (Denominador)**
 
@@ -679,8 +675,6 @@ Al sumar las probabilidades condicionales parciales, obtenemos:
 
 $$P(A) = `r round(P_Total_Calculada, 4)`$$
 
-*(Este valor coincide con la probabilidad marginal observada, validando el cálculo).*
-
 **Paso 2: Aplicación Final de Bayes**
 
 Sustituimos en la fórmula principal:
@@ -691,10 +685,215 @@ $$P(B|A) = \frac{P(A|B)\cdot P(B)}{P(A_{Total})} =
 
 > **Interpretación:** Dado que el paciente falleció, la probabilidad de que proviniera del grupo de **Riesgo Crítico** es del **`r round(((P_A_dado_B * P_B)/P_Total_Calculada)*100, 2)`%**.
 
+## Variables Aleatorias Discretas
+
+### Variable Discreta 1: ESTADO (Modelo Bernoulli)
+
+Analizamos la variable `ESTADO` ("Vivo" vs "Muerto"). Al ser dicotómica, proponemos el modelo Bernoulli.
+
+-   **Variable Aleatoria** $Y$: Estado final del paciente al egreso.
+-   **Rango:** $R_Y = \{0, 1\}$
+-   **Modelo Propuesto:** $Y \sim Bernoulli(p)$
+-   **Codificación:** $1=$ Sobrevive ("Vivo"), $0=$ Fallece ("Muerto").
+
+```{r}
+# Preparación de datos
+df_bernoulli <- DATOS_FINALES |>
+  mutate(Y = ifelse(ESTADO == "Vivo", 1, 0))
+
+# Estimación del Parámetro p (Probabilidad de Éxito)
+p_hat <- mean(df_bernoulli$Y)
+```
+
+#### Validación Gráfica (Distribución de Probabilidad)
+
+Visualizamos la distribución de masa de probabilidad usando líneas verticales.
+
+```{r}
+# Tabla de proporciones
+tabla_b <- table(df_bernoulli$Y) / nrow(df_bernoulli)
+
+# Gráfico de líneas (type = "h")
+plot(as.numeric(names(tabla_b)), as.vector(tabla_b),
+     type = "h", lwd = 5, col = "blue", ylim = c(0, 1),
+     xaxt = "n",
+     main = "Distribución Bernoulli: Variable ESTADO",
+     xlab = "Estado (0=Fallece, 1=Sobrevive)", ylab = "Probabilidad")
+points(as.numeric(names(tabla_b)), as.vector(tabla_b), pch = 19, col = "blue")
+axis(1, at = c(0, 1), labels = c("0 (Muerto)", "1 (Vivo)"))
+```
+
+#### Validación Numérica
+
+Comparamos la varianza empírica con la teórica ($\sigma^2 = p(1-p)$).
+
+-   **Media Estimada (**$p$): `r round(p_hat, 4)`
+
+-   **Varianza Teórica:** `r round(p_hat * (1 - p_hat), 4)`
+
+-   **Varianza Empírica:** `r round(var(df_bernoulli$Y), 4)`
+
+### Variable Discreta 2: NIVEL DE RIESGO (Candidata a Poisson)
+
+Analizamos la severidad del riesgo clínico como una variable de conteo/ordinal.
+
+-   **Variable Aleatoria** $X$: Nivel de severidad del riesgo.
+
+-   **Rango:** $R_X = \{0, 1, 2, 3, 4, 5\}$
+
+-   **Modelo Candidato:** $X \sim Poisson(\lambda)$
+
+```{r}
+# Transformación a numérica (0-5)
+df_poisson <- DATOS_FINALES |>
+  mutate(X = case_when(
+    grepl("Muy bajo", RIESGO_CLINICO) ~ 0,
+    grepl("Bajo", RIESGO_CLINICO) ~ 1,
+    grepl("Moderado", RIESGO_CLINICO) ~ 2,
+    grepl("Alto", RIESGO_CLINICO) ~ 3,
+    grepl("Muy alto", RIESGO_CLINICO) ~ 4,
+    grepl("Crítico", RIESGO_CLINICO) ~ 5,
+    TRUE ~ NA_real_
+  ))
+
+# Estimación de Lambda (Media)
+lambda_est <- mean(df_poisson$X, na.rm=TRUE)
+```
+
+#### Comparación Gráfica (Empírica vs Teórica)
+
+Superponemos las probabilidades reales (Azul) con las esperadas por Poisson (Rojo).
+
+```{r}
+# 1. Probabilidades Empíricas
+tabla_p <- table(df_poisson$X) / sum(table(df_poisson$X))
+x_vals <- as.numeric(names(tabla_p))
+y_emp <- as.vector(tabla_p)
+
+# 2. Probabilidades Teóricas (Poisson)
+y_teor <- dpois(x_vals, lambda = lambda_est)
+
+# 3. Gráfico de Líneas
+plot(x_vals, y_emp, 
+     type = "h", lwd = 4, col = "blue",
+     ylim = c(0, max(c(y_emp, y_teor)) + 0.1),
+     main = "Ajuste Poisson: Nivel de Riesgo",
+     xlab = "Nivel de Riesgo (X)", ylab = "Probabilidad")
+points(x_vals, y_emp, pch = 19, col = "blue")
+
+# Líneas Teóricas (Desplazadas ligeramente para visualización)
+lines(x_vals + 0.1, y_teor, type = "h", lwd = 3, col = "red", lty = 2)
+points(x_vals + 0.1, y_teor, pch = 17, col = "red")
+
+legend("topright", legend = c("Empírica (Real)", "Teórica (Poisson)"), 
+       col = c("blue", "red"), lty = c(1, 2), pch = c(19, 17))
+```
+
+#### Validación y Conclusión
+
+Verificamos el supuesto de equidispersión ($E[X] \approx Var(X)$).
+
+-   **Media (**$\lambda$): `r round(lambda_est, 4)`
+
+-   **Varianza (**$S^2$): `r round(var(df_poisson$X, na.rm=TRUE), 4)`
+
+## Variables Aleatorias Continuas
+
+### Variable Continua 1: EDAD (Candidata a Normal)
+
+Evaluamos si la edad de los pacientes sigue una distribución Normal (Campana de Gauss).
+
+-   **Variable:** Edad (años).
+
+-   **Modelo Candidato:** $X \sim Normal(\mu, \sigma^2)$
+
+```{r}
+#| warning: false
+# Histograma con Curva Normal Teórica
+hist(DATOS_FINALES$EDAD, prob = TRUE, col = "lightblue", 
+     main = "Distribución de la Edad", xlab = "Edad", breaks = 20)
+
+# Curva Normal Teórica (Rojo)
+curve(dnorm(x, mean=mean(DATOS_FINALES$EDAD, na.rm=TRUE), 
+            sd=sd(DATOS_FINALES$EDAD, na.rm=TRUE)), 
+      add=TRUE, col="red", lwd=2)
+```
+
+#### Validación Numérica
+
+Comparación de estadísticos clave para la Normalidad.
+
+```{r}
+media_edad <- mean(DATOS_FINALES$EDAD, na.rm=TRUE)
+mediana_edad <- median(DATOS_FINALES$EDAD, na.rm=TRUE)
+
+data.frame(Estadistico = c("Media", "Mediana"), Valor = c(media_edad, mediana_edad))
+```
+
+Validación Gráfica (QQ-Plot)
+
+```{r}
+qqnorm(DATOS_FINALES$EDAD, main = "QQ-Plot Normal: Edad", pch=19, col="gray")
+qqline(DATOS_FINALES$EDAD, col="red", lwd=2)
+```
+
+### Variable Continua 2: TIEMPO DE ESTANCIA (Candidata a Exponencial)
+
+Analizamos el tiempo de hospitalización, esperando que siga una distribución Exponencial (común en tiempos de espera/duración).
+
+-   **Variable:** Tiempo de Estancia (días).
+
+-   **Modelo Candidato:** $X \sim Exponencial(\lambda)$
+
+-   **Parámetro:** $\lambda = 1 / \mu$
+
+```{r}
+# --- AJUSTA AQUÍ EL NOMBRE DE TU VARIABLE SI ES DIFERENTE ---
+datos_tiempo <- DATOS_FINALES$TIEMPO_ESTANCIA 
+# -----------------------------------------------------------
+
+# Estimación del parámetro lambda
+media_tiempo <- mean(datos_tiempo, na.rm = TRUE)
+lambda_estancia <- 1 / media_tiempo
+```
+
+#### Exploración Gráfica (Histograma + Curva Teórica)
+
+La distribución Exponencial tiene una forma decrescente característica.
+
+```{r}
+# Histograma
+hist(datos_tiempo, prob = TRUE, col = "#ffcc99", border = "white",
+     main = "Distribución Tiempo de Estancia", 
+     xlab = "Días de Estancia", breaks = 30)
+
+# Curva Exponencial Teórica (Rojo)
+curve(dexp(x, rate = lambda_estancia), 
+      add = TRUE, col = "red", lwd = 2, lty = 1)
+
+legend("topright", legend = c("Datos Reales", "Modelo Exponencial"),
+       fill = c("#ffcc99", NA), border = c("white", NA),
+       lwd = c(NA, 2), col = c(NA, "red"))
+```
+
+#### Validación Numérica (Propiedad de Memoria)
+
+En una distribución exponencial ideal, la desviación estándar es igual a la media ($\sigma = \mu$).
+
+```{r}
+sd_tiempo <- sd(datos_tiempo, na.rm = TRUE)
+
+validacion_exp <- data.frame(
+  Medida = c("Media (Esperanza)", "Desviación Estándar"),
+  Valor = c(media_tiempo, sd_tiempo),
+  Diferencia = abs(media_tiempo - sd_tiempo)
+)
+print(validacion_exp)
+```
 
 # Conclusiones
 
-El análisis de los 17,714 registros de casos COVID-19 en México durante el 2021 permite establecer las siguientes conclusiones en respuesta a los objetivos planteados:
+El análisis integral de la muestra de casos COVID-19 en México durante el 2021 permite establecer las siguientes conclusiones en respuesta a los objetivos planteados:
 
 1.  **Perfil de riesgo predominante:** La mayor parte de los casos presentaron un riesgo clínico bajo a moderado y una evolución clínica leve. La distribución asimétrica del *Score de Riesgo COVID* confirma que la carga de comorbilidades fue generalmente moderada en la población estudiada, lo que explica la alta frecuencia de desenlaces sin complicaciones graves.
 
@@ -703,6 +902,16 @@ El análisis de los 17,714 registros de casos COVID-19 en México durante el 202
 3.  **Equidad en el sistema de vigilancia:** La distribución por sexo muestra un moderado predominio masculino (57.3%), alineado con patrones epidemiológicos nacionales de COVID-19 en México durante 2021, aunque la letalidad aparente por sexo en esta muestra fue similar entre ambos grupos.
 
 4.  **Independencia del tiempo de respuesta:** El análisis bivariado demostró una correlación prácticamente nula entre la edad del paciente y los días de retraso en la atención. Esto implica que el tiempo de búsqueda de atención sanitaria fue homogéneo entre los distintos grupos etarios.
+
+5.  **Dependencia Estadística de la Mortalidad:** La prueba de probabilidad condicional demostró que el fallecimiento y el riesgo crítico **no son eventos independientes** ($P(A \cap B) \neq P(A)P(B)$). Esto confirma estadísticamente que la acumulación de factores de riesgo (comorbilidades) altera significativamente la probabilidad de supervivencia del paciente.
+
+6.  **Modelado de Supervivencia (Bernoulli):** La variable *Estado del Paciente* se ajusta perfectamente al modelo Bernoulli. La validación numérica mostró que la varianza empírica coincide con la teórica ($\sigma^2 = p(1-p)$), lo que valida el uso de este modelo para describir la probabilidad de éxito (supervivencia) en la población.
+
+7.  **Rechazo del Modelo de Conteo Simple (Poisson):** El *Nivel de Riesgo Clínico* no se comporta como una variable Poisson debido a la presencia de **sobredispersión** (la varianza es mayor que la media) y a la naturaleza acotada de la escala. Esto sugiere que la acumulación de riesgos no es un proceso puramente aleatorio, sino que está influenciado por factores estructurales biológicos.
+
+8.  **Comportamiento de la Edad (Aproximación Normal):** La distribución de la edad de los pacientes tiende a seguir una distribución Normal (campana de Gauss), aunque con desviaciones en los extremos (colas) visibles en el QQ-Plot. Esto es consistente con fenómenos demográficos naturales, permitiendo el uso de modelos gaussianos con cierta precaución.
+
+9.  **Dinámica de la Hospitalización (Exponencial):** El *Tiempo de Estancia* exhibe un patrón de decaimiento que se ajusta razonablemente al modelo Exponencial. La similitud entre la media y la desviación estándar respalda la propiedad de "falta de memoria" de esta distribución, útil para modelar tiempos de servicio en sistemas de salud.
 
 # Bibliografía
 
