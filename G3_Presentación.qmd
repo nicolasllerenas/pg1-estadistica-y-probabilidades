@@ -543,10 +543,14 @@ points(1:length(means), means, pch = 23, col = "red", bg = "yellow", cex = 1.5)
 
 ## Probabilidad Empírica
 
-### Variable de Estudio 1: Nivel de Riesgo Clínico
+### Nivel de Riesgo Clínico
 
 -   **Experimento:** Seleccionar un paciente al azar de la muestra y observar su categoría de riesgo clínico.
 -   **Espacio Muestral (**$\Omega_1$): $$\Omega_1 = \{ \text{Muy bajo}, \text{Bajo}, \text{Moderado}, \text{Alto}, \text{Muy alto}, \text{Crítico} \}$$
+
+**Tabla 10**\
+
+**Probabilidad Empírica: Riesgo Clínico**
 
 ```{r}
 # Tabla Variable 1: RIESGO
@@ -559,18 +563,22 @@ tabla_riesgo <- DATOS_FINALES |>
   mutate(Porcentaje = paste0(round(Pi * 100, 2), "%"))
 
 kbl(tabla_riesgo, 
-    col.names = c("Nivel de Riesgo ($E_i$)", "Frecuencia ($f_i$)", "Probabilidad ($P$)", "%"),
-    align = "c", caption = "Probabilidad Empírica: Riesgo Clínico") |>
+    col.names = c("Nivel de Riesgo", "Frecuencia", "Probabilidad", "%"),
+    align = "c", caption = NULL) |>
   kable_styling(bootstrap_options = "striped", full_width = F)
 ```
 
-### Variable de Estudio 2: Estado del Paciente
+### Estado del Paciente
 
 -   **Experimento:** Seleccionar un paciente al azar de la muestra y observar su desenlace final.
 
 -   **Espacio Muestral (**$\Omega_2$):
 
     $$\Omega_2 = \{ \text{Vivo}, \text{Muerto} \}$$
+
+**Tabla 11**\
+
+**Probabilidad Empírica: Estado Final**
 
 ```{r}
 # Tabla Variable 2: ESTADO
@@ -583,8 +591,8 @@ tabla_estado <- DATOS_FINALES |>
   mutate(Porcentaje = paste0(round(Pi * 100, 2), "%"))
 
 kbl(tabla_estado, 
-    col.names = c("Estado", "Frecuencia ($f_i$)", "Probabilidad ($P$)", "%"),
-    align = "c", caption = "Probabilidad Empírica: Estado Final") |>
+    col.names = c("Estado", "Frecuencia", "Probabilidad", "%"),
+    align = "c", caption = NULL) |>
   kable_styling(bootstrap_options = "striped", full_width = F)
 ```
 
@@ -594,28 +602,26 @@ En esta sección definimos dos eventos específicos ($A$ y $B$) para analizar su
 
 -   **Evento** $A$: Seleccionar un paciente que **Fallece** (Variable `ESTADO` = "Muerto").
 
--   **Evento** $B$: Seleccionar un paciente que tiene **Riesgo Crítico** (Variable `RIESGO_CLINICO` = "Crítico (9-10)").
+-   **Evento** $B$: Seleccionar un paciente que tiene **Riesgo Bajo** (Variable `RIESGO_CLINICO` = "Bajo (1-2)").
 
 ```{r}
-# --- CÁLCULOS USANDO TUS VARIABLES (ESTADO y RIESGO) ---
+# --- CÁLCULOS ---
 n_total <- nrow(DATOS_FINALES)
 
 # 1. Probabilidades Marginales
-# Usamos filter() y nrow() como es la buena práctica
 f_A <- DATOS_FINALES |> filter(ESTADO == "Muerto") |> nrow()
 P_A <- f_A / n_total
 
-f_B <- DATOS_FINALES |> filter(RIESGO_CLINICO == "Crítico (9-10)") |> nrow()
+f_B <- DATOS_FINALES |> filter(RIESGO_CLINICO == "Bajo (1-2)") |> nrow()
 P_B <- f_B / n_total
 
 # 2. Intersección (Probabilidad Conjunta P(A y B))
 f_interseccion <- DATOS_FINALES |> 
-  filter(ESTADO == "Muerto", RIESGO_CLINICO == "Crítico (9-10)") |> 
+  filter(ESTADO == "Muerto", RIESGO_CLINICO == "Bajo (1-2)") |> 
   nrow()
 P_Interseccion <- f_interseccion / n_total
 
 # 3. Probabilidad Condicional Directa P(A|B) (Verosimilitud)
-# Nota: Si f_B es 0, esto es 0.
 P_A_dado_B <- ifelse(P_B > 0, P_Interseccion / P_B, 0)
 ```
 
@@ -623,13 +629,13 @@ P_A_dado_B <- ifelse(P_B > 0, P_Interseccion / P_B, 0)
 
 Dos eventos son estadísticamente independientes si se cumple que:
 
-$$P(A \cap B) = P(A) \cdot P(B)$$
+\$\$P(A \\cap B) = P(A) \\cdot P(B)\$\$
 
 Sustituyendo con nuestros datos:
 
 -   **Probabilidad Conjunta (Observada):**
 
-    $$P(A \cap B) = `r round(P_Interseccion, 4)`$$
+    $$P(A \cap B) = P(A) \cdot P(B)$$
 
 -   **Producto de Marginales (Teórica):**
 
@@ -641,11 +647,11 @@ Sustituyendo con nuestros datos:
 
     $$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$
 
-    $$P(A \cup B) = `r round(P_A, 4)` + `r round(P_B, 4)` - `r round(P_Interseccion, 4)`= `r round(P_A + P_B - P_Interseccion, 4)`$$
+    $$P(A \cup B) = `r round(P_A,4)` + `r round(P_B,4)` - `r round(P_Interseccion,4)` = `r round(P_A + P_B - P_Interseccion,4)`$$
 
 ### Teorema de Bayes y Probabilidad Total
 
-Deseamos calcular la probabilidad a posteriori $P(B|A)$: *Si sabemos que un paciente ha fallecido, ¿cuál es la probabilidad de que perteneciera al grupo de Riesgo Crítico?*
+Deseamos calcular la probabilidad a posteriori $P(B|A)$: *Si sabemos que un paciente ha fallecido, ¿cuál es la probabilidad de que perteneciera al grupo de Riesgo Bajo?*
 
 Fórmula de Bayes:
 
@@ -659,12 +665,11 @@ $$P(A) = \sum_{i=1}^{6} P(A \mid E_i)\cdot P(E_i)$$
 
 ```{r}
 # Cálculo de la Probabilidad Total sumando cada grupo
-# Esto demuestra al profesor que aplicamos la fórmula de Probabilidad Total
 tabla_total <- DATOS_FINALES |>
   group_by(RIESGO_CLINICO) |>
   summarise(
-    P_Ei = n() / n_total,                            # P(Ei) - A priori
-    P_A_dado_Ei = sum(ESTADO == "Muerto") / n()      # P(A | Ei) - Verosimilitud
+    P_Ei = n() / n_total,                                    # P(Ei) - A priori
+    P_A_dado_Ei = sum(ESTADO == "Muerto") / n()       # P(A | Ei) - Verosimilitud
   )
 
 # Realizamos la suma de productos
@@ -679,11 +684,9 @@ $$P(A) = `r round(P_Total_Calculada, 4)`$$
 
 Sustituimos en la fórmula principal:
 
-$$P(B|A) = \frac{P(A|B)\cdot P(B)}{P(A_{Total})} =
-\frac{`r round(P_A_dado_B,4)` \cdot `r round(P_B,4)`}{`r round(P_Total_Calculada,4)`} =
-`r round((P_A_dado_B * P_B)/P_Total_Calculada,4)`$$
+$$P(B|A) = \frac{P(A|B)\cdot P(B)}{P(A_{Total})} = \frac{`r round(P_A_dado_B,4)` \cdot `r round(P_B,4)`}{`r round(P_Total_Calculada,4)`} = `r round((P_A_dado_B * P_B)/P_Total_Calculada,4)`$$
 
-> **Interpretación:** Dado que el paciente falleció, la probabilidad de que proviniera del grupo de **Riesgo Crítico** es del **`r round(((P_A_dado_B * P_B)/P_Total_Calculada)*100, 2)`%**.
+> **Interpretación:** Este resultado cuantifica la probabilidad condicional inversa: dado el evento "Fallecimiento", el porcentaje calculado indica la proporción esperada de casos que provienen del grupo de Riesgo Bajo.
 
 ## Variables Aleatorias Discretas
 
@@ -835,60 +838,6 @@ Validación Gráfica (QQ-Plot)
 ```{r}
 qqnorm(DATOS_FINALES$EDAD, main = "QQ-Plot Normal: Edad", pch=19, col="gray")
 qqline(DATOS_FINALES$EDAD, col="red", lwd=2)
-```
-
-### Variable Continua 2: TIEMPO DE ESTANCIA (Candidata a Exponencial)
-
-Analizamos el tiempo de hospitalización, esperando que siga una distribución Exponencial (común en tiempos de espera/duración).
-
--   **Variable:** Tiempo de Estancia (días).
-
--   **Modelo Candidato:** $X \sim Exponencial(\lambda)$
-
--   **Parámetro:** $\lambda = 1 / \mu$
-
-```{r}
-# --- AJUSTA AQUÍ EL NOMBRE DE TU VARIABLE SI ES DIFERENTE ---
-datos_tiempo <- DATOS_FINALES$TIEMPO_ESTANCIA 
-# -----------------------------------------------------------
-
-# Estimación del parámetro lambda
-media_tiempo <- mean(datos_tiempo, na.rm = TRUE)
-lambda_estancia <- 1 / media_tiempo
-```
-
-#### Exploración Gráfica (Histograma + Curva Teórica)
-
-La distribución Exponencial tiene una forma decrescente característica.
-
-```{r}
-# Histograma
-hist(datos_tiempo, prob = TRUE, col = "#ffcc99", border = "white",
-     main = "Distribución Tiempo de Estancia", 
-     xlab = "Días de Estancia", breaks = 30)
-
-# Curva Exponencial Teórica (Rojo)
-curve(dexp(x, rate = lambda_estancia), 
-      add = TRUE, col = "red", lwd = 2, lty = 1)
-
-legend("topright", legend = c("Datos Reales", "Modelo Exponencial"),
-       fill = c("#ffcc99", NA), border = c("white", NA),
-       lwd = c(NA, 2), col = c(NA, "red"))
-```
-
-#### Validación Numérica (Propiedad de Memoria)
-
-En una distribución exponencial ideal, la desviación estándar es igual a la media ($\sigma = \mu$).
-
-```{r}
-sd_tiempo <- sd(datos_tiempo, na.rm = TRUE)
-
-validacion_exp <- data.frame(
-  Medida = c("Media (Esperanza)", "Desviación Estándar"),
-  Valor = c(media_tiempo, sd_tiempo),
-  Diferencia = abs(media_tiempo - sd_tiempo)
-)
-print(validacion_exp)
 ```
 
 # Conclusiones
