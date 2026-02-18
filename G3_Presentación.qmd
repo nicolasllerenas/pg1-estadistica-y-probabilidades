@@ -792,7 +792,7 @@ legend("topright", legend = c("Empírica (Real)", "Teórica (Poisson)"),
        col = c("blue", "red"), lty = c(1, 2), pch = c(19, 17))
 ```
 
-#### Validación y Conclusión
+#### Validación Numérica
 
 Verificamos el supuesto de equidispersión ($E[X] \approx Var(X)$).
 
@@ -833,7 +833,7 @@ mediana_edad <- median(DATOS_FINALES$EDAD, na.rm=TRUE)
 data.frame(Estadistico = c("Media", "Mediana"), Valor = c(media_edad, mediana_edad))
 ```
 
-Validación Gráfica (QQ-Plot)
+#### Validación Gráfica (QQ-Plot)
 
 ```{r}
 qqnorm(DATOS_FINALES$EDAD, main = "QQ-Plot Normal: Edad", pch=19, col="gray")
