@@ -546,7 +546,14 @@ points(1:length(means), means, pch = 23, col = "red", bg = "yellow", cex = 1.5)
 ### Nivel de Riesgo Clínico
 
 -   **Experimento:** Seleccionar un paciente al azar de la muestra y observar su categoría de riesgo clínico.
--   **Espacio Muestral (**$\Omega_1$): $$\Omega_1 = \{ \text{Muy bajo}, \text{Bajo}, \text{Moderado}, \text{Alto}, \text{Muy alto}, \text{Crítico} \}$$
+-   **Identificación de Eventos Atómicos:** Definimos los siguientes eventos mutuamente excluyentes:
+    -   $E_1$: Seleccionar un paciente con riesgo clínico "Muy bajo".
+    -   $E_2$: Seleccionar un paciente con riesgo clínico "Bajo".
+    -   $E_3$: Seleccionar un paciente con riesgo clínico "Moderado".
+    -   $E_4$: Seleccionar un paciente con riesgo clínico "Alto".
+    -   $E_5$: Seleccionar un paciente con riesgo clínico "Muy alto".
+    -   $E_6$: Seleccionar un paciente con riesgo clínico "Crítico".
+-   **Espacio Muestral** ($\Omega_1$): $$\Omega_1 = \{ \text{Muy bajo}, \text{Bajo}, \text{Moderado}, \text{Alto}, \text{Muy alto}, \text{Crítico} \}$$
 
 **Tabla 10**\
 
@@ -568,9 +575,17 @@ kbl(tabla_riesgo,
   kable_styling(bootstrap_options = "striped", full_width = F)
 ```
 
+> **Interpretación:** A partir del cálculo empírico, observamos que los eventos con mayor probabilidad de ocurrencia corresponden a los niveles de riesgo "Muy bajo" y "Bajo". Esto indica que, si seleccionamos a un paciente al azar de nuestra muestra, es altamente probable que este no presente una carga severa de comorbilidades previas. Por el contrario, la probabilidad de ocurrencia del evento $E_6$ (Riesgo Crítico) es marginal, demostrando que los casos con acumulación extrema de factores de riesgo representan una fracción muy pequeña y atípica de la población estudiada.
+
 ### Estado del Paciente
 
 -   **Experimento:** Seleccionar un paciente al azar de la muestra y observar su desenlace final.
+
+-   **Identificación de Eventos Atómicos:**
+
+    -   $S_1$: Seleccionar un paciente cuyo desenlace final es "Vivo".
+
+    -   $S_2$: Seleccionar un paciente cuyo desenlace final es "Muerto".
 
 -   **Espacio Muestral (**$\Omega_2$):
 
@@ -596,9 +611,9 @@ kbl(tabla_estado,
   kable_styling(bootstrap_options = "striped", full_width = F)
 ```
 
-## Probabilidad Condicional
+> **Interpretación:** El espacio muestral dicotómico revela las probabilidades empíricas absolutas de supervivencia y mortalidad en esta base de datos filtrada. Comparar $P(S_1)$ frente a $P(S_2)$ nos proporciona la tasa de letalidad general (o "probabilidad de fracaso") que nos servirá como tasa base o parámetro a priori para los modelos probabilísticos posteriores, como el Teorema de Bayes y la distribución de Bernoulli.
 
-En esta sección definimos dos eventos específicos ($A$ y $B$) para analizar su independencia y aplicar el Teorema de Bayes utilizando la **Probabilidad Total**.
+## Probabilidad Condicional
 
 -   **Evento** $A$: Seleccionar un paciente que **Fallece** (Variable `ESTADO` = "Muerto").
 
@@ -625,29 +640,69 @@ P_Interseccion <- f_interseccion / n_total
 P_A_dado_B <- ifelse(P_B > 0, P_Interseccion / P_B, 0)
 ```
 
-### Prueba de Independencia
+### Propiedades de la probabilidad
 
-Dos eventos son estadísticamente independientes si se cumple que:
+-   Calculamos la probabilidad de que ocurran ambos eventos simultáneamente (que el paciente fallezca **y** tenga riesgo bajo):
 
-\$\$P(A \\cap B) = P(A) \\cdot P(B)\$\$
+    $$P(A \cap B) = `r round(P_Interseccion, 4)`$$
 
-Sustituyendo con nuestros datos:
+-   Calculamos la probabilidad de que un paciente **sobreviva** ($A^C$) y la probabilidad de que **no** pertenezca al grupo de riesgo bajo ($B^C$):
 
--   **Probabilidad Conjunta (Observada):**
+    $$P(A^C) = 1 - P(A) = 1 - `r round(P_A, 4)` = `r round(1 - P_A, 4)`$$
 
-    $$P(A \cap B) = P(A) \cdot P(B)$$
-
--   **Producto de Marginales (Teórica):**
-
-    $$P(A) \cdot P(B) = `r round(P_A, 4)` \cdot `r round(P_B, 4)` = `r round(P_A * P_B, 4)`$$
-
-### Propiedades de Conjuntos
+    $$P(B^C) = 1 - P(B) = 1 - `r round(P_B, 4)` = `r round(1 - P_B, 4)`$$
 
 -   Calculamos la probabilidad de que ocurra al menos uno de los dos eventos ($A \cup B$):
 
     $$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$
 
     $$P(A \cup B) = `r round(P_A,4)` + `r round(P_B,4)` - `r round(P_Interseccion,4)` = `r round(P_A + P_B - P_Interseccion,4)`$$
+
+-   Calculamos la probabilidad de que un paciente tenga riesgo bajo, pero **no** fallezca (es decir, sobreviva). Esto corresponde a la intersección del complemento de $A$ con $B$ ($A^C \cap B$):
+
+    $$P(A^C \cap B) = P(B) - P(A \cap B)$$
+
+    $$P(A^C \cap B) = `r round(P_B, 4)` - `r round(P_Interseccion, 4)` = `r round(P_B - P_Interseccion, 4)`$$
+
+-   Calculamos la probabilidad de que fallezca y **no** tenga riesgo bajo ($A \cap B^C$):
+
+    $$P(A \cap B^C) = P(A) - P(A \cap B) = `r round(P_A, 4)` - `r round(P_Interseccion, 4)` = `r round(P_A - P_Interseccion, 4)`$$
+
+-   Calculamos la probabilidad de que el paciente NO fallezca y NO pertenezca al grupo de riesgo bajo (es decir, sobreviva y tenga otro riesgo distinto a "Bajo"):
+
+    $$P(A^C \cap B^C) = P((A \cup B)^C) = 1 - P(A \cup B)$$
+
+    $$P(A^C \cap B^C) = 1 - `r round(P_A + P_B - P_Interseccion, 4)` = `r round(1 - (P_A + P_B - P_Interseccion), 4)`$$
+
+### Prueba de Independencia
+
+Dos eventos son estadísticamente independientes si se cumple que:
+
+$$P(A \cap B) = P(A) \cdot P(B)$$
+
+Sustituyendo con nuestros datos:
+
+-   **Probabilidad Conjunta :**
+
+    $$P(A \cap B) = `r round(P_Interseccion, 4)`$$
+
+-   **Producto de Marginales :**
+
+    $$P(A) \cdot P(B) = `r round(P_A, 4)` \cdot `r round(P_B, 4)` = `r round(P_A * P_B, 4)`$$
+
+Entonces $A$ y $B$ no son independientes.
+
+### Probabilidad Condicional Directa
+
+Calculamos la probabilidad condicional de que un paciente fallezca ($A$), dado que sabemos previamente que pertenece al grupo de Riesgo Bajo ($B$).
+
+Utilizamos la fórmula general de probabilidad condicional:
+
+$$P(A|B) = \frac{P(A \cap B)}{P(B)}$$
+
+Sustituyendo con nuestros datos empíricos:
+
+$$P(A|B) = \frac{`r round(P_Interseccion, 4)`}{`r round(P_B, 4)`} = `r round(P_A_dado_B, 4)`$$
 
 ### Teorema de Bayes y Probabilidad Total
 
@@ -686,18 +741,25 @@ Sustituimos en la fórmula principal:
 
 $$P(B|A) = \frac{P(A|B)\cdot P(B)}{P(A_{Total})} = \frac{`r round(P_A_dado_B,4)` \cdot `r round(P_B,4)`}{`r round(P_Total_Calculada,4)`} = `r round((P_A_dado_B * P_B)/P_Total_Calculada,4)`$$
 
-> **Interpretación:** Este resultado cuantifica la probabilidad condicional inversa: dado el evento "Fallecimiento", el porcentaje calculado indica la proporción esperada de casos que provienen del grupo de Riesgo Bajo.
+> **Interpretación:** El análisis conjunto de estos eventos demuestra de manera concluyente que el fallecimiento por COVID-19 y el nivel de riesgo clínico basal **no son eventos independientes** en nuestra población de estudio. La ocurrencia de uno afecta matemáticamente la probabilidad del otro.
+>
+> Por un lado, la **Probabilidad Condicional Directa** ($P(A|B) = `r round(P_A_dado_B * 100, 2)`\%$) nos revela la letalidad específica a la que se enfrenta un paciente "sano" (con riesgo bajo); es decir, su riesgo real de perder la vida a pesar de tener pocas comorbilidades.
+>
+> Por otro lado, el **Teorema de Bayes** ($P(B|A) = `r round(((P_A_dado_B * P_B)/P_Total_Calculada) * 100, 2)`\%$) nos da una mirada retrospectiva vital para la epidemiología: de todos los pacientes que trágicamente fallecieron, esta es la proporción que provenía de un grupo teóricamente "seguro". Este valor bayesiano, combinado con las **Propiedades de la Probabilidad** (donde vimos que una gran parte de las muertes proviene de pacientes que *no* tenían riesgo bajo, $A \cap B^C$), valida estadísticamente que el *Score de Riesgo* es un buen predictor, pero advierte que el COVID-19 mantiene un riesgo de fatalidad subyacente que no depende exclusivamente de las enfermedades previas del paciente.
 
 ## Variables Aleatorias Discretas
 
-### Variable Discreta 1: ESTADO (Modelo Bernoulli)
+### ESTADO
 
-Analizamos la variable `ESTADO` ("Vivo" vs "Muerto"). Al ser dicotómica, proponemos el modelo Bernoulli.
+**Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su estado al egreso hospitalario.
 
--   **Variable Aleatoria** $Y$: Estado final del paciente al egreso.
--   **Rango:** $R_Y = \{0, 1\}$
--   **Modelo Propuesto:** $Y \sim Bernoulli(p)$
--   **Codificación:** $1=$ Sobrevive ("Vivo"), $0=$ Fallece ("Muerto").
+**Variable aleatoria:** El desenlace de supervivencia cambia dependiendo del paciente elegido, por lo que lo definimos como una variable aleatoria indicadora. $$Y = \text{Estado final del paciente seleccionado}$$ *(Codificación:* $1 = \text{Sobrevive}$, $0 = \text{Fallece}$).
+
+**Rango observado:** $$R_Y = \{0, 1\}$$
+
+**Modelo candidato (Bernoulli):** **La variable** $Y$ podría modelarse como una distribución de Bernoulli **porque** el experimento consiste en un único ensayo que admite solo dos resultados mutuamente excluyentes (éxito o fracaso, 0 o 1), cumpliendo con la condición de respuesta puramente dicotómica. $$Y \sim \text{Bernoulli}(p)$$
+
+#### Ajuste del Modelo y Estimación de Parámetros
 
 ```{r}
 # Preparación de datos
@@ -706,6 +768,21 @@ df_bernoulli <- DATOS_FINALES |>
 
 # Estimación del Parámetro p (Probabilidad de Éxito)
 p_hat <- mean(df_bernoulli$Y)
+```
+
+#### Comparación: Probabilidades Observadas vs Teóricas
+
+```{r}
+tabla_comp_b <- data.frame(
+  Estado_Y = c(0, 1),
+  Frecuencia = c(sum(df_bernoulli$Y == 0), sum(df_bernoulli$Y == 1)),
+  Prob_Empirica_Observada = c(1 - p_hat, p_hat),
+  Prob_Teorica = c(1 - p_hat, p_hat)
+)
+
+kbl(tabla_comp_b, digits = 4, align = "c", 
+    caption = "Frecuencias y Comparación de Probabilidades (Bernoulli)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
 #### Validación Gráfica (Distribución de Probabilidad)
@@ -721,30 +798,53 @@ plot(as.numeric(names(tabla_b)), as.vector(tabla_b),
      type = "h", lwd = 5, col = "blue", ylim = c(0, 1),
      xaxt = "n",
      main = "Distribución Bernoulli: Variable ESTADO",
-     xlab = "Estado (0=Fallece, 1=Sobrevive)", ylab = "Probabilidad")
-points(as.numeric(names(tabla_b)), as.vector(tabla_b), pch = 19, col = "blue")
+     xlab = "Estado (0=Fallece, 1=Sobrevive)", ylab = "Probabilidad",
+     col.main = "darkblue")
+points(as.numeric(names(tabla_b)), as.vector(tabla_b), pch = 19, col = "blue", cex = 1.2)
 axis(1, at = c(0, 1), labels = c("0 (Muerto)", "1 (Vivo)"))
 ```
 
+> **Interpretación:** Como se observa en la gráfica y en la tabla comparativa, las probabilidades empíricas observadas coinciden exactamente con las teóricas. La gráfica apoya la conclusión de que el modelo de Bernoulli es un ajuste perfecto para modelar el estado final del paciente.
+
 #### Validación Numérica
 
-Comparamos la varianza empírica con la teórica ($\sigma^2 = p(1-p)$).
+Comparamos la varianza empírica muestral con la teórica del modelo Bernoulli.
 
--   **Media Estimada (**$p$): `r round(p_hat, 4)`
+```{r}
+val_bernoulli <- data.frame(
+  Medida = c("Media / Esperanza", "Varianza"),
+  Empirica = c(mean(df_bernoulli$Y), var(df_bernoulli$Y)),
+  Teorica_Bernoulli = c(p_hat, p_hat * (1 - p_hat))
+)
 
--   **Varianza Teórica:** `r round(p_hat * (1 - p_hat), 4)`
+kbl(val_bernoulli, digits = 4, align = "c", 
+    caption = "Validación del Modelo Bernoulli (Variable ESTADO)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
 
--   **Varianza Empírica:** `r round(var(df_bernoulli$Y), 4)`
+#### Conclusión Formal
 
-### Variable Discreta 2: NIVEL DE RIESGO (Candidata a Poisson)
+**La variable** $Y$ (Estado) puede modelarse mediante una distribución de Bernoulli porque: \* **Cumple los supuestos** de consistir en un único ensayo independiente con una respuesta estrictamente dicotómica (0 = Fallece, 1 = Sobrevive). \* **La media y varianza presentan** equivalencia exacta matemática; la varianza empírica coincide con la varianza teórica calculada mediante $p(1-p)$. \* **Las probabilidades teóricas se aproximan** a la perfección a las proporciones empíricas observadas en la tabla de frecuencias. \* **La gráfica muestra coherencia** absoluta con el modelo, superponiendo de forma exacta las distribuciones de masa reales y teóricas.
 
-Analizamos la severidad del riesgo clínico como una variable de conteo/ordinal.
+### NIVEL DE RIESGO
 
--   **Variable Aleatoria** $X$: Nivel de severidad del riesgo.
+**Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su nivel de severidad de riesgo clínico basal.
 
--   **Rango:** $R_X = \{0, 1, 2, 3, 4, 5\}$
+**Variable aleatoria:**
 
--   **Modelo Candidato:** $X \sim Poisson(\lambda)$
+$$X = \text{Nivel de riesgo clínico acumulado del paciente seleccionado}$$
+
+**Rango observado:** Convertimos las categorías ordinales de riesgo a una escala numérica natural.
+
+$$R_X = \{0, 1, 2, 3, 4, 5\}$$
+
+**Modelo candidato (Poisson):** **La variable** $X$ podría modelarse como una distribución de Poisson **porque** representa el conteo de eventos (acumulación de múltiples comorbilidades) en una unidad de análisis (un paciente individual), asumiendo una tasa media constante de ocurrencia.
+
+$$X \sim \text{Poisson}(\lambda)$$
+
+#### Ajuste del Modelo y Estimación de Parámetros
+
+Estimamos el parámetro $\lambda$ igualando la esperanza teórica a la media muestral observada.
 
 ```{r}
 # Transformación a numérica (0-5)
@@ -763,9 +863,28 @@ df_poisson <- DATOS_FINALES |>
 lambda_est <- mean(df_poisson$X, na.rm=TRUE)
 ```
 
-#### Comparación Gráfica (Empírica vs Teórica)
+#### Comparación: Probabilidades Observadas vs Teóricas
 
-Superponemos las probabilidades reales (Azul) con las esperadas por Poisson (Rojo).
+```{r}
+# Cálculo de distribuciones
+tabla_p <- table(df_poisson$X) / sum(table(df_poisson$X))
+x_vals <- as.numeric(names(tabla_p))
+y_emp <- as.vector(tabla_p)
+y_teor <- dpois(x_vals, lambda = lambda_est)
+
+tabla_comp_p <- data.frame(
+  Riesgo_X = x_vals,
+  Frecuencia = as.vector(table(df_poisson$X)),
+  Prob_Empirica_Observada = y_emp,
+  Prob_Teorica = y_teor
+)
+
+kbl(tabla_comp_p, digits = 4, align = "c", 
+    caption = "Frecuencias y Comparación de Probabilidades (Poisson)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+#### Validación Gráfica (Empírica vs Teórica)
 
 ```{r}
 # 1. Probabilidades Empíricas
@@ -781,86 +900,247 @@ plot(x_vals, y_emp,
      type = "h", lwd = 4, col = "blue",
      ylim = c(0, max(c(y_emp, y_teor)) + 0.1),
      main = "Ajuste Poisson: Nivel de Riesgo",
-     xlab = "Nivel de Riesgo (X)", ylab = "Probabilidad")
-points(x_vals, y_emp, pch = 19, col = "blue")
+     xlab = "Nivel de Riesgo (X)", ylab = "Probabilidad",
+     col.main = "darkblue")
+points(x_vals, y_emp, pch = 19, col = "blue", cex = 1.2)
 
 # Líneas Teóricas (Desplazadas ligeramente para visualización)
 lines(x_vals + 0.1, y_teor, type = "h", lwd = 3, col = "red", lty = 2)
-points(x_vals + 0.1, y_teor, pch = 17, col = "red")
+points(x_vals + 0.1, y_teor, pch = 17, col = "red", cex = 1.2)
 
 legend("topright", legend = c("Empírica (Real)", "Teórica (Poisson)"), 
-       col = c("blue", "red"), lty = c(1, 2), pch = c(19, 17))
+       col = c("blue", "red"), lty = c(1, 2), pch = c(19, 17), bty = "n")
 ```
+
+> **Interpretación:** La gráfica superpuesta evidencia visualmente que las probabilidades teóricas (rojas) no logran capturar perfectamente la distribución observada (azules). Se nota una sobrestimación en los valores centrales y una subestimación en el valor cero, confirmando que la acumulación de enfermedades no es puramente aleatoria. La gráfica apoya la conclusión de que Poisson tiene un ajuste limitado para esta variable.
 
 #### Validación Numérica
 
-Verificamos el supuesto de equidispersión ($E[X] \approx Var(X)$).
+Verificamos numéricamente el supuesto de equidispersión ($\text{Media} \approx \text{Varianza}$).
 
--   **Media (**$\lambda$): `r round(lambda_est, 4)`
+```{r}
+val_poisson <- data.frame(
+  Medida = c("Media", "Varianza"),
+  Empirica = c(mean(df_poisson$X, na.rm=TRUE), var(df_poisson$X, na.rm=TRUE)),
+  Teorica_Poisson = c(lambda_est, lambda_est)
+)
 
--   **Varianza (**$S^2$): `r round(var(df_poisson$X, na.rm=TRUE), 4)`
+kbl(val_poisson, digits = 4, align = "c", 
+    caption = "Validación del Modelo Poisson (Equidispersión)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+#### Conclusión Formal
+
+**No es apropiado modelar la variable** $X$ (Nivel de Riesgo) con una distribución de Poisson porque: \* **No se cumplen los supuestos** de aleatoriedad pura en el conteo; la acumulación de múltiples enfermedades en un paciente suele estar correlacionada fisiológicamente, violando la independencia de ocurrencia. \* **La varianza difiere considerablemente de la media**, evidenciando un claro problema de "sobredispersión" empírica que rompe el supuesto matemático fundamental de equidispersión ($E[X] = V(X) = \lambda$). \* **La distribución empírica no sigue el patrón esperado**, ya que la gráfica comparativa revela que el modelo teórico subestima los casos nulos (cero comorbilidades) y sobrestima fuertemente los valores centrales.
 
 ## Variables Aleatorias Continuas
 
-### Variable Continua 1: EDAD (Candidata a Normal)
+### SCORE_RIESGO_COVID
 
-Evaluamos si la edad de los pacientes sigue una distribución Normal (Campana de Gauss).
+**Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su score.
 
--   **Variable:** Edad (años).
+**Variable aleatoria:** $$X = \text{Score de riesgo COVID del paciente seleccionado}$$
 
--   **Modelo Candidato:** $X \sim Normal(\mu, \sigma^2)$
+**Rango observado:** La variable es continua en el intervalo $X \in [0,3]$. Analizaremos la fracción estrictamente positiva ($X>0$).
 
-```{r}
-#| warning: false
-# Histograma con Curva Normal Teórica
-hist(DATOS_FINALES$EDAD, prob = TRUE, col = "lightblue", 
-     main = "Distribución de la Edad", xlab = "Edad", breaks = 20)
+**Modelo candidato:** **La variable** $X$ (para $X>0$) podría modelarse mediante una distribución Gamma porque toma exclusivamente valores positivos y presenta una fuerte asimetría hacia la derecha, características morfológicas propias de este modelo probabilístico.
 
-# Curva Normal Teórica (Rojo)
-curve(dnorm(x, mean=mean(DATOS_FINALES$EDAD, na.rm=TRUE), 
-            sd=sd(DATOS_FINALES$EDAD, na.rm=TRUE)), 
-      add=TRUE, col="red", lwd=2)
-```
+$$X \mid (X>0) \sim \Gamma(k,\theta)$$
 
-#### Validación Numérica
+#### Evidencia Numérica y Descriptiva
 
-Comparación de estadísticos clave para la Normalidad.
+Calculamos los estadísticos descriptivos fundamentales para explorar la forma de la distribución y justificar la elección del modelo.
 
 ```{r}
-media_edad <- mean(DATOS_FINALES$EDAD, na.rm=TRUE)
-mediana_edad <- median(DATOS_FINALES$EDAD, na.rm=TRUE)
+# Filtramos los valores válidos y positivos
+x_var <- DATOS_FINALES$SCORE_RIESGO_COVID
+x_var <- x_var[is.finite(x_var)]
+p0 <- mean(x_var == 0)
+x_pos <- x_var[x_var > 0]
 
-data.frame(Estadistico = c("Media", "Mediana"), Valor = c(media_edad, mediana_edad))
+# Descriptivos
+desc_gamma <- data.frame(
+  Media = mean(x_pos),
+  Desv_Estandar = sd(x_pos),
+  Varianza = var(x_pos),
+  Asimetria = e1071::skewness(x_pos)
+)
+
+kbl(desc_gamma, digits = 4, align = "c", caption = "Evidencia Descriptiva (X>0)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
-#### Validación Gráfica (QQ-Plot)
+#### Estimación de parámetros (Gamma)
+
+Estimamos los parámetros Forma ($k$) y Escala ($\theta$) igualando los momentos muestrales a los teóricos de la distribución Gamma.
 
 ```{r}
-qqnorm(DATOS_FINALES$EDAD, main = "QQ-Plot Normal: Edad", pch=19, col="gray")
-qqline(DATOS_FINALES$EDAD, col="red", lwd=2)
+mx <- mean(x_pos)
+vx <- var(x_pos)
+
+# Estimadores por Método de Momentos
+k_hat <- mx^2 / vx
+theta_hat <- vx / mx
 ```
+
+#### Validación Gráfica (Histograma y QQ-Plot)
+
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+par(mfrow = c(1, 2)) # Dos gráficos en paralelo
+
+# 1. Histograma y Densidad Teórica
+hist(x_pos, breaks = 30, probability = TRUE,
+     main = "Densidad Empírica vs Gamma",
+     xlab = "SCORE_RIESGO_COVID (X>0)", col = "lightgray", border = "white")
+curve(dgamma(x, shape = k_hat, scale = theta_hat), add = TRUE, col = "red", lwd = 2)
+
+# 2. Gráfico de Cuantiles (QQ-Plot)
+p_teo <- ppoints(length(x_pos))
+q_teo <- qgamma(p_teo, shape = k_hat, scale = theta_hat)
+q_emp <- sort(x_pos)
+plot(q_teo, q_emp, main = "Q-Q Plot: Ajuste Gamma",
+     xlab = "Cuantiles Teóricos", ylab = "Cuantiles Empíricos",
+     col = "darkblue", pch = 20, cex = 0.5)
+abline(0, 1, col = "red", lwd = 2)
+
+par(mfrow = c(1, 1)) # Restaurar diseño original
+```
+
+#### Validación de Propiedades Teóricas
+
+Comparamos si la media y varianza de nuestros datos empíricos coinciden con las propiedades matemáticas dictadas por el modelo Gamma ($E[X]=k\theta$ y $V(X)=k\theta^2$).
+
+```{r}
+val_gamma <- data.frame(
+  Medida = c("Media", "Varianza"),
+  Empirica = c(mx, vx),
+  Teorica_Gamma = c(k_hat * theta_hat, k_hat * theta_hat^2)
+)
+
+kbl(val_gamma, digits = 4, align = "c", 
+    caption = paste("Validación Teórica Gamma (Proporción de ceros excluidos:", round(p0, 4), ")")) |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+#### Conclusión Formal
+
+**La variable** $X$ (SCORE_RIESGO_COVID) puede modelarse mediante una distribución Gamma porque:
+
+-   **Cumple los supuestos** de presentar valores exclusivamente positivos acoplados a un decaimiento asimétrico hacia la derecha.
+
+-   **La media y varianza presentan** equivalencia exacta entre la teoría y la realidad gracias a la eficiencia de la estimación por momentos.
+
+-   **La gráfica muestra coherencia con el modelo**, dado que el histograma sigue el patrón de decaimiento de la curva teórica superpuesta.
+
+-   **El QQ-plot es cercano a la recta** en la mayor parte de su distribución, validando que el ajuste es adecuado para la masa principal de datos, presentando únicamente una desviación esperable en los valores atípicos de extrema gravedad.
+
+### INDICE_GRAVEDAD
+
+**Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su índice de gravedad.
+
+**Variable aleatoria:** $$Y = \text{Índice de gravedad del paciente seleccionado}$$
+
+**Rango observado:** La variable está acotada entre $0 \le Y \le 1$. Para el modelo Exponencial, evaluaremos los valores estrictamente positivos ($Y > 0$).
+
+**Modelo candidato:** **La variable** $Y$ podría modelarse mediante una distribución Exponencial porque presenta exclusivamente valores positivos y una fuerte asimetría hacia la derecha (decaimiento), características fundamentales de este modelo.
+
+$$Y \mid (Y>0) \sim \text{Exponencial}(\lambda)$$
+
+#### Evidencia Numérica y Descriptiva
+
+```{r}
+df_exp <- DATOS_FINALES |>
+  transmute(Y = INDICE_GRAVEDAD) |>
+  filter(is.finite(Y), Y > 0)
+
+y_pos <- df_exp$Y
+
+desc_exp <- data.frame(
+  Media = mean(y_pos),
+  Desv_Estandar = sd(y_pos),
+  Varianza = var(y_pos),
+  Asimetria = e1071::skewness(y_pos)
+)
+
+kbl(desc_exp, digits = 4, align = "c", caption = "Evidencia Descriptiva (Y>0)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+#### Estimación de parámetros
+
+```{r}
+my <- mean(y_pos)
+vy <- var(y_pos)
+
+# Estimador para Exponencial: lambda = 1 / media
+lambda_hat <- 1 / my
+```
+
+#### Validación Gráfica (Histograma y QQ-Plot)
+
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+par(mfrow = c(1, 2))
+
+# 1. Histograma y Curva Teórica
+hist(y_pos, breaks = 30, probability = TRUE,
+     main = "Densidad Empírica vs Exponencial",
+     xlab = "INDICE_GRAVEDAD (Y>0)", col = "lightgray", border = "white")
+curve(dexp(x, rate = lambda_hat), add = TRUE, col = "red", lwd = 2)
+
+# 2. Gráfico de Cuantiles (QQ-Plot)
+p_teo_e <- ppoints(length(y_pos))
+q_teo_e <- qexp(p_teo_e, rate = lambda_hat)
+q_emp_e <- sort(y_pos)
+plot(q_teo_e, q_emp_e, main = "Q-Q Plot: Ajuste Exponencial",
+     xlab = "Cuantiles Teóricos", ylab = "Cuantiles Empíricos",
+     col = "darkblue", pch = 20, cex = 0.5)
+abline(0, 1, col = "red", lwd = 2)
+
+par(mfrow = c(1, 1))
+```
+
+#### Validación de Propiedades Teóricas
+
+```{r}
+val_exp <- data.frame(
+  Medida = c("Media", "Varianza"),
+  Empirica = c(my, vy),
+  Teorica_Exponencial = c(1 / lambda_hat, 1 / (lambda_hat^2))
+)
+
+kbl(val_exp, digits = 4, align = "c", 
+    caption = "Validación Teórica Exponencial") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+#### Conclusión Formal
+
+**No es apropiado modelar la variable** $Y$ (Índice de Gravedad) de manera pura con una distribución Exponencial porque:
+
+-   **La distribución empírica no sigue el patrón esperado:** Aunque la variable tiene asimetría derecha, el histograma revela que la acumulación de datos no describe una curva de decaimiento suave perfecta, sino que presenta múltiples picos atípicos.
+
+-   **La varianza difiere considerablemente de la media al cuadrado:** Matemáticamente, la varianza empírica está muy alejada de la varianza teórica exigida por el modelo.
+
+-   **El QQ-plot está desviado:** Los cuantiles empíricos no siguen la línea diagonal, demostrando que la Exponencial asume una cola infinita, mientras que nuestros datos están rígidamente acotados en un valor máximo de 1.
 
 # Conclusiones
 
 El análisis integral de la muestra de casos COVID-19 en México durante el 2021 permite establecer las siguientes conclusiones en respuesta a los objetivos planteados:
 
-1.  **Perfil de riesgo predominante:** La mayor parte de los casos presentaron un riesgo clínico bajo a moderado y una evolución clínica leve. La distribución asimétrica del *Score de Riesgo COVID* confirma que la carga de comorbilidades fue generalmente moderada en la población estudiada, lo que explica la alta frecuencia de desenlaces sin complicaciones graves.
-
-2.  **Valor predictivo del riesgo basal:** Aunque existe una correlación positiva entre la cantidad de comorbilidades y la severidad del desenlace (r \> 0), esta relación no es determinista. La variabilidad observada en pacientes con *Riesgo Crítico* sugiere que el riesgo inicial por sí solo no dicta el desenlace, y que factores externos (como la atención médica oportuna) juegan un rol crucial.
-
-3.  **Equidad en el sistema de vigilancia:** La distribución por sexo muestra un moderado predominio masculino (57.3%), alineado con patrones epidemiológicos nacionales de COVID-19 en México durante 2021, aunque la letalidad aparente por sexo en esta muestra fue similar entre ambos grupos.
-
-4.  **Independencia del tiempo de respuesta:** El análisis bivariado demostró una correlación prácticamente nula entre la edad del paciente y los días de retraso en la atención. Esto implica que el tiempo de búsqueda de atención sanitaria fue homogéneo entre los distintos grupos etarios.
-
-5.  **Dependencia Estadística de la Mortalidad:** La prueba de probabilidad condicional demostró que el fallecimiento y el riesgo crítico **no son eventos independientes** ($P(A \cap B) \neq P(A)P(B)$). Esto confirma estadísticamente que la acumulación de factores de riesgo (comorbilidades) altera significativamente la probabilidad de supervivencia del paciente.
-
-6.  **Modelado de Supervivencia (Bernoulli):** La variable *Estado del Paciente* se ajusta perfectamente al modelo Bernoulli. La validación numérica mostró que la varianza empírica coincide con la teórica ($\sigma^2 = p(1-p)$), lo que valida el uso de este modelo para describir la probabilidad de éxito (supervivencia) en la población.
-
-7.  **Rechazo del Modelo de Conteo Simple (Poisson):** El *Nivel de Riesgo Clínico* no se comporta como una variable Poisson debido a la presencia de **sobredispersión** (la varianza es mayor que la media) y a la naturaleza acotada de la escala. Esto sugiere que la acumulación de riesgos no es un proceso puramente aleatorio, sino que está influenciado por factores estructurales biológicos.
-
-8.  **Comportamiento de la Edad (Aproximación Normal):** La distribución de la edad de los pacientes tiende a seguir una distribución Normal (campana de Gauss), aunque con desviaciones en los extremos (colas) visibles en el QQ-Plot. Esto es consistente con fenómenos demográficos naturales, permitiendo el uso de modelos gaussianos con cierta precaución.
-
-9.  **Dinámica de la Hospitalización (Exponencial):** El *Tiempo de Estancia* exhibe un patrón de decaimiento que se ajusta razonablemente al modelo Exponencial. La similitud entre la media y la desviación estándar respalda la propiedad de "falta de memoria" de esta distribución, útil para modelar tiempos de servicio en sistemas de salud.
+1.  **Perfil de riesgo predominante:** La mayor parte de los casos presentaron un riesgo clínico bajo a moderado y una evolución clínica leve. La distribución asimétrica del Score de Riesgo COVID confirma que la carga de comorbilidades fue generalmente moderada en la población estudiada, lo que explica la alta frecuencia de desenlaces sin complicaciones graves.
+2.  **Valor predictivo del riesgo basal:** Aunque existe una correlación positiva entre la cantidad de comorbilidades y la severidad del desenlace, esta relación no es determinista. La variabilidad observada en pacientes con Riesgo Crítico sugiere que el riesgo inicial por sí solo no dicta el desenlace final, y que factores externos (como la atención médica oportuna) juegan un rol crucial.
+3.  **Equidad en el sistema de vigilancia:** La distribución por sexo muestra un moderado predominio masculino (57.3%), alineado con los patrones epidemiológicos nacionales de COVID-19 en México durante 2021, aunque en esta submuestra estrictamente filtrada la letalidad aparente fue ligeramente superior en mujeres.
+4.  **Independencia del tiempo de respuesta:** El análisis bivariado demostró una correlación prácticamente nula ($r \approx 0$) entre la edad del paciente y los días de retraso en la atención. Esto implica que el tiempo de búsqueda de atención sanitaria fue homogéneo y no dependió de los distintos grupos etarios.
+5.  **Dependencia Estadística de la Mortalidad:** La prueba de probabilidad condicional demostró que el fallecimiento y el riesgo crítico no son eventos independientes ($P(A \cap B) \neq P(A)P(B)$). Esto confirma estadísticamente que la acumulación de factores de riesgo (comorbilidades) altera y condiciona significativamente la probabilidad de supervivencia del paciente.
+6.  **Modelado de Supervivencia (Bernoulli):** La variable Estado del Paciente se ajusta perfectamente al modelo Bernoulli. La validación numérica mostró que la varianza empírica coincide con la teórica ($\sigma^2 = p(1-p)$), lo que valida el uso de este modelo para describir la probabilidad de éxito (supervivencia) en la población con respuestas puramente dicotómicas.
+7.  **Rechazo del Modelo de Conteo Simple (Poisson):** El Nivel de Riesgo Clínico no se comporta como una variable Poisson pura debido a la presencia de sobredispersión (la varianza difiere de la media). Esto sugiere que la acumulación de riesgos en un paciente no es un proceso puramente aleatorio o independiente, sino que está influenciado por factores estructurales y biológicos correlacionados.
+8.  **Aceptación del Modelo Gamma (Score de Riesgo COVID):** El Score de Riesgo (para valores $>0$) se ajustó de manera adecuada a una distribución Gamma. La validación numérica y gráfica (QQ-Plot) demostró que el modelo captura correctamente la fuerte asimetría positiva y la restricción a valores no negativos, confirmando que la mayoría de la población presenta un riesgo basal bajo con un decaimiento progresivo hacia los casos más críticos.
+9.  **Limitaciones en el Modelado Continuo (Rechazo Exponencial en Índice de Gravedad):** Se comprobó que el Índice de Gravedad no es apropiado para ser modelado puramente con una distribución Exponencial. La evidencia empírica demostró que la naturaleza rígidamente acotada del índice (con un tope máximo de 1) y sus "saltos" discretos rompen los supuestos de continuidad absoluta y cola infinita que exige matemáticamente el modelo teórico, evidenciando las limitaciones de ajustar índices de diseño clínico a distribuciones continuas simples.
 
 # Bibliografía
 
