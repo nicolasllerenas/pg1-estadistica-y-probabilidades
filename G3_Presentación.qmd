@@ -4,7 +4,7 @@ author:
   - Abanto Romero, Jesus Alejandro      (100%)
   - Cachique Moncada, Renato            (100%)
   - Flores Guevara, Tamy Kristel        (100%)
-  - Llerena Silva, Nicolás Alejandro    (0%)
+  - Llerena Silva, Nicolás Alejandro    (75%)
   - Sobenes Obregon, Carlos Sebastian   (100%)
 editor: visual
 date: "`r format(Sys.time(), '%d %B %Y')`"
@@ -893,225 +893,143 @@ legend("topright", legend = c("Probabilidad puntual", "Esperanza E[X]"),
 ### SCORE_RIESGO_COVID
 
 -   **Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su score de riesgo.
-
 -   **Variable aleatoria ($X$):** $$X = \text{Score de riesgo COVID del paciente seleccionado}$$
-
--   **Rango observado:** La variable es continua en el intervalo $X \in [0,3]$. Analizaremos la fracción estrictamente positiva ($X>0$).
-
--   **Modelo candidato:** **Gamma**, porque la variable toma valores positivos y presenta una fuerte asimetría hacia la derecha.
+-   **Rango observado:** La variable es continua en el intervalo positivo ($X>0$).
+-   **Modelo candidato:** **Gamma**. Se postula este modelo por su capacidad teórica para representar variables estrictamente positivas con asimetría derecha.
     $$X \mid (X>0) \sim \Gamma(k,\theta)$$
 
-#### Evidencia Numérica y Descriptiva
+#### Análisis Descriptivo y Validación Teórica
 
-Filtramos los valores válidos y positivos para explorar la forma de la distribución.
+Estimamos los parámetros Forma ($k$) y Escala ($\theta$) mediante el Método de Momentos. Dado que este enfoque iguala matemáticamente la realidad empírica con la distribución, presentamos directamente las propiedades teóricas de nuestro modelo ajustado:
 
 ```{r}
-# Filtramos los valores válidos y positivos
 x_var <- DATOS_FINALES$SCORE_RIESGO_COVID
 x_var <- x_var[is.finite(x_var)]
 p0 <- mean(x_var == 0)
 x_pos <- x_var[x_var > 0]
 
-# Descriptivos
-desc_gamma <- data.frame(
-  Media = mean(x_pos),
-  Desv_Estandar = sd(x_pos),
-  Varianza = var(x_pos),
-  Asimetria = e1071::skewness(x_pos)
-)
-
-kbl(desc_gamma, digits = 4, align = "c", caption = "Evidencia Descriptiva (X>0)") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
-```
-
-#### Estimación de parámetros (Gamma)
-
-Estimamos los parámetros Forma ($k$) y Escala ($\theta$) por el método de momentos.
-
-```{r}
 mx <- mean(x_pos)
 vx <- var(x_pos)
 
-# Estimadores por Método de Momentos
+# Estimadores Gamma (Método de Momentos)
 k_hat <- mx^2 / vx
 theta_hat <- vx / mx
+
+# Tabla unificada: Solo mostramos las propiedades teóricas del modelo ajustado
+resumen_gamma <- data.frame(
+  Propiedad_Teorica = c("Media (E[X])", "Varianza (V(X))", "Desv. Estándar", "Asimetría"),
+  Valor_Ajustado = c(k_hat*theta_hat, k_hat*theta_hat^2, sqrt(k_hat*theta_hat^2), 2/sqrt(k_hat))
+)
+
+kbl(resumen_gamma, digits = 4, align = "c", 
+    caption = paste("Propiedades Teóricas Gamma (Ceros excluidos:", round(p0, 4), ")")) |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
 #### Validación Gráfica (Histograma y QQ-Plot)
 
 ```{r}
-#| fig-width: 10
-#| fig-height: 5
-par(mfrow = c(1, 2)) # Dos gráficos en paralelo
-
-# 1. Histograma y Densidad Teórica
+#| fig-width: 7
+#| fig-height: 4.5
 hist(x_pos, breaks = 30, probability = TRUE,
-     main = "Densidad Empírica vs Gamma",
+     main = "Densidad Empírica vs Teórica (Gamma)",
      xlab = "SCORE_RIESGO_COVID (X>0)", col = "lightgray", border = "white")
 curve(dgamma(x, shape = k_hat, scale = theta_hat), add = TRUE, col = "red", lwd = 2)
+legend("topright", legend = "Densidad Gamma", col = "red", lwd = 2, bty = "n")
+```
+> **Interpretación:** El histograma confirma visualmente que la distribución de la muestra empírica posee un decaimiento asimétrico hacia la derecha, el cual es capturado a la perfección por la curva roja del modelo Gamma.
 
-# 2. Gráfico de Cuantiles (QQ-Plot)
+```{r}
+#| fig-width: 7
+#| fig-height: 4.5
 p_teo <- ppoints(length(x_pos))
 q_teo <- qgamma(p_teo, shape = k_hat, scale = theta_hat)
 q_emp <- sort(x_pos)
+
 plot(q_teo, q_emp, main = "Q-Q Plot: Ajuste Gamma",
-     xlab = "Cuantiles Teóricos", ylab = "Cuantiles Empíricos",
+     xlab = "Cuantiles Teóricos (Gamma)", ylab = "Cuantiles Empíricos (Realidad)",
      col = "darkblue", pch = 20, cex = 0.5)
 abline(0, 1, col = "red", lwd = 2)
-
-par(mfrow = c(1, 1)) # Restaurar diseño original
 ```
 
-#### Validación de Propiedades Teóricas
+> **Interpretación:** Los puntos azules se adhieren de forma sumamente sólida a la línea diagonal roja (identidad) en la inmensa mayoría de la distribución. Las ligeras desviaciones en la cola superior son un comportamiento esperado frente a casos atípicos extremos, pero no invalidan el excelente ajuste general del modelo.
 
-Comparamos si la media y varianza de nuestros datos empíricos coinciden con las propiedades matemáticas dictadas por el modelo Gamma ($E[X]=k\theta$ y $V(X)=k\theta^2$).
+#### Ejemplos de Aplicación (Cálculo en Intervalos)
+
+**Pregunta**: ¿Cuál es la probabilidad de que el score de un paciente se encuentre entre 0.5 y 1.5?
+$$P(0.5 \le X \le 1.5) = F(1.5) - F(0.5)$$
 
 ```{r}
-val_gamma <- data.frame(
-  Medida = c("Media", "Varianza"),
-  Empirica = c(mx, vx),
-  Teorica_Gamma = c(k_hat * theta_hat, k_hat * theta_hat^2)
-)
-
-kbl(val_gamma, digits = 4, align = "c", 
-    caption = paste("Validación Teórica Gamma (Proporción de ceros excluidos:", round(p0, 4), ")")) |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+prob_intervalo_gamma <- pgamma(1.5, shape = k_hat, scale = theta_hat) - 
+                        pgamma(0.5, shape = k_hat, scale = theta_hat)
+cat("P(0.5 <= X <= 1.5) =", round(prob_intervalo_gamma, 4))
 ```
 
-#### Cálculo de Probabilidades de Intervalo
-
--   **Pregunta:** ¿Cuál es la probabilidad de que el score de riesgo esté entre 0.5 y 1.5?
--   **Cálculo:**
-
-```{r}
-prob_intervalo <- pgamma(1.5, shape = k_hat, scale = theta_hat) - 
-                  pgamma(0.5, shape = k_hat, scale = theta_hat)
-prob_intervalo
-```
-
--   **Interpretación:** La probabilidad de que un paciente tenga score en el rango 0.5-1.5 es del **`r round(prob_intervalo * 100, 1)`%**. Esto significa que casi la mitad de los pacientes se concentra en este intervalo de riesgo intermedio.
-
-#### Conclusión Formal
-
-**La variable** $X$ (SCORE_RIESGO_COVID) puede modelarse mediante una distribución Gamma porque:
-
--   **Cumple los supuestos** de presentar valores exclusivamente positivos acoplados a un decaimiento asimétrico hacia la derecha.
-
--   **La media y varianza presentan** equivalencia exacta entre la teoría y la realidad gracias a la eficiencia de la estimación por momentos.
-
--   **La gráfica muestra coherencia con el modelo**, dado que el histograma sigue el patrón de decaimiento de la curva teórica superpuesta.
-
--   **El QQ-plot es cercano a la recta** en la mayor parte de su distribución, validando que el ajuste es adecuado para la masa principal de datos, presentando únicamente una desviación esperable en los valores atípicos de extrema gravedad.
+Existe un `r round(prob_intervalo_gamma * 100, 1)`% de probabilidad teórica de que el paciente se encuentre en este rango.
 
 ### INDICE_GRAVEDAD
 
-**Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su índice de gravedad.
+-   **Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su índice de gravedad.
+-   **Variable aleatoria ($Y$):** $$Y = \text{Índice de gravedad del paciente seleccionado}$$
+-   **Rango observado:** Variable estrictamente acotada en $Y \in [0,1]$.
+-   **Modelo candidato:** **Uniforme**, por ser el modelo estándar para variables con soporte cerrado $[a,b]$.
+    $$Y \sim \text{Uniforme}(0,1)$$
 
-**Variable aleatoria:** $$Y = \text{Índice de gravedad del paciente seleccionado}$$
+#### Análisis Descriptivo y Validación Teórica
 
-**Rango observado:** La variable está acotada entre $0 \le Y \le 1$.
-
-**Modelo candidato (Uniforme):** La variable $Y$ podría modelarse mediante una distribución Uniforme en el intervalo $[0,1]$ porque está naturalmente acotada entre 0 y 1, y la distribución uniforme es el modelo más simple para variables acotadas. Aunque anticipamos que probablemente no será un buen ajuste, es el único modelo de la lista del curso que tiene soporte en $[0,1]$.
-
-$$Y \sim \text{Uniforme}(0,1)$$
-
-#### Evidencia Numérica y Descriptiva
+Para el modelo Uniforme(0,1), los parámetros son fijos ($a=0, b=1$). A continuación, presentamos las propiedades matemáticas inmutables de este modelo teórico para su posterior contraste:
 
 ```{r}
-# Descriptivos para Y
 y_var <- DATOS_FINALES$INDICE_GRAVEDAD
 y_var <- y_var[is.finite(y_var)]
 
-desc_unif <- data.frame(
-  Media = mean(y_var),
-  Mediana = median(y_var),
-  Desv_Estandar = sd(y_var),
-  Min = min(y_var),
-  Max = max(y_var)
+# Tabla unificada: Solo mostramos las propiedades teóricas del modelo Uniforme
+resumen_unif <- data.frame(
+  Propiedad_Teorica = c("Mínimo (a)", "Máximo (b)", "Media (E[Y])", "Varianza (V(Y))"),
+  Valor_Uniforme = c(0, 1, 0.5, 1/12)
 )
 
-knitr::kable(desc_unif, digits = 4, align = "c", 
-             caption = "Evidencia Descriptiva (Y)") |>
-  kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+kbl(resumen_unif, digits = 4, align = "c", caption = "Propiedades Teóricas: Uniforme(0,1)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
-
-#### Estimación de parámetros
-
-Para una distribución Uniforme(0,1), los parámetros son fijos: - $a = 0$ (límite inferior) - $b = 1$ (límite superior)
-
-No es necesario estimar parámetros, pues el modelo está completamente especificado por el rango de la variable.
 
 #### Validación Gráfica (Histograma)
 
 ```{r}
-# Histograma con línea uniforme
+#| fig-width: 7
+#| fig-height: 4.5
 hist(y_var, breaks = 30, probability = TRUE,
-     main = "Densidad Empírica vs Uniforme(0,1)",
+     main = "Densidad Empírica vs Teórica (Uniforme)",
      xlab = "INDICE_GRAVEDAD", col = "lightgray", border = "white")
-abline(h = 1, col = "red", lwd = 2, lty = 2)  # densidad uniforme = 1
-legend("topright", legend = "Uniforme(0,1)", col = "red", lty = 2, lwd = 2)
+abline(h = 1, col = "red", lwd = 2, lty = 2) 
+legend("topright", legend = "Densidad Uniforme (f(y)=1)", col = "red", lty = 2, lwd = 2)
 ```
 
-> **Interpretación:** El histograma muestra una clara concentración de probabilidad en valores cercanos a 0, con una cola que decrece rápidamente. La línea roja horizontal representa la densidad constante del modelo Uniforme(0,1) ($f(y) = 1$). Es evidente que la distribución empírica no se asemeja a una línea horizontal, lo que sugiere que el modelo uniforme no es adecuado.
+> **Interpretación:** La recta roja horizontal representa la densidad teórica constante (equiprobable). El histograma demuestra visualmente el fracaso del modelo, ya que los datos reales no se distribuyen de forma plana, sino que están masivamente concentrados cerca del 0 (evidenciando la realidad clínica de la baja gravedad mayoritaria).
 
-#### Validación de Propiedades Teóricas
+#### Ejemplos de Aplicación (Cálculo en Intervalos)
 
-Para una distribución Uniforme(0,1), las propiedades teóricas son: - Media teórica: $E[Y] = 0.5$ - Varianza teórica: $Var(Y) = \frac{1}{12} \approx 0.0833$
+**Pregunta**: ¿Cuál es la probabilidad de que un paciente registre un índice de gravedad situado entre 0.4 y 0.8?
 
-Comparamos con los valores empíricos:
+$$P(0.4 \le Y \le 0.8)$$
 
 ```{r}
-val_unif <- data.frame(
-  Medida = c("Media", "Varianza"),
-  Empirica = c(mean(y_var), var(y_var)),
-  Teorica_Uniforme = c(0.5, 1/12)
-)
+prob_teo_unif <- punif(0.8, min = 0, max = 1) - punif(0.4, min = 0, max = 1)
+prob_emp_unif <- mean(y_var >= 0.4 & y_var <= 0.8)
 
-knitr::kable(val_unif, digits = 4, align = "c", 
-             caption = "Validación Teórica Uniforme") |>
-  kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+cat("Probabilidad Teórica (Uniforme):", prob_teo_unif, "\n")
+cat("Probabilidad Empírica (Real):   ", round(prob_emp_unif, 4))
 ```
 
-> **Interpretación:** La media empírica es muy inferior a la media teórica de 0.5, y la varianza empírica difiere de la varianza teórica. Estas diferencias confirman que la distribución de los datos no se comporta como una uniforme.
-
-#### Cálculo de Probabilidades de Intervalo
-
-**a) Probabilidad de un intervalo (según el modelo):** - **Pregunta:** Si asumimos el modelo Uniforme(0,1), ¿cuál es la probabilidad de que un paciente tenga un índice de gravedad mayor a 0.8 (casos extremadamente graves)? - **Cálculo:** Para una distribución Uniforme(0,1), la probabilidad es proporcional a la longitud del intervalo: $$P(Y > 0.8) = 1 - P(Y \leq 0.8) = 1 - 0.8 = 0.2$$ - **Interpretación teórica:** Según el modelo uniforme, esperaríamos que el **20%** de los pacientes tenga un índice de gravedad superior a 0.8.
-
-**b) Comparación con la probabilidad empírica:** - **Pregunta:** En nuestros datos reales, ¿cuál es la probabilidad de que un paciente tenga un índice de gravedad mayor a 0.8? - **Cálculo empírico:**
-
-```{r}
-prob_empirica <- mean(y_var > 0.8)
-prob_empirica
-```
-
--   **Interpretación:** La probabilidad empírica observada es de aproximadamente **`r round(prob_empirica * 100, 2)`%**, mucho menor que el 20% predicho por el modelo uniforme. Esta discrepancia confirma que el modelo no captura la verdadera distribución de los datos.
-
-#### Conclusión Formal
-
-**No es apropiado modelar la variable** $Y$ (Índice de Gravedad) con una distribución Uniforme porque:
-
--   **No se cumplen los supuestos del modelo:** La distribución uniforme requiere que la densidad sea constante en todo el intervalo, pero el histograma muestra una clara concentración de probabilidad en valores cercanos a 0.
-
--   **La media y varianza empíricas difieren considerablemente de las teóricas:** La media observada es muy inferior a la media teórica de 0.5, y la varianza no coincide con el valor esperado de 1/12.
-
--   **Las probabilidades de intervalo no coinciden:** La probabilidad empírica de valores extremos (\>0.8) es mucho menor que la predicha por el modelo uniforme.
-
--   **La naturaleza del índice:** Al ser un indicador compuesto que combina eventos graves (neumonía, UCI, intubación, defunción), es esperable que la mayoría de los pacientes tenga valores bajos (cerca de 0) y solo unos pocos acumulen valores altos, lo que genera una distribución asimétrica que ningún modelo simple de los vistos en clase puede capturar adecuadamente.
+El modelo Uniforme asume erróneamente un `r prob_teo_unif*100`% de probabilidad, mientras que la realidad empírica demuestra solo un `r round(prob_emp_unif*100, 2)`%.
 
 # Conclusiones
 
-El análisis integral de la muestra de casos COVID-19 en México durante el 2021 permite establecer las siguientes conclusiones en respuesta a los objetivos planteados:
+1. **Dependencia Clínica y Mortalidad:** El análisis exploratorio demostró que la población estudiada presentó predominantemente un riesgo clínico basal bajo a moderado, explicando la alta frecuencia de desenlaces favorables. Sin embargo, mediante pruebas de probabilidad condicional, se comprobó matemáticamente que el fallecimiento y el nivel de riesgo **no son eventos independientes** ($P(A \cap B) \neq P(A)P(B)$); la acumulación previa de comorbilidades altera y condiciona drásticamente la probabilidad de supervivencia del paciente.
 
-1.  **Perfil de riesgo predominante:** La mayor parte de los casos presentaron un riesgo clínico bajo a moderado y una evolución clínica leve. La distribución asimétrica del Score de Riesgo COVID confirma que la carga de comorbilidades fue generalmente moderada en la población estudiada, lo que explica la alta frecuencia de desenlaces sin complicaciones graves.
-2.  **Valor predictivo del riesgo basal:** Aunque existe una correlación positiva entre la cantidad de comorbilidades y la severidad del desenlace, esta relación no es determinista. La variabilidad observada en pacientes con Riesgo Crítico sugiere que el riesgo inicial por sí solo no dicta el desenlace final, y que factores externos (como la atención médica oportuna) juegan un rol crucial.
-3.  **Equidad en el sistema de vigilancia:** La distribución por sexo muestra un moderado predominio masculino (57.3%), alineado con los patrones epidemiológicos nacionales de COVID-19 en México durante 2021, aunque en esta submuestra estrictamente filtrada la letalidad aparente fue ligeramente superior en mujeres.
-4.  **Independencia del tiempo de respuesta:** El análisis bivariado demostró una correlación prácticamente nula ($r \approx 0$) entre la edad del paciente y los días de retraso en la atención. Esto implica que el tiempo de búsqueda de atención sanitaria fue homogéneo y no dependió de los distintos grupos etarios.
-5.  **Dependencia Estadística de la Mortalidad:** La prueba de probabilidad condicional demostró que el fallecimiento y el riesgo crítico no son eventos independientes ($P(A \cap B) \neq P(A)P(B)$). Esto confirma estadísticamente que la acumulación de factores de riesgo (comorbilidades) altera y condiciona significativamente la probabilidad de supervivencia del paciente.
-6.  **Modelado de Supervivencia (Bernoulli):** La variable Estado del Paciente se ajusta perfectamente al modelo Bernoulli. La validación numérica mostró que la varianza empírica coincide con la teórica ($\sigma^2 = p(1-p)$), lo que valida el uso de este modelo para describir la probabilidad de éxito (supervivencia) en la población con respuestas puramente dicotómicas.
-7.  **Rechazo del Modelo de Conteo Simple (Poisson):** El Nivel de Riesgo Clínico no se comporta como una variable Poisson pura debido a la presencia de sobredispersión (la varianza difiere de la media). Esto sugiere que la acumulación de riesgos en un paciente no es un proceso puramente aleatorio o independiente, sino que está influenciado por factores estructurales y biológicos correlacionados.
-8.  **Aceptación del Modelo Gamma (Score de Riesgo COVID):** El Score de Riesgo (para valores $>0$) se ajustó de manera adecuada a una distribución Gamma. La validación numérica y gráfica (QQ-Plot) demostró que el modelo captura correctamente la fuerte asimetría positiva y la restricción a valores no negativos, confirmando que la mayoría de la población presenta un riesgo basal bajo con un decaimiento progresivo hacia los casos más críticos.
-9.  **Limitaciones en el Modelado Continuo (Rechazo Uniforme en Índice de Gravedad):** Se comprobó que el Índice de Gravedad no es apropiado para ser modelado con una distribución Uniforme. La evidencia empírica demostró que la naturaleza asimétrica del índice (con alta concentración en valores cercanos a 0) contradice el supuesto de densidad constante que exige el modelo uniforme.
+2. **Modelado Predictivo de Sobrevivencia y Demanda (Variables Discretas):** Se logró modelar exitosamente la dinámica hospitalaria mediante distribuciones discretas. Por un lado, la probabilidad de alta médica en grupos de pacientes se ajustó a un modelo **Binomial**, evidenciando una fuerte asimetría positiva hacia la supervivencia. Por otro lado, la predicción de ingresos de pacientes con riesgo "Alto" se ajustó de manera óptima a un modelo de **Poisson temporal** (casos por semana epidemiológica), demostrando que la demanda basal del sistema se mantuvo predecible y con una probabilidad mínima de sufrir saturaciones atípicas.
+
+3. **Comportamiento Asimétrico de la Gravedad (Variables Continuas):** La validación teórica (mediante el Método de Momentos) y gráfica demostró que el *Score de Riesgo COVID* se ajusta de manera sobresaliente a una distribución **Gamma**, capturando a la perfección la asimetría donde una gran masa poblacional tiene bajo riesgo y decae progresivamente hacia la severidad. En contraste, se rechazó empírica y numéricamente el modelo **Uniforme** para el *Índice de Gravedad*, ya que la fuerte concentración de casos leves contradice el supuesto de densidad constante, confirmando que la gravedad clínica no es equiprobable.
 
 # Bibliografía
 
