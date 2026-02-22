@@ -345,7 +345,7 @@ ggplot(tabla_sexo, aes(x = Etiqueta, y = Frecuencia, fill = Etiqueta)) +
 
 > **Interpretación:** En la muestra analizada se observa una ligera preponderancia de casos en hombres respecto a mujeres, lo que representa una distribución moderadamente asimétrica por sexo, aunque sin alcanzar una diferencia extrema.
 
-## Analisis De Interaccion
+## Analisis de Interaccion
 
 ### Variables Categóricas: SEXO vs ESTADO
 
@@ -392,6 +392,8 @@ barplot(tabla_categorica,
         args.legend = list(x = "topright", title = "Sexo", cex = 0.8))
 ```
 
+> **Interpretación:** El gráfico de barras agrupadas ilustra las frecuencias absolutas de supervivencia y mortalidad según el sexo del paciente. Visualmente, se aprecia que el volumen total de casos en hombres (barras rosas) supera al de las mujeres (barras celestes) en ambos desenlaces (Vivo y Muerto). Esto es un reflejo directo de la mayor proporción de pacientes masculinos en la muestra general. Asimismo, se observa que en ambos grupos la barra correspondiente a los casos fatales es ligeramente más alta que la de sobrevivientes, confirmando la alta letalidad en esta submuestra de pacientes con registros completos.
+
 **Figura 6**\
 *Distribución del Estado según Sexo\
 *Frecuencia absoluta de casos
@@ -414,7 +416,7 @@ ggplot(DATOS_FINALES, aes(x = factor(SEXO, labels = c("Mujer", "Hombre")), fill 
   theme(legend.position = "top")
 ```
 
-> **Interpretación:** En la muestra analizable (n = 17 714 casos completos), la letalidad fue superior en mujeres (56,9 %) frente a hombres (51,8 %), diferencia de 5,1 puntos porcentuales. Este resultado contradice la tendencia nacional de COVID-19 en México (2020-2022), donde los hombres concentraron ≈60-62 % de las defunciones y exhibieron tasas de letalidad 1,5-2 veces mayores (DGE/SSA). La inversión observada se atribuye probablemente al filtrado estricto por casos completos, que puede generar sesgo hacia desenlaces graves en mujeres, así como a particularidades del conjunto de datos didáctico utilizado, limitando su representatividad y exigiendo precaución en la generalización de los hallazgos.
+> **Interpretación:** Este gráfico de barras agrupadas contrasta visualmente los desenlaces clínicos absolutos según el sexo. Se aprecia de inmediato que, aunque el grupo de hombres aporta un mayor volumen total de pacientes, en ambos géneros la barra roja (fallecidos) supera a la verde (vivos). Destaca gráficamente que la brecha de altura entre la barra roja y la verde es proporcionalmente más pronunciada en el grupo de mujeres, lo que ilustra de manera clara la mayor tasa de letalidad de este sector dentro de nuestra muestra específica.
 
 ### Variables Numéricas: EDAD vs DIAS_RETRASO
 
@@ -475,6 +477,8 @@ cor_edad_retraso <- cor(DATOS_FINALES$EDAD, DATOS_FINALES$DIAS_RETRASO,
                         use = "complete.obs")
 ```
 
+> **Interpretación:** El gráfico de dispersión ilustra la relación bivariada empírica entre la edad de los pacientes y los días que demoraron en buscar atención hospitalaria. Visualmente, la distribución de los puntos azules forma una nube dispersa y homogénea, sin evidenciar ninguna tendencia ascendente o descendente clara. Esta ausencia de un patrón lineal, respaldada por un coeficiente de correlación cercano a cero, demuestra de forma inicial que el tiempo de espera para acudir al hospital fue indistinto para todos los grupos de edad.
+
 Coeficiente de correlacion:
 
 ```{r}
@@ -493,7 +497,7 @@ round(cor_edad_retraso, 3)
               ylab = "Días de retraso")
 ```
 
-> **Interpretación:** El gráfico de dispersión muestra la relación entre la edad de los pacientes y los días de retraso entre la aparición de síntomas y el ingreso. Los puntos se encuentran dispersos sin formar un patrón claramente definido, lo que sugiere que la relación entre ambas variables es muy débil. El coeficiente de correlación obtenido (r = `round(cor_edad_retraso, 3)`) confirma una asociación prácticamente nula entre la edad y los días de retraso, por lo que no se observa una relación lineal. Esto implica que la edad del paciente no parece ser un factor determinante en el tiempo de retraso para el ingreso. El gráfico de densidad (smoothScatter) muestra una concentración de casos entre 0-10 días de retraso para todas las edades, pero sin una tendencia clara que indique dependencia entre ambas variables.
+> **Interpretación:** A diferencia de la dispersión clásica, este gráfico de densidad revela las zonas de mayor concentración masiva de pacientes. Se observa claramente que el área de mayor densidad (la franja horizontal más oscura) se localiza en la parte inferior del eje Y (entre 0 y 10 días de retraso) y se extiende de manera uniforme a lo largo de casi todas las edades. Esto confirma visualmente que la inmensa mayoría de la población, sin importar si eran jóvenes o adultos mayores, acudió a recibir atención médica durante los primeros días tras el inicio de los síntomas, reafirmando que no existe una dependencia lineal entre la edad y el tiempo de espera.
 
 ### Variables Categórica Y Numérica: RIESGO_CLINICO vs INDICE_GRAVEDAD
 
@@ -557,7 +561,7 @@ points(1:length(means), means, pch = 23, col = "red", bg = "yellow", cex = 1.5)
 
 **Tabla 10**\
 
-**Probabilidad Empírica: Riesgo Clínico**
+*Probabilidad Empírica: Riesgo Clínico*
 
 ```{r}
 # Tabla Variable 1: RIESGO
@@ -575,7 +579,7 @@ kbl(tabla_riesgo,
   kable_styling(bootstrap_options = "striped", full_width = F)
 ```
 
-> **Interpretación:** A partir del cálculo empírico, observamos que los eventos con mayor probabilidad de ocurrencia corresponden a los niveles de riesgo "Muy bajo" y "Bajo". Esto indica que, si seleccionamos a un paciente al azar de nuestra muestra, es altamente probable que este no presente una carga severa de comorbilidades previas. Por el contrario, la probabilidad de ocurrencia del evento $E_6$ (Riesgo Crítico) es marginal, demostrando que los casos con acumulación extrema de factores de riesgo representan una fracción muy pequeña y atípica de la población estudiada.
+A partir del cálculo empírico, observamos que los eventos con mayor probabilidad de ocurrencia corresponden a los niveles de riesgo "Muy bajo" y "Bajo". Esto indica que, si seleccionamos a un paciente al azar de nuestra muestra, es altamente probable que este no presente una carga severa de comorbilidades previas. Por el contrario, la probabilidad de ocurrencia del evento $E_6$ (Riesgo Crítico) es marginal, demostrando que los casos con acumulación extrema de factores de riesgo representan una fracción muy pequeña y atípica de la población estudiada.
 
 ### Estado del Paciente
 
@@ -593,7 +597,7 @@ kbl(tabla_riesgo,
 
 **Tabla 11**\
 
-**Probabilidad Empírica: Estado Final**
+*Probabilidad Empírica: Estado Final*
 
 ```{r}
 # Tabla Variable 2: ESTADO
@@ -611,7 +615,7 @@ kbl(tabla_estado,
   kable_styling(bootstrap_options = "striped", full_width = F)
 ```
 
-> **Interpretación:** El espacio muestral dicotómico revela las probabilidades empíricas absolutas de supervivencia y mortalidad en esta base de datos filtrada. Comparar $P(S_1)$ frente a $P(S_2)$ nos proporciona la tasa de letalidad general (o "probabilidad de fracaso") que nos servirá como tasa base o parámetro a priori para los modelos probabilísticos posteriores, como el Teorema de Bayes y la distribución de Bernoulli.
+El espacio muestral dicotómico revela las probabilidades empíricas absolutas de supervivencia y mortalidad en esta base de datos filtrada. Comparar $P(S_1)$ frente a $P(S_2)$ nos proporciona la tasa de letalidad general (o "probabilidad de fracaso") que nos servirá como tasa base o parámetro a priori para los modelos probabilísticos posteriores, como el Teorema de Bayes y la distribución de Bernoulli.
 
 ## Probabilidad Condicional
 
@@ -741,11 +745,11 @@ Sustituimos en la fórmula principal:
 
 $$P(B|A) = \frac{P(A|B)\cdot P(B)}{P(A_{Total})} = \frac{`r round(P_A_dado_B,4)` \cdot `r round(P_B,4)`}{`r round(P_Total_Calculada,4)`} = `r round((P_A_dado_B * P_B)/P_Total_Calculada,4)`$$
 
-> **Interpretación:** El análisis conjunto de estos eventos demuestra de manera concluyente que el fallecimiento por COVID-19 y el nivel de riesgo clínico basal **no son eventos independientes** en nuestra población de estudio. La ocurrencia de uno afecta matemáticamente la probabilidad del otro.
->
-> Por un lado, la **Probabilidad Condicional Directa** ($P(A|B) = `r round(P_A_dado_B * 100, 2)`\%$) nos revela la letalidad específica a la que se enfrenta un paciente "sano" (con riesgo bajo); es decir, su riesgo real de perder la vida a pesar de tener pocas comorbilidades.
->
-> Por otro lado, el **Teorema de Bayes** ($P(B|A) = `r round(((P_A_dado_B * P_B)/P_Total_Calculada) * 100, 2)`\%$) nos da una mirada retrospectiva vital para la epidemiología: de todos los pacientes que trágicamente fallecieron, esta es la proporción que provenía de un grupo teóricamente "seguro". Este valor bayesiano, combinado con las **Propiedades de la Probabilidad** (donde vimos que una gran parte de las muertes proviene de pacientes que *no* tenían riesgo bajo, $A \cap B^C$), valida estadísticamente que el *Score de Riesgo* es un buen predictor, pero advierte que el COVID-19 mantiene un riesgo de fatalidad subyacente que no depende exclusivamente de las enfermedades previas del paciente.
+El análisis conjunto de estos eventos demuestra de manera concluyente que el fallecimiento por COVID-19 y el nivel de riesgo clínico basal **no son eventos independientes** en nuestra población de estudio. La ocurrencia de uno afecta matemáticamente la probabilidad del otro.
+
+Por un lado, la **Probabilidad Condicional Directa** ($P(A|B) = `r round(P_A_dado_B * 100, 2)`\%$) nos revela la letalidad específica a la que se enfrenta un paciente "sano" (con riesgo bajo); es decir, su riesgo real de perder la vida a pesar de tener pocas comorbilidades.
+
+Por otro lado, el **Teorema de Bayes** ($P(B|A) = `r round(((P_A_dado_B * P_B)/P_Total_Calculada) * 100, 2)`\%$) nos da una mirada retrospectiva vital para la epidemiología: de todos los pacientes que trágicamente fallecieron, esta es la proporción que provenía de un grupo teóricamente "seguro". Este valor bayesiano, combinado con las **Propiedades de la Probabilidad** (donde vimos que una gran parte de las muertes proviene de pacientes que *no* tenían riesgo bajo, $A \cap B^C$), valida estadísticamente que el *Score de Riesgo* es un buen predictor, pero advierte que el COVID-19 mantiene un riesgo de fatalidad subyacente que no depende exclusivamente de las enfermedades previas del paciente.
 
 ## Variables Aleatorias Discretas
 
@@ -793,7 +797,10 @@ cat("P(Y >= 30) =", round(prob_acumulada, 4))
 
 Existe un `r round(prob_acumulada*100, 2)`% de probabilidad de que 30 o más pacientes sobrevivan.
 
-#### Validación Gráfica (Distribución de Probabilidad)
+#### Validación Gráfica
+
+**Figura 10**\
+*Distribución Teórica: Binomial(n=40, p)*
 
 ```{r}
 #| fig-width: 8
@@ -802,7 +809,6 @@ y_vals <- 0:40
 prob_y <- dbinom(y_vals, size = 40, prob = p_exito)
 
 plot(y_vals, prob_y, type = "h", lwd = 3, col = "blue",
-     main = "Distribución Teórica: Binomial(n=40, p)",
      xlab = "Número de Sobrevivientes en la muestra (Y)", 
      ylab = "Probabilidad P(Y=y)",
      col.main = "darkblue")
@@ -867,6 +873,9 @@ Hay un `r round(prob_pois_acumulada*100, 2)`% de probabilidad de que los ingreso
 
 #### Validación Gráfica
 
+**Figura 11**\
+*Distribución Teórica: Poisson(\u03bb semanal)*
+
 ```{r}
 #| fig-width: 8
 #| fig-height: 4.5
@@ -875,7 +884,6 @@ x_vals <- 0:max_x
 prob_x <- dpois(x_vals, lambda = lambda_semana)
 
 plot(x_vals, prob_x, type = "h", lwd = 4, col = "darkgreen",
-     main = "Distribución Teórica: Poisson(\u03bb semanal)",
      xlab = "Ingresos de Pacientes con Riesgo Alto por Semana (X)", 
      ylab = "Probabilidad P(X=x)",
      col.main = "darkgreen")
@@ -902,6 +910,10 @@ legend("topright", legend = c("Probabilidad puntual", "Esperanza E[X]"),
 
 Estimamos los parámetros Forma ($k$) y Escala ($\theta$) mediante el Método de Momentos. Dado que este enfoque iguala matemáticamente la realidad empírica con la distribución, presentamos directamente las propiedades teóricas de nuestro modelo ajustado:
 
+**Tabla 12**\
+
+*Propiedades Teóricas Gamma (Ceros excluidos:", round(p0, 4), ")*
+
 ```{r}
 x_var <- DATOS_FINALES$SCORE_RIESGO_COVID
 x_var <- x_var[is.finite(x_var)]
@@ -922,22 +934,29 @@ resumen_gamma <- data.frame(
 )
 
 kbl(resumen_gamma, digits = 4, align = "c", 
-    caption = paste("Propiedades Teóricas Gamma (Ceros excluidos:", round(p0, 4), ")")) |>
+    caption = NULL) |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
 #### Validación Gráfica (Histograma y QQ-Plot)
 
+**Figura 12**\
+
+*Densidad Empírica vs Teórica (Gamma)*
+
 ```{r}
 #| fig-width: 7
 #| fig-height: 4.5
 hist(x_pos, breaks = 30, probability = TRUE,
-     main = "Densidad Empírica vs Teórica (Gamma)",
      xlab = "SCORE_RIESGO_COVID (X>0)", col = "lightgray", border = "white")
 curve(dgamma(x, shape = k_hat, scale = theta_hat), add = TRUE, col = "red", lwd = 2)
 legend("topright", legend = "Densidad Gamma", col = "red", lwd = 2, bty = "n")
 ```
 > **Interpretación:** El histograma confirma visualmente que la distribución de la muestra empírica posee un decaimiento asimétrico hacia la derecha, el cual es capturado a la perfección por la curva roja del modelo Gamma.
+
+**Figura 13**\
+
+*Q-Q Plot: Ajuste Gamma*
 
 ```{r}
 #| fig-width: 7
@@ -946,7 +965,7 @@ p_teo <- ppoints(length(x_pos))
 q_teo <- qgamma(p_teo, shape = k_hat, scale = theta_hat)
 q_emp <- sort(x_pos)
 
-plot(q_teo, q_emp, main = "Q-Q Plot: Ajuste Gamma",
+plot(q_teo, q_emp,
      xlab = "Cuantiles Teóricos (Gamma)", ylab = "Cuantiles Empíricos (Realidad)",
      col = "darkblue", pch = 20, cex = 0.5)
 abline(0, 1, col = "red", lwd = 2)
@@ -979,6 +998,10 @@ Existe un `r round(prob_intervalo_gamma * 100, 1)`% de probabilidad teórica de 
 
 Para el modelo Uniforme(0,1), los parámetros son fijos ($a=0, b=1$). A continuación, presentamos las propiedades matemáticas inmutables de este modelo teórico para su posterior contraste:
 
+**Tabla 13**\
+
+*Propiedades Teóricas: Uniforme(0,1)*
+
 ```{r}
 y_var <- DATOS_FINALES$INDICE_GRAVEDAD
 y_var <- y_var[is.finite(y_var)]
@@ -989,17 +1012,20 @@ resumen_unif <- data.frame(
   Valor_Uniforme = c(0, 1, 0.5, 1/12)
 )
 
-kbl(resumen_unif, digits = 4, align = "c", caption = "Propiedades Teóricas: Uniforme(0,1)") |>
+kbl(resumen_unif, digits = 4, align = "c", caption = NULL) |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
 #### Validación Gráfica (Histograma)
 
+**Figura 14**\
+
+*Densidad Empírica vs Teórica (Uniforme)*
+
 ```{r}
 #| fig-width: 7
 #| fig-height: 4.5
 hist(y_var, breaks = 30, probability = TRUE,
-     main = "Densidad Empírica vs Teórica (Uniforme)",
      xlab = "INDICE_GRAVEDAD", col = "lightgray", border = "white")
 abline(h = 1, col = "red", lwd = 2, lty = 2) 
 legend("topright", legend = "Densidad Uniforme (f(y)=1)", col = "red", lty = 2, lwd = 2)
