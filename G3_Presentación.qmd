@@ -822,6 +822,18 @@ kbl(val_bernoulli, digits = 4, align = "c",
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
+#### Cálculo de Probabilidades de Interés
+
+**a) Probabilidad puntual:**
+- **Pregunta:** ¿Cuál es la probabilidad de que un paciente haya fallecido?
+- **Cálculo:** $P(Y = 0) = 1 - p = 1 - 0.559 = 0.441$
+- **Interpretación:** La probabilidad de fallecimiento es del **44.1%**.
+
+**b) Probabilidad acumulada:**
+- **Pregunta:** ¿Cuál es la probabilidad de que un paciente tenga estado "fallecido" o inferior?
+- **Cálculo:** $P(Y \leq 0) = P(Y = 0) = 0.441$
+- **Interpretación:** La probabilidad acumulada hasta "fallecido" es también **44.1%**.
+
 #### Conclusión Formal
 
 **La variable** $Y$ (Estado) puede modelarse mediante una distribución de Bernoulli porque: \* **Cumple los supuestos** de consistir en un único ensayo independiente con una respuesta estrictamente dicotómica (0 = Fallece, 1 = Sobrevive). \* **La media y varianza presentan** equivalencia exacta matemática; la varianza empírica coincide con la varianza teórica calculada mediante $p(1-p)$. \* **Las probabilidades teóricas se aproximan** a la perfección a las proporciones empíricas observadas en la tabla de frecuencias. \* **La gráfica muestra coherencia** absoluta con el modelo, superponiendo de forma exacta las distribuciones de masa reales y teóricas.
@@ -930,6 +942,26 @@ kbl(val_poisson, digits = 4, align = "c",
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
+#### Cálculo de Probabilidades de Interés
+
+**a) Probabilidad puntual:**
+- **Pregunta:** Bajo el modelo Poisson con $\lambda = 1.32$, ¿cuál es $P(X = 3)$?
+- **Cálculo:** 
+  $$P(X = 3) = \frac{e^{-1.32} \cdot 1.32^3}{3!}$$
+  
+```{r}
+dpois(3, lambda = 1.32)
+```
+- **Interpretación:** El modelo predice **11.5%** de probabilidad para riesgo "Alto" (X=3), mientras que la probabilidad empírica es 16.5%, evidenciando subestimación.
+
+**b) Probabilidad acumulada:**
+- **Pregunta:** ¿Cuál es $P(X \leq 2)$?
+- **Cálculo:**
+```{r}
+ppois(2, lambda = 1.32)
+```
+- **Interpretación:** El modelo predice **58.7%** de pacientes con riesgo moderado o menor, valor que puede contrastarse con la proporción empírica acumulada.
+
 #### Conclusión Formal
 
 **No es apropiado modelar la variable** $X$ (Nivel de Riesgo) con una distribución de Poisson porque: \* **No se cumplen los supuestos** de aleatoriedad pura en el conteo; la acumulación de múltiples enfermedades en un paciente suele estar correlacionada fisiológicamente, violando la independencia de ocurrencia. \* **La varianza difiere considerablemente de la media**, evidenciando un claro problema de "sobredispersión" empírica que rompe el supuesto matemático fundamental de equidispersión ($E[X] = V(X) = \lambda$). \* **La distribución empírica no sigue el patrón esperado**, ya que la gráfica comparativa revela que el modelo teórico subestima los casos nulos (cero comorbilidades) y sobrestima fuertemente los valores centrales.
@@ -1025,6 +1057,19 @@ kbl(val_gamma, digits = 4, align = "c",
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
+#### Cálculo de Probabilidades de Intervalo
+
+- **Pregunta:** ¿Cuál es la probabilidad de que el score de riesgo esté entre 0.5 y 1.5?
+- **Cálculo:**
+
+```{r}
+prob_intervalo <- pgamma(1.5, shape = k_hat, scale = theta_hat) - 
+                  pgamma(0.5, shape = k_hat, scale = theta_hat)
+prob_intervalo
+```
+
+- **Interpretación:** La probabilidad de que un paciente tenga score en el rango 0.5-1.5 es del **`r round(prob_intervalo * 100, 1)`%**. Esto significa que casi la mitad de los pacientes se concentra en este intervalo de riesgo intermedio.
+
 #### Conclusión Formal
 
 **La variable** $X$ (SCORE_RIESGO_COVID) puede modelarse mediante una distribución Gamma porque:
@@ -1043,90 +1088,106 @@ kbl(val_gamma, digits = 4, align = "c",
 
 **Variable aleatoria:** $$Y = \text{Índice de gravedad del paciente seleccionado}$$
 
-**Rango observado:** La variable está acotada entre $0 \le Y \le 1$. Para el modelo Exponencial, evaluaremos los valores estrictamente positivos ($Y > 0$).
+**Rango observado:** La variable está acotada entre $0 \le Y \le 1$.
 
-**Modelo candidato:** **La variable** $Y$ podría modelarse mediante una distribución Exponencial porque presenta exclusivamente valores positivos y una fuerte asimetría hacia la derecha (decaimiento), características fundamentales de este modelo.
+**Modelo candidato (Uniforme):** La variable $Y$ podría modelarse mediante una distribución Uniforme en el intervalo $[0,1]$ porque está naturalmente acotada entre 0 y 1, y la distribución uniforme es el modelo más simple para variables acotadas. Aunque anticipamos que probablemente no será un buen ajuste, es el único modelo de la lista del curso que tiene soporte en $[0,1]$.
 
-$$Y \mid (Y>0) \sim \text{Exponencial}(\lambda)$$
+$$Y \sim \text{Uniforme}(0,1)$$
 
 #### Evidencia Numérica y Descriptiva
 
 ```{r}
-df_exp <- DATOS_FINALES |>
-  transmute(Y = INDICE_GRAVEDAD) |>
-  filter(is.finite(Y), Y > 0)
+# Descriptivos para Y
+y_var <- DATOS_FINALES$INDICE_GRAVEDAD
+y_var <- y_var[is.finite(y_var)]
 
-y_pos <- df_exp$Y
-
-desc_exp <- data.frame(
-  Media = mean(y_pos),
-  Desv_Estandar = sd(y_pos),
-  Varianza = var(y_pos),
-  Asimetria = e1071::skewness(y_pos)
+desc_unif <- data.frame(
+  Media = mean(y_var),
+  Mediana = median(y_var),
+  Desv_Estandar = sd(y_var),
+  Min = min(y_var),
+  Max = max(y_var)
 )
 
-kbl(desc_exp, digits = 4, align = "c", caption = "Evidencia Descriptiva (Y>0)") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+knitr::kable(desc_unif, digits = 4, align = "c", 
+             caption = "Evidencia Descriptiva (Y)") |>
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
 #### Estimación de parámetros
 
-```{r}
-my <- mean(y_pos)
-vy <- var(y_pos)
+Para una distribución Uniforme(0,1), los parámetros son fijos:
+- $a = 0$ (límite inferior)
+- $b = 1$ (límite superior)
 
-# Estimador para Exponencial: lambda = 1 / media
-lambda_hat <- 1 / my
-```
+No es necesario estimar parámetros, pues el modelo está completamente especificado por el rango de la variable.
 
-#### Validación Gráfica (Histograma y QQ-Plot)
+#### Validación Gráfica (Histograma)
 
 ```{r}
-#| fig-width: 10
-#| fig-height: 5
-par(mfrow = c(1, 2))
-
-# 1. Histograma y Curva Teórica
-hist(y_pos, breaks = 30, probability = TRUE,
-     main = "Densidad Empírica vs Exponencial",
-     xlab = "INDICE_GRAVEDAD (Y>0)", col = "lightgray", border = "white")
-curve(dexp(x, rate = lambda_hat), add = TRUE, col = "red", lwd = 2)
-
-# 2. Gráfico de Cuantiles (QQ-Plot)
-p_teo_e <- ppoints(length(y_pos))
-q_teo_e <- qexp(p_teo_e, rate = lambda_hat)
-q_emp_e <- sort(y_pos)
-plot(q_teo_e, q_emp_e, main = "Q-Q Plot: Ajuste Exponencial",
-     xlab = "Cuantiles Teóricos", ylab = "Cuantiles Empíricos",
-     col = "darkblue", pch = 20, cex = 0.5)
-abline(0, 1, col = "red", lwd = 2)
-
-par(mfrow = c(1, 1))
+# Histograma con línea uniforme
+hist(y_var, breaks = 30, probability = TRUE,
+     main = "Densidad Empírica vs Uniforme(0,1)",
+     xlab = "INDICE_GRAVEDAD", col = "lightgray", border = "white")
+abline(h = 1, col = "red", lwd = 2, lty = 2)  # densidad uniforme = 1
+legend("topright", legend = "Uniforme(0,1)", col = "red", lty = 2, lwd = 2)
 ```
+
+> **Interpretación:** El histograma muestra una clara concentración de probabilidad en valores cercanos a 0, con una cola que decrece rápidamente. La línea roja horizontal representa la densidad constante del modelo Uniforme(0,1) ($f(y) = 1$). Es evidente que la distribución empírica no se asemeja a una línea horizontal, lo que sugiere que el modelo uniforme no es adecuado.
 
 #### Validación de Propiedades Teóricas
 
+Para una distribución Uniforme(0,1), las propiedades teóricas son:
+- Media teórica: $E[Y] = 0.5$
+- Varianza teórica: $Var(Y) = \frac{1}{12} \approx 0.0833$
+
+Comparamos con los valores empíricos:
+
 ```{r}
-val_exp <- data.frame(
+val_unif <- data.frame(
   Medida = c("Media", "Varianza"),
-  Empirica = c(my, vy),
-  Teorica_Exponencial = c(1 / lambda_hat, 1 / (lambda_hat^2))
+  Empirica = c(mean(y_var), var(y_var)),
+  Teorica_Uniforme = c(0.5, 1/12)
 )
 
-kbl(val_exp, digits = 4, align = "c", 
-    caption = "Validación Teórica Exponencial") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+knitr::kable(val_unif, digits = 4, align = "c", 
+             caption = "Validación Teórica Uniforme") |>
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
+
+> **Interpretación:** La media empírica es muy inferior a la media teórica de 0.5, y la varianza empírica difiere de la varianza teórica. Estas diferencias confirman que la distribución de los datos no se comporta como una uniforme.
+
+#### Cálculo de Probabilidades de Intervalo
+
+**a) Probabilidad de un intervalo (según el modelo):**
+- **Pregunta:** Si asumimos el modelo Uniforme(0,1), ¿cuál es la probabilidad de que un paciente tenga un índice de gravedad mayor a 0.8 (casos extremadamente graves)?
+- **Cálculo:** Para una distribución Uniforme(0,1), la probabilidad es proporcional a la longitud del intervalo:
+  $$P(Y > 0.8) = 1 - P(Y \leq 0.8) = 1 - 0.8 = 0.2$$
+- **Interpretación teórica:** Según el modelo uniforme, esperaríamos que el **20%** de los pacientes tenga un índice de gravedad superior a 0.8.
+
+**b) Comparación con la probabilidad empírica:**
+- **Pregunta:** En nuestros datos reales, ¿cuál es la probabilidad de que un paciente tenga un índice de gravedad mayor a 0.8?
+- **Cálculo empírico:**
+
+```{r}
+prob_empirica <- mean(y_var > 0.8)
+prob_empirica
+```
+
+- **Interpretación:** La probabilidad empírica observada es de aproximadamente **`r round(prob_empirica * 100, 2)`%**, mucho menor que el 20% predicho por el modelo uniforme. Esta discrepancia confirma que el modelo no captura la verdadera distribución de los datos.
 
 #### Conclusión Formal
 
-**No es apropiado modelar la variable** $Y$ (Índice de Gravedad) de manera pura con una distribución Exponencial porque:
+**No es apropiado modelar la variable** $Y$ (Índice de Gravedad) con una distribución Uniforme porque:
 
--   **La distribución empírica no sigue el patrón esperado:** Aunque la variable tiene asimetría derecha, el histograma revela que la acumulación de datos no describe una curva de decaimiento suave perfecta, sino que presenta múltiples picos atípicos.
+- **No se cumplen los supuestos del modelo:** La distribución uniforme requiere que la densidad sea constante en todo el intervalo, pero el histograma muestra una clara concentración de probabilidad en valores cercanos a 0.
 
--   **La varianza difiere considerablemente de la media al cuadrado:** Matemáticamente, la varianza empírica está muy alejada de la varianza teórica exigida por el modelo.
+- **La media y varianza empíricas difieren considerablemente de las teóricas:** La media observada es muy inferior a la media teórica de 0.5, y la varianza no coincide con el valor esperado de 1/12.
 
--   **El QQ-plot está desviado:** Los cuantiles empíricos no siguen la línea diagonal, demostrando que la Exponencial asume una cola infinita, mientras que nuestros datos están rígidamente acotados en un valor máximo de 1.
+- **Las probabilidades de intervalo no coinciden:** La probabilidad empírica de valores extremos (>0.8) es mucho menor que la predicha por el modelo uniforme.
+
+- **La naturaleza del índice:** Al ser un indicador compuesto que combina eventos graves (neumonía, UCI, intubación, defunción), es esperable que la mayoría de los pacientes tenga valores bajos (cerca de 0) y solo unos pocos acumulen valores altos, lo que genera una distribución asimétrica que ningún modelo simple de los vistos en clase puede capturar adecuadamente.
+
 
 # Conclusiones
 
@@ -1140,7 +1201,7 @@ El análisis integral de la muestra de casos COVID-19 en México durante el 2021
 6.  **Modelado de Supervivencia (Bernoulli):** La variable Estado del Paciente se ajusta perfectamente al modelo Bernoulli. La validación numérica mostró que la varianza empírica coincide con la teórica ($\sigma^2 = p(1-p)$), lo que valida el uso de este modelo para describir la probabilidad de éxito (supervivencia) en la población con respuestas puramente dicotómicas.
 7.  **Rechazo del Modelo de Conteo Simple (Poisson):** El Nivel de Riesgo Clínico no se comporta como una variable Poisson pura debido a la presencia de sobredispersión (la varianza difiere de la media). Esto sugiere que la acumulación de riesgos en un paciente no es un proceso puramente aleatorio o independiente, sino que está influenciado por factores estructurales y biológicos correlacionados.
 8.  **Aceptación del Modelo Gamma (Score de Riesgo COVID):** El Score de Riesgo (para valores $>0$) se ajustó de manera adecuada a una distribución Gamma. La validación numérica y gráfica (QQ-Plot) demostró que el modelo captura correctamente la fuerte asimetría positiva y la restricción a valores no negativos, confirmando que la mayoría de la población presenta un riesgo basal bajo con un decaimiento progresivo hacia los casos más críticos.
-9.  **Limitaciones en el Modelado Continuo (Rechazo Exponencial en Índice de Gravedad):** Se comprobó que el Índice de Gravedad no es apropiado para ser modelado puramente con una distribución Exponencial. La evidencia empírica demostró que la naturaleza rígidamente acotada del índice (con un tope máximo de 1) y sus "saltos" discretos rompen los supuestos de continuidad absoluta y cola infinita que exige matemáticamente el modelo teórico, evidenciando las limitaciones de ajustar índices de diseño clínico a distribuciones continuas simples.
+9.  **Limitaciones en el Modelado Continuo (Rechazo Uniforme en Índice de Gravedad):** Se comprobó que el Índice de Gravedad no es apropiado para ser modelado con una distribución Uniforme. La evidencia empírica demostró que la naturaleza asimétrica del índice (con alta concentración en valores cercanos a 0) contradice el supuesto de densidad constante que exige el modelo uniforme.
 
 # Bibliografía
 
