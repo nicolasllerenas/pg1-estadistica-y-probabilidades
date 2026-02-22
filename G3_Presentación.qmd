@@ -1,11 +1,11 @@
 ---
 title: "G3_Presentación"
 author:
-  - Abanto Romero, Jesus Alejandro
-  - Cachique Moncada, Renato
-  - Flores Guevara, Tamy Kristel
-  - Llerena Silva, Nicolás Alejandro 
-  - Sobenes Obregon, Carlos Sebastian 
+  - Abanto Romero, Jesus Alejandro      (100%)
+  - Cachique Moncada, Renato            (100%)
+  - Flores Guevara, Tamy Kristel        (100%)
+  - Llerena Silva, Nicolás Alejandro    (0%)
+  - Sobenes Obregon, Carlos Sebastian   (100%)
 editor: visual
 date: "`r format(Sys.time(), '%d %B %Y')`"
 lang: es
@@ -751,238 +751,159 @@ $$P(B|A) = \frac{P(A|B)\cdot P(B)}{P(A_{Total})} = \frac{`r round(P_A_dado_B,4)`
 
 ### ESTADO
 
-**Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su estado al egreso hospitalario.
+Utilizaremos la variable empírica `ESTADO` para estimar la probabilidad de éxito y evaluar una variable aleatoria discreta Binomial.
 
-**Variable aleatoria:** El desenlace de supervivencia cambia dependiendo del paciente elegido, por lo que lo definimos como una variable aleatoria indicadora. $$Y = \text{Estado final del paciente seleccionado}$$ *(Codificación:* $1 = \text{Sobrevive}$, $0 = \text{Fallece}$).
+-   **Definición del Éxito:** Que un paciente seleccionado al azar sobreviva al egreso hospitalario (ESTADO = "Vivo").
+-   **Experimento:** Extraer una nueva muestra aleatoria de 40 pacientes confirmados con COVID-19 y registrar cuántos de ellos logran sobrevivir.
+-   **Variable aleatoria ($Y$):** $$Y = \text{Número de pacientes que sobreviven en una muestra de tamaño } n=40$$
+-   **Modelo candidato:** **La variable $Y$ se distribuye como una Binomial** porque consiste en $n$ ensayos idénticos e independientes, donde cada paciente evaluado tiene solo dos posibles desenlaces mutuamente excluyentes (sobrevive o fallece), y la probabilidad de éxito ($p$) se asume constante para todos los ensayos.
+    $$Y \sim \text{Binomial}(n=40, p)$$
 
-**Rango observado:** $$R_Y = \{0, 1\}$$
-
-**Modelo candidato (Bernoulli):** **La variable** $Y$ podría modelarse como una distribución de Bernoulli **porque** el experimento consiste en un único ensayo que admite solo dos resultados mutuamente excluyentes (éxito o fracaso, 0 o 1), cumpliendo con la condición de respuesta puramente dicotómica. $$Y \sim \text{Bernoulli}(p)$$
-
-#### Ajuste del Modelo y Estimación de Parámetros
-
-```{r}
-# Preparación de datos
-df_bernoulli <- DATOS_FINALES |>
-  mutate(Y = ifelse(ESTADO == "Vivo", 1, 0))
-
-# Estimación del Parámetro p (Probabilidad de Éxito)
-p_hat <- mean(df_bernoulli$Y)
-```
-
-#### Comparación: Probabilidades Observadas vs Teóricas
+#### Cálculo del Parámetro ($p$)
 
 ```{r}
-tabla_comp_b <- data.frame(
-  Estado_Y = c(0, 1),
-  Frecuencia = c(sum(df_bernoulli$Y == 0), sum(df_bernoulli$Y == 1)),
-  Prob_Empirica_Observada = c(1 - p_hat, p_hat),
-  Prob_Teorica = c(1 - p_hat, p_hat)
-)
-
-kbl(tabla_comp_b, digits = 4, align = "c", 
-    caption = "Frecuencias y Comparación de Probabilidades (Bernoulli)") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+# Cálculo de la probabilidad de éxito (p) en la población total
+p_exito <- mean(DATOS_FINALES$ESTADO == "Vivo")
+cat("Probabilidad de éxito estimada (p):", round(p_exito, 4), "\n")
 ```
+
+#### Ejemplos de Aplicación (Cálculo de Probabilidades)
+
+A continuación, demostramos la utilidad del modelo resolviendo casos prácticos sobre nuestra nueva variable aleatoria $Y$, asumiendo el modelo Binomial con $n=40$ y $p=`r round(p_exito, 4)`$.
+
+##### Probabilidad Puntual
+
+¿Cuál es la probabilidad de que exactamente 25 pacientes sobrevivan en la muestra de 40? 
+$$P(Y = 25)$$
+```{r}
+prob_puntual <- dbinom(x = 25, size = 40, prob = p_exito)
+cat("P(Y = 25) =", round(prob_puntual, 4))
+```
+
+Existe un `r round(prob_puntual*100, 2)`% de probabilidad de que exactamente 25 pacientes sobrevivan.
+
+##### Probabilidad Acumulada
+
+Probabilidad de que al menos 30 pacientes sobrevivan.$$P(Y \ge 30) = 1 - P(Y \le 29)$$
+
+```{r}
+prob_acumulada <- pbinom(q = 29, size = 40, prob = p_exito, lower.tail = FALSE)
+cat("P(Y >= 30) =", round(prob_acumulada, 4))
+```
+
+Existe un `r round(prob_acumulada*100, 2)`% de probabilidad de que 30 o más pacientes sobrevivan.
 
 #### Validación Gráfica (Distribución de Probabilidad)
 
-Visualizamos la distribución de masa de probabilidad usando líneas verticales.
-
 ```{r}
-# Tabla de proporciones
-tabla_b <- table(df_bernoulli$Y) / nrow(df_bernoulli)
+#| fig-width: 8
+#| fig-height: 4.5
+y_vals <- 0:40
+prob_y <- dbinom(y_vals, size = 40, prob = p_exito)
 
-# Gráfico de líneas (type = "h")
-plot(as.numeric(names(tabla_b)), as.vector(tabla_b),
-     type = "h", lwd = 5, col = "blue", ylim = c(0, 1),
-     xaxt = "n",
-     main = "Distribución Bernoulli: Variable ESTADO",
-     xlab = "Estado (0=Fallece, 1=Sobrevive)", ylab = "Probabilidad",
+plot(y_vals, prob_y, type = "h", lwd = 3, col = "blue",
+     main = "Distribución Teórica: Binomial(n=40, p)",
+     xlab = "Número de Sobrevivientes en la muestra (Y)", 
+     ylab = "Probabilidad P(Y=y)",
      col.main = "darkblue")
-points(as.numeric(names(tabla_b)), as.vector(tabla_b), pch = 19, col = "blue", cex = 1.2)
-axis(1, at = c(0, 1), labels = c("0 (Muerto)", "1 (Vivo)"))
+points(y_vals, prob_y, pch = 19, col = "darkblue", cex = 0.8)
+
+abline(v = 40 * p_exito, col = "red", lty = 2, lwd = 2)
+legend("topleft", legend = c("Probabilidad puntual", "Esperanza E[Y]"), 
+       col = c("blue", "red"), lty = c(1, 2), pch = c(19, NA), bty = "n")
 ```
 
-> **Interpretación:** Como se observa en la gráfica y en la tabla comparativa, las probabilidades empíricas observadas coinciden exactamente con las teóricas. La gráfica apoya la conclusión de que el modelo de Bernoulli es un ajuste perfecto para modelar el estado final del paciente.
-
-#### Validación Numérica
-
-Comparamos la varianza empírica muestral con la teórica del modelo Bernoulli.
-
-```{r}
-val_bernoulli <- data.frame(
-  Medida = c("Media / Esperanza", "Varianza"),
-  Empirica = c(mean(df_bernoulli$Y), var(df_bernoulli$Y)),
-  Teorica_Bernoulli = c(p_hat, p_hat * (1 - p_hat))
-)
-
-kbl(val_bernoulli, digits = 4, align = "c", 
-    caption = "Validación del Modelo Bernoulli (Variable ESTADO)") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
-```
-
-#### Cálculo de Probabilidades de Interés
-
-**a) Probabilidad puntual:**
-- **Pregunta:** ¿Cuál es la probabilidad de que un paciente haya fallecido?
-- **Cálculo:** $P(Y = 0) = 1 - p = 1 - 0.559 = 0.441$
-- **Interpretación:** La probabilidad de fallecimiento es del **44.1%**.
-
-**b) Probabilidad acumulada:**
-- **Pregunta:** ¿Cuál es la probabilidad de que un paciente tenga estado "fallecido" o inferior?
-- **Cálculo:** $P(Y \leq 0) = P(Y = 0) = 0.441$
-- **Interpretación:** La probabilidad acumulada hasta "fallecido" es también **44.1%**.
-
-#### Conclusión Formal
-
-**La variable** $Y$ (Estado) puede modelarse mediante una distribución de Bernoulli porque: \* **Cumple los supuestos** de consistir en un único ensayo independiente con una respuesta estrictamente dicotómica (0 = Fallece, 1 = Sobrevive). \* **La media y varianza presentan** equivalencia exacta matemática; la varianza empírica coincide con la varianza teórica calculada mediante $p(1-p)$. \* **Las probabilidades teóricas se aproximan** a la perfección a las proporciones empíricas observadas en la tabla de frecuencias. \* **La gráfica muestra coherencia** absoluta con el modelo, superponiendo de forma exacta las distribuciones de masa reales y teóricas.
+> **Interpretación:** La distribución teórica presenta una asimetría negativa. La mayor masa de probabilidad se concentra alrededor de la esperanza matemática (línea roja), indicando visualmente que en la muestra de 40 pacientes, lo más probable es que una clara mayoría logre sobrevivir.
 
 ### NIVEL DE RIESGO
 
-**Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su nivel de severidad de riesgo clínico basal.
+Utilizaremos la variable `RIESGO_CLINICO` para estimar la tasa promedio de incidencia temporal y construir un modelo de Poisson (eventos en un intervalo de tiempo).
 
-**Variable aleatoria:**
+-   **Definición del Evento:** Ingreso hospitalario de un paciente con riesgo "Alto (5-6)".
 
-$$X = \text{Nivel de riesgo clínico acumulado del paciente seleccionado}$$
+-   **Experimento:** Contabilizar el ingreso de pacientes con riesgo alto durante el intervalo de **una semana epidemiológica**.
 
-**Rango observado:** Convertimos las categorías ordinales de riesgo a una escala numérica natural.
+-   **Variable aleatoria ($X$):**
+    $$X = \text{Número de pacientes con riesgo alto que ingresan por semana}$$
+    
+-   **Modelo candidato:** **Poisson**, porque modela el conteo de eventos independientes en un intervalo de tiempo continuo a una tasa promedio constante ($\lambda$).
+    $$X \sim \text{Poisson}(\lambda)$$
 
-$$R_X = \{0, 1, 2, 3, 4, 5\}$$
+#### Cálculo del Parámetro ($\lambda$)
 
-**Modelo candidato (Poisson):** **La variable** $X$ podría modelarse como una distribución de Poisson **porque** representa el conteo de eventos (acumulación de múltiples comorbilidades) en una unidad de análisis (un paciente individual), asumiendo una tasa media constante de ocurrencia.
-
-$$X \sim \text{Poisson}(\lambda)$$
-
-#### Ajuste del Modelo y Estimación de Parámetros
-
-Estimamos el parámetro $\lambda$ igualando la esperanza teórica a la media muestral observada.
+Estimamos el promedio de ingresos semanales usando las 52 semanas del año 2021.
 
 ```{r}
-# Transformación a numérica (0-5)
-df_poisson <- DATOS_FINALES |>
-  mutate(X = case_when(
-    grepl("Muy bajo", RIESGO_CLINICO) ~ 0,
-    grepl("Bajo", RIESGO_CLINICO) ~ 1,
-    grepl("Moderado", RIESGO_CLINICO) ~ 2,
-    grepl("Alto", RIESGO_CLINICO) ~ 3,
-    grepl("Muy alto", RIESGO_CLINICO) ~ 4,
-    grepl("Crítico", RIESGO_CLINICO) ~ 5,
-    TRUE ~ NA_real_
-  ))
-
-# Estimación de Lambda (Media)
-lambda_est <- mean(df_poisson$X, na.rm=TRUE)
+total_altos <- sum(DATOS_FINALES$RIESGO_CLINICO == "Alto (5-6)", na.rm = TRUE)
+lambda_semana <- total_altos / 52
+cat("Tasa promedio de ingresos con riesgo alto por semana (lambda):", round(lambda_semana, 4), "\n")
 ```
 
-#### Comparación: Probabilidades Observadas vs Teóricas
+#### Ejemplos de Aplicación (Cálculo de Probabilidades)
+
+Asumiendo el modelo $X \sim \text{Poisson}(`r round(lambda_semana, 4)`)$:
+
+##### Probabilidad Puntual
+
+Probabilidad de recibir exactamente 3 pacientes con riesgo alto en una semana.$$P(X = 3)$$
 
 ```{r}
-# Cálculo de distribuciones
-tabla_p <- table(df_poisson$X) / sum(table(df_poisson$X))
-x_vals <- as.numeric(names(tabla_p))
-y_emp <- as.vector(tabla_p)
-y_teor <- dpois(x_vals, lambda = lambda_est)
-
-tabla_comp_p <- data.frame(
-  Riesgo_X = x_vals,
-  Frecuencia = as.vector(table(df_poisson$X)),
-  Prob_Empirica_Observada = y_emp,
-  Prob_Teorica = y_teor
-)
-
-kbl(tabla_comp_p, digits = 4, align = "c", 
-    caption = "Frecuencias y Comparación de Probabilidades (Poisson)") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+prob_pois_puntual <- dpois(x = 3, lambda = lambda_semana)
+cat("P(X = 3) =", round(prob_pois_puntual, 4))
 ```
 
-#### Validación Gráfica (Empírica vs Teórica)
+Existe un `r round(prob_pois_puntual*100, 2)`% de probabilidad de tener exactamente 3 ingresos de riesgo alto en una semana.
+
+##### Probabilidad Acumulada
+
+Probabilidad de recibir como máximo 4 pacientes con riesgo alto semanales.$$P(X \le 4) = P(X=0) + ... + P(X=4)$$
 
 ```{r}
-# 1. Probabilidades Empíricas
-tabla_p <- table(df_poisson$X) / sum(table(df_poisson$X))
-x_vals <- as.numeric(names(tabla_p))
-y_emp <- as.vector(tabla_p)
-
-# 2. Probabilidades Teóricas (Poisson)
-y_teor <- dpois(x_vals, lambda = lambda_est)
-
-# 3. Gráfico de Líneas
-plot(x_vals, y_emp, 
-     type = "h", lwd = 4, col = "blue",
-     ylim = c(0, max(c(y_emp, y_teor)) + 0.1),
-     main = "Ajuste Poisson: Nivel de Riesgo",
-     xlab = "Nivel de Riesgo (X)", ylab = "Probabilidad",
-     col.main = "darkblue")
-points(x_vals, y_emp, pch = 19, col = "blue", cex = 1.2)
-
-# Líneas Teóricas (Desplazadas ligeramente para visualización)
-lines(x_vals + 0.1, y_teor, type = "h", lwd = 3, col = "red", lty = 2)
-points(x_vals + 0.1, y_teor, pch = 17, col = "red", cex = 1.2)
-
-legend("topright", legend = c("Empírica (Real)", "Teórica (Poisson)"), 
-       col = c("blue", "red"), lty = c(1, 2), pch = c(19, 17), bty = "n")
+prob_pois_acumulada <- ppois(q = 4, lambda = lambda_semana)
+cat("P(X <= 4) =", round(prob_pois_acumulada, 4))
 ```
 
-> **Interpretación:** La gráfica superpuesta evidencia visualmente que las probabilidades teóricas (rojas) no logran capturar perfectamente la distribución observada (azules). Se nota una sobrestimación en los valores centrales y una subestimación en el valor cero, confirmando que la acumulación de enfermedades no es puramente aleatoria. La gráfica apoya la conclusión de que Poisson tiene un ajuste limitado para esta variable.
+Hay un `r round(prob_pois_acumulada*100, 2)`% de probabilidad de que los ingresos de riesgo alto no superen los 4 pacientes por semana.
 
-#### Validación Numérica
-
-Verificamos numéricamente el supuesto de equidispersión ($\text{Media} \approx \text{Varianza}$).
+#### Validación Gráfica
 
 ```{r}
-val_poisson <- data.frame(
-  Medida = c("Media", "Varianza"),
-  Empirica = c(mean(df_poisson$X, na.rm=TRUE), var(df_poisson$X, na.rm=TRUE)),
-  Teorica_Poisson = c(lambda_est, lambda_est)
-)
+#| fig-width: 8
+#| fig-height: 4.5
+max_x <- max(8, qpois(0.9999, lambda = lambda_semana))
+x_vals <- 0:max_x
+prob_x <- dpois(x_vals, lambda = lambda_semana)
 
-kbl(val_poisson, digits = 4, align = "c", 
-    caption = "Validación del Modelo Poisson (Equidispersión)") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+plot(x_vals, prob_x, type = "h", lwd = 4, col = "darkgreen",
+     main = "Distribución Teórica: Poisson(\u03bb semanal)",
+     xlab = "Ingresos de Pacientes con Riesgo Alto por Semana (X)", 
+     ylab = "Probabilidad P(X=x)",
+     col.main = "darkgreen")
+points(x_vals, prob_x, pch = 19, col = "darkgreen", cex = 1.2)
+
+abline(v = lambda_semana, col = "red", lty = 2, lwd = 2)
+legend("topright", legend = c("Probabilidad puntual", "Esperanza E[X]"), 
+       col = c("darkgreen", "red"), lty = c(1, 2), pch = c(19, NA), bty = "n")
 ```
 
-#### Cálculo de Probabilidades de Interés
-
-**a) Probabilidad puntual:**
-- **Pregunta:** Bajo el modelo Poisson con $\lambda = 1.32$, ¿cuál es $P(X = 3)$?
-- **Cálculo:** 
-  $$P(X = 3) = \frac{e^{-1.32} \cdot 1.32^3}{3!}$$
-  
-```{r}
-dpois(3, lambda = 1.32)
-```
-- **Interpretación:** El modelo predice **11.5%** de probabilidad para riesgo "Alto" (X=3), mientras que la probabilidad empírica es 16.5%, evidenciando subestimación.
-
-**b) Probabilidad acumulada:**
-- **Pregunta:** ¿Cuál es $P(X \leq 2)$?
-- **Cálculo:**
-```{r}
-ppois(2, lambda = 1.32)
-```
-- **Interpretación:** El modelo predice **58.7%** de pacientes con riesgo moderado o menor, valor que puede contrastarse con la proporción empírica acumulada.
-
-#### Conclusión Formal
-
-**No es apropiado modelar la variable** $X$ (Nivel de Riesgo) con una distribución de Poisson porque: \* **No se cumplen los supuestos** de aleatoriedad pura en el conteo; la acumulación de múltiples enfermedades en un paciente suele estar correlacionada fisiológicamente, violando la independencia de ocurrencia. \* **La varianza difiere considerablemente de la media**, evidenciando un claro problema de "sobredispersión" empírica que rompe el supuesto matemático fundamental de equidispersión ($E[X] = V(X) = \lambda$). \* **La distribución empírica no sigue el patrón esperado**, ya que la gráfica comparativa revela que el modelo teórico subestima los casos nulos (cero comorbilidades) y sobrestima fuertemente los valores centrales.
+> **Interpretación:** Al enfocar el modelo en los pacientes con riesgo alto, la gráfica muestra cómo la probabilidad se distribuye en torno a la esperanza matemática (línea roja), decayendo progresivamente hacia la derecha. Esto permite a la gestión hospitalaria prever la variabilidad de la demanda semana a semana.
 
 ## Variables Aleatorias Continuas
 
 ### SCORE_RIESGO_COVID
 
-**Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su score.
+-   **Experimento:** Seleccionar un paciente al azar de `DATOS_FINALES` y registrar su score de riesgo.
 
-**Variable aleatoria:** $$X = \text{Score de riesgo COVID del paciente seleccionado}$$
+-   **Variable aleatoria ($X$):** $$X = \text{Score de riesgo COVID del paciente seleccionado}$$
 
-**Rango observado:** La variable es continua en el intervalo $X \in [0,3]$. Analizaremos la fracción estrictamente positiva ($X>0$).
+-   **Rango observado:** La variable es continua en el intervalo $X \in [0,3]$. Analizaremos la fracción estrictamente positiva ($X>0$).
 
-**Modelo candidato:** **La variable** $X$ (para $X>0$) podría modelarse mediante una distribución Gamma porque toma exclusivamente valores positivos y presenta una fuerte asimetría hacia la derecha, características morfológicas propias de este modelo probabilístico.
-
-$$X \mid (X>0) \sim \Gamma(k,\theta)$$
+-   **Modelo candidato:** **Gamma**, porque la variable toma valores positivos y presenta una fuerte asimetría hacia la derecha.
+    $$X \mid (X>0) \sim \Gamma(k,\theta)$$
 
 #### Evidencia Numérica y Descriptiva
 
-Calculamos los estadísticos descriptivos fundamentales para explorar la forma de la distribución y justificar la elección del modelo.
+Filtramos los valores válidos y positivos para explorar la forma de la distribución.
 
 ```{r}
 # Filtramos los valores válidos y positivos
@@ -1005,7 +926,7 @@ kbl(desc_gamma, digits = 4, align = "c", caption = "Evidencia Descriptiva (X>0)"
 
 #### Estimación de parámetros (Gamma)
 
-Estimamos los parámetros Forma ($k$) y Escala ($\theta$) igualando los momentos muestrales a los teóricos de la distribución Gamma.
+Estimamos los parámetros Forma ($k$) y Escala ($\theta$) por el método de momentos.
 
 ```{r}
 mx <- mean(x_pos)
@@ -1059,8 +980,8 @@ kbl(val_gamma, digits = 4, align = "c",
 
 #### Cálculo de Probabilidades de Intervalo
 
-- **Pregunta:** ¿Cuál es la probabilidad de que el score de riesgo esté entre 0.5 y 1.5?
-- **Cálculo:**
+-   **Pregunta:** ¿Cuál es la probabilidad de que el score de riesgo esté entre 0.5 y 1.5?
+-   **Cálculo:**
 
 ```{r}
 prob_intervalo <- pgamma(1.5, shape = k_hat, scale = theta_hat) - 
@@ -1068,7 +989,7 @@ prob_intervalo <- pgamma(1.5, shape = k_hat, scale = theta_hat) -
 prob_intervalo
 ```
 
-- **Interpretación:** La probabilidad de que un paciente tenga score en el rango 0.5-1.5 es del **`r round(prob_intervalo * 100, 1)`%**. Esto significa que casi la mitad de los pacientes se concentra en este intervalo de riesgo intermedio.
+-   **Interpretación:** La probabilidad de que un paciente tenga score en el rango 0.5-1.5 es del **`r round(prob_intervalo * 100, 1)`%**. Esto significa que casi la mitad de los pacientes se concentra en este intervalo de riesgo intermedio.
 
 #### Conclusión Formal
 
@@ -1116,9 +1037,7 @@ knitr::kable(desc_unif, digits = 4, align = "c",
 
 #### Estimación de parámetros
 
-Para una distribución Uniforme(0,1), los parámetros son fijos:
-- $a = 0$ (límite inferior)
-- $b = 1$ (límite superior)
+Para una distribución Uniforme(0,1), los parámetros son fijos: - $a = 0$ (límite inferior) - $b = 1$ (límite superior)
 
 No es necesario estimar parámetros, pues el modelo está completamente especificado por el rango de la variable.
 
@@ -1137,9 +1056,7 @@ legend("topright", legend = "Uniforme(0,1)", col = "red", lty = 2, lwd = 2)
 
 #### Validación de Propiedades Teóricas
 
-Para una distribución Uniforme(0,1), las propiedades teóricas son:
-- Media teórica: $E[Y] = 0.5$
-- Varianza teórica: $Var(Y) = \frac{1}{12} \approx 0.0833$
+Para una distribución Uniforme(0,1), las propiedades teóricas son: - Media teórica: $E[Y] = 0.5$ - Varianza teórica: $Var(Y) = \frac{1}{12} \approx 0.0833$
 
 Comparamos con los valores empíricos:
 
@@ -1159,35 +1076,28 @@ knitr::kable(val_unif, digits = 4, align = "c",
 
 #### Cálculo de Probabilidades de Intervalo
 
-**a) Probabilidad de un intervalo (según el modelo):**
-- **Pregunta:** Si asumimos el modelo Uniforme(0,1), ¿cuál es la probabilidad de que un paciente tenga un índice de gravedad mayor a 0.8 (casos extremadamente graves)?
-- **Cálculo:** Para una distribución Uniforme(0,1), la probabilidad es proporcional a la longitud del intervalo:
-  $$P(Y > 0.8) = 1 - P(Y \leq 0.8) = 1 - 0.8 = 0.2$$
-- **Interpretación teórica:** Según el modelo uniforme, esperaríamos que el **20%** de los pacientes tenga un índice de gravedad superior a 0.8.
+**a) Probabilidad de un intervalo (según el modelo):** - **Pregunta:** Si asumimos el modelo Uniforme(0,1), ¿cuál es la probabilidad de que un paciente tenga un índice de gravedad mayor a 0.8 (casos extremadamente graves)? - **Cálculo:** Para una distribución Uniforme(0,1), la probabilidad es proporcional a la longitud del intervalo: $$P(Y > 0.8) = 1 - P(Y \leq 0.8) = 1 - 0.8 = 0.2$$ - **Interpretación teórica:** Según el modelo uniforme, esperaríamos que el **20%** de los pacientes tenga un índice de gravedad superior a 0.8.
 
-**b) Comparación con la probabilidad empírica:**
-- **Pregunta:** En nuestros datos reales, ¿cuál es la probabilidad de que un paciente tenga un índice de gravedad mayor a 0.8?
-- **Cálculo empírico:**
+**b) Comparación con la probabilidad empírica:** - **Pregunta:** En nuestros datos reales, ¿cuál es la probabilidad de que un paciente tenga un índice de gravedad mayor a 0.8? - **Cálculo empírico:**
 
 ```{r}
 prob_empirica <- mean(y_var > 0.8)
 prob_empirica
 ```
 
-- **Interpretación:** La probabilidad empírica observada es de aproximadamente **`r round(prob_empirica * 100, 2)`%**, mucho menor que el 20% predicho por el modelo uniforme. Esta discrepancia confirma que el modelo no captura la verdadera distribución de los datos.
+-   **Interpretación:** La probabilidad empírica observada es de aproximadamente **`r round(prob_empirica * 100, 2)`%**, mucho menor que el 20% predicho por el modelo uniforme. Esta discrepancia confirma que el modelo no captura la verdadera distribución de los datos.
 
 #### Conclusión Formal
 
 **No es apropiado modelar la variable** $Y$ (Índice de Gravedad) con una distribución Uniforme porque:
 
-- **No se cumplen los supuestos del modelo:** La distribución uniforme requiere que la densidad sea constante en todo el intervalo, pero el histograma muestra una clara concentración de probabilidad en valores cercanos a 0.
+-   **No se cumplen los supuestos del modelo:** La distribución uniforme requiere que la densidad sea constante en todo el intervalo, pero el histograma muestra una clara concentración de probabilidad en valores cercanos a 0.
 
-- **La media y varianza empíricas difieren considerablemente de las teóricas:** La media observada es muy inferior a la media teórica de 0.5, y la varianza no coincide con el valor esperado de 1/12.
+-   **La media y varianza empíricas difieren considerablemente de las teóricas:** La media observada es muy inferior a la media teórica de 0.5, y la varianza no coincide con el valor esperado de 1/12.
 
-- **Las probabilidades de intervalo no coinciden:** La probabilidad empírica de valores extremos (>0.8) es mucho menor que la predicha por el modelo uniforme.
+-   **Las probabilidades de intervalo no coinciden:** La probabilidad empírica de valores extremos (\>0.8) es mucho menor que la predicha por el modelo uniforme.
 
-- **La naturaleza del índice:** Al ser un indicador compuesto que combina eventos graves (neumonía, UCI, intubación, defunción), es esperable que la mayoría de los pacientes tenga valores bajos (cerca de 0) y solo unos pocos acumulen valores altos, lo que genera una distribución asimétrica que ningún modelo simple de los vistos en clase puede capturar adecuadamente.
-
+-   **La naturaleza del índice:** Al ser un indicador compuesto que combina eventos graves (neumonía, UCI, intubación, defunción), es esperable que la mayoría de los pacientes tenga valores bajos (cerca de 0) y solo unos pocos acumulen valores altos, lo que genera una distribución asimétrica que ningún modelo simple de los vistos en clase puede capturar adecuadamente.
 
 # Conclusiones
 
