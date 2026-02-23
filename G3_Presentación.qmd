@@ -4,7 +4,7 @@ author:
   - Abanto Romero, Jesus Alejandro      (100%)
   - Cachique Moncada, Renato            (100%)
   - Flores Guevara, Tamy Kristel        (100%)
-  - Llerena Silva, Nicolás Alejandro    (75%)
+  - Llerena Silva, Nicolás Alejandro    (0%)
   - Sobenes Obregon, Carlos Sebastian   (100%)
 editor: visual
 date: "`r format(Sys.time(), '%d %B %Y')`"
@@ -28,9 +28,7 @@ execute:
 
 ## Relevancia
 
-La pandemia por COVID-19 ha tenido un impacto significativo en la salud pública a nivel mundial. El análisis de datos epidemiológicos permite comprender mejor las características de los casos y los factores asociados a la gravedad de la enfermedad.
-
-Este informe presenta un análisis descriptivo de los **casos sospechosos y confirmados de COVID-19 en México durante el año 2021**, utilizando una muestra de datos oficiales del sistema de vigilancia epidemiológica. Entender estos patrones es crucial para mejorar la respuesta ante futuras emergencias sanitarias.
+El COVID-19 impactó severamente la salud pública mundial. Analizamos casos sospechosos y confirmados en México (2021) usando datos epidemiológicos oficiales. Entender sus características y factores de gravedad es crucial para mejorar la respuesta ante futuras emergencias sanitarias.
 
 ## Planificación
 
@@ -62,7 +60,7 @@ gantt
 
 ### Objetivo General
 
-Analizar los casos sospechosos y confirmados de COVID-19 en México durante el año 2021, describiendo sus principales características demográficas y clínicas.
+Analizar demográfica y clínicamente los casos de COVID-19 en México durante 2021.
 
 ### Objetivos Específicos
 
@@ -76,21 +74,19 @@ Analizar los casos sospechosos y confirmados de COVID-19 en México durante el a
 
 ## Población objetivo
 
-La población está conformada por todos los registros acumulados en el Sistema de Vigilancia Epidemiológica de Enfermedades Respiratorias Viral correspondientes a casos sospechosos y confirmados de COVID-19 en México durante el año 2021. La unidad muestral es el **individuo (paciente)**.
+La población abarca todos los registros del Sistema de Vigilancia Epidemiológica sobre casos de COVID-19 en México (2021). La unidad muestral es el **individuo**.
 
 ## Tipo de muestreo
 
-Se empleó un muestreo no probabilístico por conveniencia. Al tratarse de un análisis de datos secundarios, se trabajó con la totalidad de observaciones accesibles y validadas en el archivo fuente proporcionado.
+Aplicamos muestreo no probabilístico por conveniencia, analizando la totalidad de observaciones validadas del archivo fuente.
 
 ## Recolección de datos
 
-La recolección de datos se basó en el uso de una fuente secundaria: la base de datos histórica de **Datos Abiertos de la Dirección General de Epidemiología (DGE)** de la Secretaría de Salud de México.
-
-Para este proyecto académico, no se realizó una recolección primaria (encuestas), sino que se trabajó con el archivo `muestra_covid_500M_NA.csv`. Este dataset es una muestra didáctica procesada por el equipo docente (Prado Urbano, 2026) que contiene registros correspondientes al año **2021**, conservando la estructura y las variables clínicas originales validadas por la autoridad sanitaria mexicana.
+Usamos el archivo `muestra_covid_500M_NA.csv`, una muestra didáctica del 2021 (Prado Urbano, 2026) extraída de Datos Abiertos de la DGE, que conserva variables clínicas validadas por la autoridad sanitaria.
 
 ## Variables
 
-A continuación se definen las variables seleccionadas y su clasificación:
+Clasificación de variables seleccionadas:
 
 **Tabla 1**\
 *Descripción y clasificación de las variables seleccionadas para el estudio*
@@ -239,8 +235,6 @@ data.frame(
 ```
 
 # Análisis Descriptivo
-
-En esta sección se describen las variables principales del estudio mediante estadísticos de posición (media, mediana), dispersión (desviación estándar) y gráficos exploratorios.
 
 ## Análisis Univariado
 
@@ -696,6 +690,26 @@ Sustituyendo con nuestros datos:
 
 Entonces $A$ y $B$ no son independientes.
 
+#### Argumento Gráfico de Independencia
+
+Para respaldar nuestra prueba numérica, visualizamos la relación entre ambas variables mediante un gráfico de mosaico. Si los eventos fueran independientes, las divisiones horizontales (Vivos/Muertos) se mantendrían al mismo nivel en todas las columnas verticales (Niveles de riesgo).
+
+**Figura 10**\
+*Mosaico de Independencia: Riesgo Clínico vs Estado*
+
+```{r}
+#| fig-width: 8
+#| fig-height: 5
+tabla_indep <- table(DATOS_FINALES$RIESGO_CLINICO, DATOS_FINALES$ESTADO)
+
+mosaicplot(tabla_indep,
+           xlab = "Nivel de Riesgo Clínico", ylab = "Estado Final",
+           color = c("#E74C3C", "#2ECC71"), # Rojo para Muerto, Verde para Vivo
+           border = "white", las = 1, cex.axis = 0.8)
+```
+
+> **Interpretación:** El gráfico demuestra visualmente la falta de independencia estadística. Las áreas no son proporcionales ni simétricas. Se observa claramente que a medida que nos desplazamos de izquierda a derecha (hacia riesgos más críticos), la proporción del área roja (Fallecidos) aumenta drásticamente en comparación con el área verde (Vivos). Esto confirma gráficamente el resultado numérico: el nivel de riesgo condiciona severamente el estado final del paciente.
+
 ### Probabilidad Condicional Directa
 
 Calculamos la probabilidad condicional de que un paciente fallezca ($A$), dado que sabemos previamente que pertenece al grupo de Riesgo Bajo ($B$).
@@ -799,7 +813,7 @@ Existe un `r round(prob_acumulada*100, 2)`% de probabilidad de que 30 o más pac
 
 #### Validación Gráfica
 
-**Figura 10**\
+**Figura 11**\
 *Distribución Teórica: Binomial(n=40, p)*
 
 ```{r}
@@ -873,7 +887,7 @@ Hay un `r round(prob_pois_acumulada*100, 2)`% de probabilidad de que los ingreso
 
 #### Validación Gráfica
 
-**Figura 11**\
+**Figura 12**\
 *Distribución Teórica: Poisson(\u03bb semanal)*
 
 ```{r}
@@ -940,7 +954,7 @@ kbl(resumen_gamma, digits = 4, align = "c",
 
 #### Validación Gráfica (Histograma y QQ-Plot)
 
-**Figura 12**\
+**Figura 13**\
 
 *Densidad Empírica vs Teórica (Gamma)*
 
@@ -954,7 +968,7 @@ legend("topright", legend = "Densidad Gamma", col = "red", lwd = 2, bty = "n")
 ```
 > **Interpretación:** El histograma confirma visualmente que la distribución de la muestra empírica posee un decaimiento asimétrico hacia la derecha, el cual es capturado a la perfección por la curva roja del modelo Gamma.
 
-**Figura 13**\
+**Figura 14**\
 
 *Q-Q Plot: Ajuste Gamma*
 
@@ -1018,7 +1032,7 @@ kbl(resumen_unif, digits = 4, align = "c", caption = NULL) |>
 
 #### Validación Gráfica (Histograma)
 
-**Figura 14**\
+**Figura 15**\
 
 *Densidad Empírica vs Teórica (Uniforme)*
 
